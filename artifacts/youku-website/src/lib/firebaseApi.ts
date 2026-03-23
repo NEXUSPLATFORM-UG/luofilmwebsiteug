@@ -3,10 +3,7 @@ import {
   getDocs, getDoc, query, where, orderBy, limit,
   serverTimestamp, Timestamp, increment,
 } from "firebase/firestore";
-import {
-  ref, uploadBytesResumable, getDownloadURL, deleteObject,
-} from "firebase/storage";
-import { db, storage } from "./firebase";
+import { db } from "./firebase";
 
 function tsToMs(ts: Timestamp | null | undefined): number {
   if (!ts) return Date.now();
@@ -21,34 +18,6 @@ function docToObj(d: any) {
   return out;
 }
 
-export async function uploadFile(
-  path: string,
-  file: File,
-  onProgress?: (pct: number) => void
-): Promise<string> {
-  const storageRef = ref(storage, path);
-  return new Promise((resolve, reject) => {
-    const task = uploadBytesResumable(storageRef, file);
-    task.on(
-      "state_changed",
-      (snap) => {
-        if (onProgress) onProgress((snap.bytesTransferred / snap.totalBytes) * 100);
-      },
-      reject,
-      async () => {
-        const url = await getDownloadURL(task.snapshot.ref);
-        resolve(url);
-      }
-    );
-  });
-}
-
-export async function deleteFile(url: string) {
-  try {
-    const storageRef = ref(storage, url);
-    await deleteObject(storageRef);
-  } catch (_) {}
-}
 
 export const fbApi = {
   stats: async () => {

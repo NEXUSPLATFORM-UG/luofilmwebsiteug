@@ -1,6 +1,4 @@
-import { fbApi, uploadFile } from "../lib/firebaseApi";
-
-export { uploadFile };
+import { fbApi } from "../lib/firebaseApi";
 
 export const api = {
   stats: () => fbApi.stats(),

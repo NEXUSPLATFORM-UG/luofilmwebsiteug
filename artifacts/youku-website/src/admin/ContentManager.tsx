@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Plus, Edit, Trash2, Search, Film, List, Upload, X } from "lucide-react";
-import { api, uploadFile } from "./api";
+import { Plus, Edit, Trash2, Search, Film, List } from "lucide-react";
+import { api } from "./api";
 
 const GENRES = ["Romance","Drama","Action","Thriller","Fantasy","Historical","Comedy","Mystery","Xianxia","Wuxia","Campus","Medical","Period","Modern","Variety","Documentary","Sports","Anime"];
 const BADGES = ["none","VIP","Express","New"];
@@ -31,75 +31,32 @@ function Modal({ title, onClose, children }: any) {
   );
 }
 
-function Field({ label, children }: any) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>{label}</label>
-      {children}
-    </div>
-  );
-}
-
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 12px",
   color: "#fff", fontSize: 13, outline: "none"
 };
 
-function FileUploadField({ label, urlKey, filePrefix, form, setForm }: { label: string; urlKey: string; filePrefix: string; form: any; setForm: any }) {
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleFile = async (file: File) => {
-    setUploading(true);
-    setProgress(0);
-    try {
-      const ext = file.name.split(".").pop();
-      const path = `content/${filePrefix}_${Date.now()}.${ext}`;
-      const url = await uploadFile(path, file, setProgress);
-      setForm((f: any) => ({ ...f, [urlKey]: url }));
-    } catch (e) {
-      alert("Upload failed: " + String(e));
-    }
-    setUploading(false);
-    setProgress(0);
-  };
-
+function UrlField({ label, urlKey, placeholder, form, setForm }: any) {
   return (
-    <Field label={label}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <input
-          style={{ ...inp, flex: 1 }}
-          value={form[urlKey] || ""}
-          onChange={e => setForm((f: any) => ({ ...f, [urlKey]: e.target.value }))}
-          placeholder="https://... or upload file below"
-        />
-        {form[urlKey] && (
-          <button type="button" onClick={() => setForm((f: any) => ({ ...f, [urlKey]: "" }))}
-            style={{ padding: "6px 8px", background: "#ef444422", border: "none", borderRadius: 6, color: "#f87171", cursor: "pointer" }}>
-            <X size={13} />
-          </button>
-        )}
-      </div>
-      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
-        <input ref={fileRef} type="file" style={{ display: "none" }}
-          accept={urlKey.includes("video") || urlKey.includes("Video") ? "video/*" : "image/*"}
-          onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
-        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-          style={{ padding: "5px 12px", background: uploading ? "#333" : "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.4)", borderRadius: 6, color: "#818cf8", cursor: uploading ? "not-allowed" : "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
-          <Upload size={12} /> {uploading ? `Uploading ${Math.round(progress)}%...` : "Upload File"}
-        </button>
-        {form[urlKey] && (
-          <span style={{ fontSize: 11, color: "#10b981" }}>✓ File ready</span>
-        )}
-      </div>
-      {uploading && (
-        <div style={{ marginTop: 6, height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 2 }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: "#6366f1", borderRadius: 2, transition: "width 0.2s" }} />
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>{label}</label>
+      <input
+        style={inp}
+        value={form[urlKey] || ""}
+        onChange={e => setForm((f: any) => ({ ...f, [urlKey]: e.target.value }))}
+        placeholder={placeholder || "https://..."}
+      />
+      {form[urlKey] && (
+        <div style={{ marginTop: 4, fontSize: 11, color: "rgba(255,255,255,0.3)", wordBreak: "break-all" }}>
+          {urlKey.includes("thumbnail") || urlKey.includes("cover") || urlKey.includes("Cover") ? (
+            <img src={form[urlKey]} alt="" style={{ height: 40, borderRadius: 4, marginTop: 4, objectFit: "cover" }} onError={e => (e.currentTarget.style.display = "none")} />
+          ) : (
+            <span style={{ color: "#10b981" }}>✓ URL set</span>
+          )}
         </div>
       )}
-    </Field>
+    </div>
   );
 }
 
@@ -123,65 +80,80 @@ function ContentForm({ initial, onSave, onClose }: any) {
     setSaving(false);
   };
 
-  const contentId = initial?.id || `new_${Date.now()}`;
-
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Title">
+        <div style={{ gridColumn: "1/-1" }}>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Title</label>
           <input style={inp} value={form.title} onChange={e => set("title", e.target.value)} placeholder="Content title" autoFocus />
-        </Field>
-        <Field label="Type">
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Type</label>
           <select style={inp} value={form.type} onChange={e => set("type", e.target.value)}>
             <option value="movie">Movie</option>
             <option value="series">Series</option>
           </select>
-        </Field>
-        <Field label="Genre">
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Genre</label>
           <select style={inp} value={form.genre} onChange={e => set("genre", e.target.value)}>
             {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
           </select>
-        </Field>
-        <Field label="Year">
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Year</label>
           <input style={inp} type="number" value={form.year} onChange={e => set("year", Number(e.target.value))} />
-        </Field>
-        <Field label="Rating (0-10)">
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Rating (0–10)</label>
           <input style={inp} type="number" step="0.1" min="0" max="10" value={form.rating} onChange={e => set("rating", Number(e.target.value))} />
-        </Field>
-        <Field label="Badge">
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Badge</label>
           <select style={inp} value={form.badge} onChange={e => set("badge", e.target.value)}>
             {BADGES.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
-        </Field>
+        </div>
         {form.type === "movie" ? (
-          <Field label="Duration (mins)">
+          <div>
+            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Duration (mins)</label>
             <input style={inp} type="number" value={form.duration} onChange={e => set("duration", Number(e.target.value))} />
-          </Field>
+          </div>
         ) : (
-          <Field label="Episode Count">
+          <div>
+            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Episode Count</label>
             <input style={inp} type="number" value={form.episodeCount} onChange={e => set("episodeCount", Number(e.target.value))} />
-          </Field>
+          </div>
         )}
-        <Field label="Status">
+        <div>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Status</label>
           <select style={inp} value={form.status} onChange={e => set("status", e.target.value)}>
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="archived">Archived</option>
           </select>
-        </Field>
+        </div>
+        <div style={{ gridColumn: "1/-1" }}>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Description</label>
+          <textarea style={{ ...inp, minHeight: 72, resize: "vertical" }} value={form.description} onChange={e => set("description", e.target.value)} />
+        </div>
       </div>
-      <Field label="Description">
-        <textarea style={{ ...inp, minHeight: 80, resize: "vertical" }} value={form.description} onChange={e => set("description", e.target.value)} />
-      </Field>
-      <FileUploadField label="Thumbnail Image" urlKey="thumbnailUrl" filePrefix={`thumb_${contentId}`} form={form} setForm={setForm} />
-      <FileUploadField label="Cover / Banner Image" urlKey="coverUrl" filePrefix={`cover_${contentId}`} form={form} setForm={setForm} />
-      {form.type === "movie" && (
-        <FileUploadField label="Video File (MP4 / Stream)" urlKey="videoUrl" filePrefix={`video_${contentId}`} form={form} setForm={setForm} />
-      )}
-      <FileUploadField label="Trailer Video" urlKey="trailerUrl" filePrefix={`trailer_${contentId}`} form={form} setForm={setForm} />
+
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 16, marginTop: 4 }}>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 14 }}>
+          Paste URLs from any CDN, YouTube, Google Drive, or other hosting provider.
+        </p>
+        <UrlField label="Thumbnail Image URL" urlKey="thumbnailUrl" placeholder="https://cdn.example.com/thumb.jpg" form={form} setForm={setForm} />
+        <UrlField label="Cover / Banner Image URL" urlKey="coverUrl" placeholder="https://cdn.example.com/cover.jpg" form={form} setForm={setForm} />
+        {form.type === "movie" && (
+          <UrlField label="Video URL (MP4, HLS stream, etc.)" urlKey="videoUrl" placeholder="https://cdn.example.com/movie.mp4" form={form} setForm={setForm} />
+        )}
+        <UrlField label="Trailer Video URL" urlKey="trailerUrl" placeholder="https://cdn.example.com/trailer.mp4" form={form} setForm={setForm} />
+      </div>
+
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-        <button onClick={onClose} style={{ ...inp, width: "auto", cursor: "pointer" }}>Cancel</button>
-        <Btn onClick={save}>{saving ? "Saving..." : (initial?.id ? "Save Changes" : "Upload Content")}</Btn>
+        <button onClick={onClose} style={{ padding: "8px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+        <Btn onClick={save}>{saving ? "Saving..." : (initial?.id ? "Save Changes" : "Add Content")}</Btn>
       </div>
     </div>
   );
@@ -203,7 +175,7 @@ export default function ContentManager() {
   useEffect(() => { load(); }, [search, typeFilter]);
 
   const del = async (id: string) => {
-    if (!confirm("Delete this content? This will also delete all its episodes.")) return;
+    if (!confirm("Delete this content? This will also remove all its episodes.")) return;
     setDeleting(id);
     await api.content.delete(id).catch(console.error);
     setDeleting(null);
@@ -215,15 +187,15 @@ export default function ContentManager() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: 0 }}>Content Management</h1>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>Manage movies, series and their episodes. Upload files directly to Firebase Storage.</p>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>Add movies and series using URLs — no file uploads required.</p>
         </div>
-        <Btn onClick={() => setModal("create")}><Plus size={15} /> Upload Content</Btn>
+        <Btn onClick={() => setModal("create")}><Plus size={15} /> Add Content</Btn>
       </div>
 
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
         <div style={{ flex: 1, position: "relative" }}>
           <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)" }} />
-          <input style={{ ...inp, paddingLeft: 36, width: "100%" }} placeholder="Search content..." value={search} onChange={e => setSearch(e.target.value)} />
+          <input style={{ ...inp, paddingLeft: 36 }} placeholder="Search content..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select style={{ ...inp, width: 140 }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
           <option value="">All Types</option>
@@ -236,7 +208,7 @@ export default function ContentManager() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-              {["Thumbnail", "Title", "Type", "Genre", "Year", "Rating", "Badge", "Status", "Views", "Actions"].map(h => (
+              {["Thumbnail","Title","Type","Genre","Year","Rating","Badge","Status","Views","Actions"].map(h => (
                 <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "rgba(255,255,255,0.45)", fontWeight: 600, fontSize: 12, whiteSpace: "nowrap" }}>{h}</th>
               ))}
             </tr>
@@ -245,7 +217,7 @@ export default function ContentManager() {
             {loading ? (
               <tr><td colSpan={10} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Loading...</td></tr>
             ) : content.length === 0 ? (
-              <tr><td colSpan={10} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>No content found. Upload your first movie or series!</td></tr>
+              <tr><td colSpan={10} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>No content yet. Add your first movie or series!</td></tr>
             ) : content.map(c => (
               <tr key={c.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                 <td style={{ padding: "10px 14px" }}>
@@ -265,7 +237,9 @@ export default function ContentManager() {
                 <td style={{ padding: "10px 14px", color: "rgba(255,255,255,0.5)" }}>{c.year}</td>
                 <td style={{ padding: "10px 14px", color: "#f59e0b", fontWeight: 600 }}>⭐ {c.rating}</td>
                 <td style={{ padding: "10px 14px" }}>
-                  {c.badge !== "none" && <span style={{ padding: "2px 7px", borderRadius: 4, fontSize: 11, fontWeight: 700, background: c.badge === "VIP" ? "#f59e0b33" : "#3b82f633", color: c.badge === "VIP" ? "#fbbf24" : "#60a5fa" }}>{c.badge}</span>}
+                  {c.badge && c.badge !== "none" && (
+                    <span style={{ padding: "2px 7px", borderRadius: 4, fontSize: 11, fontWeight: 700, background: c.badge === "VIP" ? "#f59e0b33" : "#3b82f633", color: c.badge === "VIP" ? "#fbbf24" : "#60a5fa" }}>{c.badge}</span>
+                  )}
                 </td>
                 <td style={{ padding: "10px 14px" }}>
                   <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: c.status === "published" ? "#10b98122" : "#ef444422", color: c.status === "published" ? "#34d399" : "#f87171" }}>{c.status}</span>
@@ -291,7 +265,7 @@ export default function ContentManager() {
       </div>
 
       {modal && (
-        <Modal title={modal === "create" ? "Upload New Content" : `Edit: ${modal.title}`} onClose={() => setModal(null)}>
+        <Modal title={modal === "create" ? "Add New Content" : `Edit: ${modal.title}`} onClose={() => setModal(null)}>
           <ContentForm initial={modal === "create" ? null : modal} onSave={() => { setModal(null); load(); }} onClose={() => setModal(null)} />
         </Modal>
       )}
