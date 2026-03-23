@@ -32,6 +32,8 @@ export default function PlayPage() {
   const [saved, setSaved] = useState(false);
   const [shared, setShared] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [showQualityPicker, setShowQualityPicker] = useState(false);
+  const [downloadQuality, setDownloadQuality] = useState("");
   const [subtitlesOn, setSubtitlesOn] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoverPlayer, setHoverPlayer] = useState(false);
@@ -380,7 +382,7 @@ export default function PlayPage() {
               {/* Action buttons */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <ActionBtn
-                  icon={<ThumbsUp size={16} fill={liked ? "#fff" : "none"} color={liked ? "#fff" : "#60a5fa"} />}
+                  icon={<ThumbsUp size={14} fill={liked ? "#fff" : "none"} color={liked ? "#fff" : "#60a5fa"} />}
                   label={liked ? "LIKED" : "LIKE"}
                   active={liked}
                   color={{
@@ -392,7 +394,7 @@ export default function PlayPage() {
                   onClick={() => setLiked(!liked)}
                 />
                 <ActionBtn
-                  icon={<Heart size={16} fill={saved ? "#fff" : "none"} color={saved ? "#fff" : "#f472b6"} />}
+                  icon={<Heart size={14} fill={saved ? "#fff" : "none"} color={saved ? "#fff" : "#f472b6"} />}
                   label={saved ? "SAVED" : "SAVE"}
                   active={saved}
                   color={{
@@ -404,7 +406,7 @@ export default function PlayPage() {
                   onClick={() => setSaved(!saved)}
                 />
                 <ActionBtn
-                  icon={<Share2 size={16} color={shared ? "#fff" : "#34d399"} />}
+                  icon={<Share2 size={14} color={shared ? "#fff" : "#34d399"} />}
                   label={shared ? "SHARED" : "SHARE"}
                   active={shared}
                   color={{
@@ -415,22 +417,68 @@ export default function PlayPage() {
                   }}
                   onClick={() => setShared(!shared)}
                 />
-                <ActionBtn
-                  icon={<Download size={16} color={downloaded ? "#fff" : "#fb923c"} />}
-                  label={downloaded ? "DONE" : "DOWNLOAD"}
-                  active={downloaded}
-                  color={{
-                    bg: "rgba(251,146,60,0.08)",
-                    border: "#fb923c",
-                    glow: "rgba(251,146,60,0.4)",
-                    activeBg: "linear-gradient(135deg,#ea580c,#fb923c)",
-                  }}
-                  onClick={() => setDownloaded(!downloaded)}
-                />
+                <div style={{ position: "relative" }}>
+                  <ActionBtn
+                    icon={<Download size={14} color={downloaded ? "#fff" : "#fb923c"} />}
+                    label={downloaded ? `${downloadQuality}` : "DOWNLOAD"}
+                    active={downloaded}
+                    color={{
+                      bg: "rgba(251,146,60,0.08)",
+                      border: "#fb923c",
+                      glow: "rgba(251,146,60,0.4)",
+                      activeBg: "linear-gradient(135deg,#ea580c,#fb923c)",
+                    }}
+                    onClick={() => {
+                      if (downloaded) { setDownloaded(false); setDownloadQuality(""); }
+                      else setShowQualityPicker(!showQualityPicker);
+                    }}
+                  />
+                  {showQualityPicker && (
+                    <>
+                      <div style={{ position: "fixed", inset: 0, zIndex: 49 }} onClick={() => setShowQualityPicker(false)} />
+                      <div style={{
+                        position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
+                        transform: "translateX(-50%)", zIndex: 50,
+                        background: "#1a1a2a", border: "1px solid rgba(251,146,60,0.3)",
+                        borderRadius: 10, padding: "8px 6px",
+                        boxShadow: "0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,146,60,0.1)",
+                        minWidth: 110, animation: "qualityPop 0.15s ease",
+                      }}>
+                        <style>{`@keyframes qualityPop { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
+                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(251,146,60,0.7)", textAlign: "center", paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
+                          SELECT QUALITY
+                        </div>
+                        {[
+                          { label: "480p", sub: "SD · ~300MB" },
+                          { label: "720p", sub: "HD · ~700MB" },
+                          { label: "1080p", sub: "FHD · ~1.5GB" },
+                          { label: "4K", sub: "UHD · ~4GB" },
+                        ].map((q) => (
+                          <button key={q.label} onClick={() => {
+                            setDownloadQuality(q.label);
+                            setDownloaded(true);
+                            setShowQualityPicker(false);
+                          }} style={{
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            width: "100%", padding: "7px 10px", borderRadius: 6,
+                            background: "transparent", border: "none", cursor: "pointer",
+                            transition: "background 0.15s", gap: 10,
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(251,146,60,0.12)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                          >
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{q.label}</span>
+                            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{q.sub}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
                 <ActionBtn
                   icon={subtitlesOn
-                    ? <Check size={16} color="#fff" />
-                    : <MessageSquare size={16} color="#c084fc" />}
+                    ? <Check size={14} color="#fff" />
+                    : <MessageSquare size={14} color="#c084fc" />}
                   label={subtitlesOn ? "SUB ON" : "SUBTITLES"}
                   active={subtitlesOn}
                   color={{
@@ -987,22 +1035,22 @@ function ActionBtn({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 4,
         background: active ? color.activeBg : color.bg,
         border: `1px solid ${active ? color.border : "rgba(255,255,255,0.08)"}`,
-        borderRadius: 10,
+        borderRadius: 8,
         cursor: "pointer",
-        padding: "10px 14px",
-        minWidth: 68,
+        padding: "7px 10px",
+        minWidth: 54,
         transition: "all 0.2s",
-        boxShadow: active ? `0 4px 16px ${color.glow}` : "0 1px 4px rgba(0,0,0,0.3)",
+        boxShadow: active ? `0 3px 12px ${color.glow}` : "0 1px 3px rgba(0,0,0,0.3)",
       }}
     >
       {icon}
       <span style={{
-        fontSize: 9,
+        fontSize: 8,
         fontWeight: 700,
-        letterSpacing: "0.08em",
+        letterSpacing: "0.07em",
         color: active ? "#fff" : "rgba(255,255,255,0.5)",
         whiteSpace: "nowrap",
       }}>
