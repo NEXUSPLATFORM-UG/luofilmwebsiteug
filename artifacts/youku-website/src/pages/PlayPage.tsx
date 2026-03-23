@@ -15,9 +15,32 @@ import {
   Check,
   Film,
 } from "lucide-react";
-import { shows } from "../data/shows";
-import type { Show } from "../data/shows";
 import { fbApi } from "../lib/firebaseApi";
+
+function getEmbedInfo(url: string): { type: "video" | "iframe"; src: string } {
+  if (!url) return { type: "video", src: "" };
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) return { type: "iframe", src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) return { type: "iframe", src: `https://drive.google.com/file/d/${driveMatch[1]}/preview` };
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return { type: "iframe", src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1` };
+  return { type: "video", src: url };
+}
+
+interface Show {
+  id: string;
+  title: string;
+  type: string;
+  episodeCount?: number;
+  badge?: string;
+  genre: string;
+  year?: number;
+  rating?: number;
+  description?: string;
+  coverUrl?: string;
+  thumbnailUrl?: string;
+}
 
 function toShow(d: any): Show {
   return {
@@ -37,30 +60,13 @@ function toShow(d: any): Show {
 
 export default function PlayPage() {
   const params = useParams<{ id: string }>();
-  const [firestoreShow, setFirestoreShow] = useState<Show | null>(null);
+  const [show, setShow] = useState<Show | null>(null);
+  const [rawData, setRawData] = useState<any>(null);
   const [episodes, setEpisodes] = useState<any[]>([]);
-  const staticShow = shows.find((s) => s.id === params.id) || shows[0];
-
-  useEffect(() => {
-    if (!params.id) return;
-    fbApi.publicContent.getById(params.id).then((d) => {
-      if (d) {
-        const s = toShow(d);
-        setFirestoreShow(s);
-        fbApi.content.episodes.list(params.id).then((r) => setEpisodes(r.episodes || [])).catch(() => {});
-        fbApi.content.incrementViews(params.id).catch(() => {});
-      }
-    }).catch(() => {});
-  }, [params.id]);
-
-  const show = firestoreShow || staticShow;
-  const isSeries = show.type === "series";
-
+  const [loadingShow, setLoadingShow] = useState(true);
   const [currentEp, setCurrentEp] = useState(1);
   const [epPage, setEpPage] = useState(0);
-  const [activeTab, setActiveTab] = useState<"EPISODES" | "RECOMMENDED" | "SYNOPSIS">(
-    isSeries ? "EPISODES" : "RECOMMENDED"
-  );
+  const [activeTab, setActiveTab] = useState<"EPISODES" | "RECOMMENDED" | "SYNOPSIS">("EPISODES");
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [shared, setShared] = useState(false);
@@ -70,17 +76,55 @@ export default function PlayPage() {
   const [subtitlesOn, setSubtitlesOn] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoverPlayer, setHoverPlayer] = useState(false);
+  const [related, setRelated] = useState<any[]>([]);
 
-  const displayEpisodes = episodes.length > 0
-    ? episodes
-    : Array.from({ length: show.episodeCount }, (_, i) => ({ number: i + 1, episodeNumber: i + 1 }));
+  useEffect(() => {
+    if (!params.id) return;
+    setLoadingShow(true);
+    setShow(null);
+    setEpisodes([]);
+    setRelated([]);
+    setIsPlaying(false);
+    fbApi.publicContent.getById(params.id).then((d) => {
+      if (d) {
+        setShow(toShow(d));
+        setRawData(d);
+        setActiveTab(d.type === "series" ? "EPISODES" : "RECOMMENDED");
+        if (d.type === "series") {
+          fbApi.content.episodes.list(params.id).then((r) => setEpisodes(r.episodes || [])).catch(() => {});
+        }
+        fbApi.content.incrementViews(params.id).catch(() => {});
+        fbApi.publicContent.listAll().then((all: any[]) => {
+          setRelated(all.filter((x: any) => x.id !== params.id).slice(0, 12));
+        }).catch(() => {});
+      }
+    }).catch(() => {}).finally(() => setLoadingShow(false));
+  }, [params.id]);
+
+  if (loadingShow) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0e0e0e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!show) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0e0e0e", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
+        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 16 }}>Content not found</div>
+        <Link href="/"><button style={{ padding: "8px 20px", background: "#00a9f5", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>Go Home</button></Link>
+      </div>
+    );
+  }
+
+  const isSeries = show.type === "series";
+  const displayEpisodes = episodes.sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0));
   const EPS_PER_PAGE = 30;
   const totalPages = Math.ceil(displayEpisodes.length / EPS_PER_PAGE);
   const visibleEpisodes = displayEpisodes.slice(epPage * EPS_PER_PAGE, (epPage + 1) * EPS_PER_PAGE);
-  const related = shows.filter((s) => s.id !== show.id).slice(0, 8);
   const currentEpisodeData = displayEpisodes.find((e: any) => (e.episodeNumber || e.number) === currentEp);
-  const videoSrc = (currentEpisodeData as any)?.videoUrl || (show as any).videoUrl || "";
-
+  const videoSrc = (currentEpisodeData as any)?.videoUrl || rawData?.videoUrl || "";
   const isVip = show.badge === "VIP";
 
   const tabs = isSeries
@@ -137,18 +181,28 @@ export default function PlayPage() {
             }}
             onMouseEnter={() => setHoverPlayer(true)}
             onMouseLeave={() => setHoverPlayer(false)}
-            onClick={() => { if (!videoSrc) setIsPlaying(!isPlaying); }}
+            onClick={() => { if (videoSrc) setIsPlaying(true); }}
           >
-            {videoSrc && isPlaying ? (
-              <video
-                src={videoSrc}
-                autoPlay
-                controls
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
-                onPause={() => setIsPlaying(false)}
-                onPlay={() => setIsPlaying(true)}
-              />
-            ) : (
+            {videoSrc && isPlaying ? (() => {
+              const embed = getEmbedInfo(videoSrc);
+              return embed.type === "iframe" ? (
+                <iframe
+                  src={embed.src}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", background: "#000" }}
+                />
+              ) : (
+                <video
+                  src={embed.src}
+                  autoPlay
+                  controls
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
+                  onPause={() => setIsPlaying(false)}
+                  onPlay={() => setIsPlaying(true)}
+                />
+              );
+            })() : (
             <>
             <img
               src={show.coverUrl}
