@@ -272,8 +272,14 @@ export const fbApi = {
       return snap.exists() ? docToObj(snap) : null;
     },
     getCarousel: async () => {
-      const snap = await getDocs(query(collection(db, "carousel"), orderBy("order", "asc")));
-      return snap.docs.map(docToObj);
+      const snap = await getDocs(collection(db, "carousel"));
+      const items = snap.docs.map(docToObj);
+      return items.sort((a: any, b: any) => (a.sortOrder ?? a.order ?? 0) - (b.sortOrder ?? b.order ?? 0));
+    },
+    getFeatured: async () => {
+      const snap = await getDocs(collection(db, "featured"));
+      const items = snap.docs.map(docToObj);
+      return items.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
     },
   },
 };

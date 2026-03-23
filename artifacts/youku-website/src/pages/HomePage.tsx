@@ -1,9 +1,32 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { shows as staticShows, bannerShows as staticBanner, trendingShows as staticTrending } from "../data/shows";
-import type { Show } from "../data/shows";
 import { fbApi } from "../lib/firebaseApi";
+
+interface Show {
+  id: string;
+  title: string;
+  type: string;
+  episodeCount?: number;
+  badge?: string;
+  genre?: string;
+  year?: number;
+  rating?: number;
+  description?: string;
+  coverUrl?: string;
+  thumbnailUrl?: string;
+}
+
+interface CarouselItem {
+  id: string;
+  contentId?: string;
+  page?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+  customTitle?: string;
+  customDescription?: string;
+  customImageUrl?: string;
+}
 
 function toShow(d: any): Show {
   return {
@@ -13,38 +36,75 @@ function toShow(d: any): Show {
     episodeCount: d.episodeCount || 0,
     badge: d.badge || "none",
     genre: d.genre || "",
-    year: d.year || 2024,
-    rating: d.rating || 8.0,
+    year: d.year || new Date().getFullYear(),
+    rating: d.rating || 0,
     description: d.description || "",
     coverUrl: d.coverUrl || d.thumbnailUrl || "",
     thumbnailUrl: d.thumbnailUrl || d.coverUrl || "",
   };
 }
 
+function carouselToShow(item: CarouselItem, contentMap: Map<string, Show>): Show | null {
+  if (item.contentId) {
+    const content = contentMap.get(item.contentId);
+    if (content) {
+      return {
+        ...content,
+        title: item.customTitle || content.title,
+        description: item.customDescription || content.description,
+        thumbnailUrl: item.customImageUrl || content.thumbnailUrl,
+        coverUrl: item.customImageUrl || content.coverUrl,
+      };
+    }
+  }
+  if (item.customTitle && item.customImageUrl) {
+    return {
+      id: item.id,
+      title: item.customTitle,
+      type: "movie",
+      description: item.customDescription || "",
+      thumbnailUrl: item.customImageUrl,
+      coverUrl: item.customImageUrl,
+      badge: "none",
+      genre: "",
+    };
+  }
+  return null;
+}
+
 export default function HomePage() {
-  const [fireShows, setFireShows] = useState<Show[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [shows, setShows] = useState<Show[]>([]);
+  const [bannerShows, setBannerShows] = useState<Show[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fbApi.publicContent.listAll()
-      .then((docs) => {
-        if (docs.length > 0) setFireShows(docs.map(toShow));
+    Promise.all([
+      fbApi.publicContent.listAll(),
+      fbApi.publicContent.getCarousel(),
+    ])
+      .then(([contentDocs, carouselItems]) => {
+        const allShows = contentDocs.map(toShow);
+        setShows(allShows);
+
+        const contentMap = new Map<string, Show>(allShows.map(s => [s.id, s]));
+        const homeCarousel = (carouselItems as CarouselItem[])
+          .filter(item => (!item.page || item.page === "home") && item.isActive !== false);
+
+        const banners: Show[] = [];
+        for (const item of homeCarousel) {
+          const s = carouselToShow(item, contentMap);
+          if (s) banners.push(s);
+        }
+
+        if (banners.length > 0) {
+          setBannerShows(banners);
+        } else if (allShows.length > 0) {
+          setBannerShows(allShows.slice(0, 6));
+        }
       })
       .catch(() => {})
-      .finally(() => setLoaded(true));
+      .finally(() => setLoading(false));
   }, []);
-
-  const allShows = loaded && fireShows.length > 0
-    ? [...fireShows, ...staticShows.filter(s => !fireShows.find(f => f.id === s.id))]
-    : staticShows;
-
-  const bannerShows = fireShows.length > 0
-    ? allShows.slice(0, Math.min(6, allShows.length))
-    : staticBanner;
-
-  const trendingShows = fireShows.length > 0
-    ? allShows.slice(0, Math.min(20, allShows.length))
-    : staticTrending;
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -61,17 +121,18 @@ export default function HomePage() {
   );
 
   const nextSlide = useCallback(() => {
-    setActiveSlide((prev) => (prev + 1) % bannerShows.length);
+    setActiveSlide((prev) => (prev + 1) % Math.max(bannerShows.length, 1));
   }, [bannerShows.length]);
 
   const prevSlide = useCallback(() => {
-    setActiveSlide((prev) => (prev - 1 + bannerShows.length) % bannerShows.length);
+    setActiveSlide((prev) => (prev - 1 + Math.max(bannerShows.length, 1)) % Math.max(bannerShows.length, 1));
   }, [bannerShows.length]);
 
   useEffect(() => {
+    if (bannerShows.length === 0) return;
     timerRef.current = setInterval(nextSlide, 5000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [nextSlide]);
+  }, [nextSlide, bannerShows.length]);
 
   const restartTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -82,92 +143,131 @@ export default function HomePage() {
   const handlePrev = () => { prevSlide(); restartTimer(); };
   const handleNext = () => { nextSlide(); restartTimer(); };
 
-  const currentIdx = Math.min(activeSlide, bannerShows.length - 1);
-  const currentShow = bannerShows[currentIdx] || bannerShows[0];
-  if (!currentShow) return null;
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0e0e0e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Loading...</div>
+      </div>
+    );
+  }
+
+  const currentIdx = bannerShows.length > 0 ? Math.min(activeSlide, bannerShows.length - 1) : 0;
+  const currentShow = bannerShows[currentIdx];
   const sideShows = bannerShows.filter((_, i) => i !== currentIdx).slice(0, 2);
-  const miniShows = allShows.slice(bannerShows.length, bannerShows.length + 4);
+  const miniShows = shows.slice(bannerShows.length, bannerShows.length + 4);
+
+  const movies = shows.filter(s => s.type === "movie");
+  const series = shows.filter(s => s.type === "series");
+  const byGenre = (g: string) => shows.filter(s => (s.genre || "").toLowerCase().includes(g));
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
       <div style={{ height: 60 }} />
 
-      <div style={{ display: "flex", gap: 8, padding: "10px 12px", maxWidth: 1440, margin: "0 auto", boxSizing: "border-box" }}>
-        <div style={{ flex: "0 0 auto", position: "relative" }}>
-          <div style={{ width: "calc(56vw - 20px)", minWidth: 480, maxWidth: 760, position: "relative", overflow: "hidden", borderRadius: 6, background: "#1a1a1a" }}>
-            <div style={{ paddingTop: "56.25%" }} />
-            <img
-              key={currentShow.id}
-              src={currentShow.thumbnailUrl}
-              alt={currentShow.title}
-              style={{
-                position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
-                opacity: isTransitioning ? 0.7 : 1, transition: "opacity 0.4s ease",
-              }}
-            />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)" }} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)" }} />
+      {bannerShows.length === 0 ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400, color: "rgba(255,255,255,0.3)", fontSize: 15 }}>
+          No content published yet. Add content from the admin panel.
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 8, padding: "10px 12px", maxWidth: 1440, margin: "0 auto", boxSizing: "border-box" }}>
+          <div style={{ flex: "0 0 auto", position: "relative" }}>
+            <div style={{ width: "calc(56vw - 20px)", minWidth: 480, maxWidth: 760, position: "relative", overflow: "hidden", borderRadius: 6, background: "#1a1a1a" }}>
+              <div style={{ paddingTop: "56.25%" }} />
+              <img
+                key={currentShow.id}
+                src={currentShow.thumbnailUrl}
+                alt={currentShow.title}
+                style={{
+                  position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+                  opacity: isTransitioning ? 0.7 : 1, transition: "opacity 0.4s ease",
+                }}
+              />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)" }} />
 
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 20px 20px" }}>
-              {currentShow.badge && currentShow.badge !== "none" && (
-                <span style={{
-                  display: "inline-block", padding: "1px 8px", borderRadius: 2, fontSize: 11, fontWeight: 700, marginBottom: 8,
-                  background: currentShow.badge === "VIP" ? "linear-gradient(90deg,#ffc552,#ffdd9a)" : currentShow.badge === "Express" ? "linear-gradient(90deg,#00a3f5,#00c9fd)" : "linear-gradient(90deg,#8819ff,#ad61ff)",
-                  color: currentShow.badge === "VIP" ? "#4e2d03" : "#fff",
-                }}>{currentShow.badge}</span>
-              )}
-              <h2 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.3, marginBottom: 6, textShadow: "0 1px 4px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                {currentShow.title}
-              </h2>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 12, maxWidth: 380 }}>
-                {currentShow.description}
-              </p>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Link href={`/play/${currentShow.id}`}>
-                  <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "#00a9f5", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}>
-                    ▶ PLAY NOW
-                  </button>
-                </Link>
-                <Link href={`/play/${currentShow.id}`}>
-                  <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 500, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
-                    DETAILS
-                  </button>
-                </Link>
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 20px 20px" }}>
+                {currentShow.badge && currentShow.badge !== "none" && (
+                  <span style={{
+                    display: "inline-block", padding: "1px 8px", borderRadius: 2, fontSize: 11, fontWeight: 700, marginBottom: 8,
+                    background: currentShow.badge === "VIP" ? "linear-gradient(90deg,#ffc552,#ffdd9a)" : currentShow.badge === "Express" ? "linear-gradient(90deg,#00a3f5,#00c9fd)" : "linear-gradient(90deg,#8819ff,#ad61ff)",
+                    color: currentShow.badge === "VIP" ? "#4e2d03" : "#fff",
+                  }}>{currentShow.badge}</span>
+                )}
+                <h2 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.3, marginBottom: 6, textShadow: "0 1px 4px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {currentShow.title}
+                </h2>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 12, maxWidth: 380 }}>
+                  {currentShow.description}
+                </p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Link href={`/play/${currentShow.id}`}>
+                    <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "#00a9f5", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                      ▶ PLAY NOW
+                    </button>
+                  </Link>
+                  <Link href={`/play/${currentShow.id}`}>
+                    <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 500, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
+                      DETAILS
+                    </button>
+                  </Link>
+                </div>
+              </div>
+
+              <button onClick={handlePrev} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <ChevronLeft size={16} />
+              </button>
+              <button onClick={handleNext} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <ChevronRight size={16} />
+              </button>
+
+              <div style={{ position: "absolute", bottom: 8, right: 12, display: "flex", gap: 4 }}>
+                {bannerShows.map((_, i) => (
+                  <button key={i} onClick={() => handleGoToSlide(i)} style={{ height: 3, width: i === currentIdx ? 20 : 6, borderRadius: 2, background: i === currentIdx ? "#fff" : "rgba(255,255,255,0.35)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s" }} />
+                ))}
               </div>
             </div>
+          </div>
 
-            <button onClick={handlePrev} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-              <ChevronLeft size={16} />
-            </button>
-            <button onClick={handleNext} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-              <ChevronRight size={16} />
-            </button>
-
-            <div style={{ position: "absolute", bottom: 8, right: 12, display: "flex", gap: 4 }}>
-              {bannerShows.map((_, i) => (
-                <button key={i} onClick={() => handleGoToSlide(i)} style={{ height: 3, width: i === currentIdx ? 20 : 6, borderRadius: 2, background: i === currentIdx ? "#fff" : "rgba(255,255,255,0.35)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s" }} />
-              ))}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+            <div style={{ display: "flex", gap: 8, flex: "0 0 auto" }}>
+              {sideShows.map((show) => <SideShowCard key={show.id} show={show} />)}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+              {miniShows.map((show) => <MiniShowCard key={show.id} show={show} />)}
             </div>
           </div>
         </div>
-
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
-          <div style={{ display: "flex", gap: 8, flex: "0 0 auto" }}>
-            {sideShows.map((show) => <SideShowCard key={show.id} show={show} />)}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
-            {miniShows.map((show) => <MiniShowCard key={show.id} show={show} />)}
-          </div>
-        </div>
-      </div>
+      )}
 
       <div style={{ padding: "8px 12px 40px", maxWidth: 1440, margin: "0 auto" }}>
-        <ContentRow title="HOT SERIES" subtitle="RECOMMENDED" shows={trendingShows.slice(0, 10)} />
-        <ContentRow title="ROMANCE" shows={allShows.filter((s) => s.genre.toLowerCase().includes("romance")).slice(0, 10)} />
-        <ContentRow title="FANTASY & WUXIA" shows={allShows.filter((s) => s.genre.toLowerCase().includes("xianxia") || s.genre.toLowerCase().includes("fantasy")).slice(0, 10)} />
-        <ContentRow title="HISTORICAL" shows={allShows.filter((s) => s.genre.toLowerCase().includes("historical") || s.genre.toLowerCase().includes("wuxia")).slice(0, 10)} />
-        {fireShows.length > 0 && (
-          <ContentRow title="NEW UPLOADS" subtitle="RECENTLY ADDED" shows={fireShows.slice(0, 10)} />
+        {shows.length > 0 && (
+          <ContentRow title="ALL CONTENT" subtitle="RECENTLY ADDED" shows={shows.slice(0, 10)} />
+        )}
+        {series.length > 0 && (
+          <ContentRow title="SERIES" shows={series.slice(0, 10)} />
+        )}
+        {movies.length > 0 && (
+          <ContentRow title="MOVIES" shows={movies.slice(0, 10)} />
+        )}
+        {byGenre("romance").length > 0 && (
+          <ContentRow title="ROMANCE" shows={byGenre("romance").slice(0, 10)} />
+        )}
+        {byGenre("fantasy").length > 0 && (
+          <ContentRow title="FANTASY & WUXIA" shows={byGenre("fantasy").slice(0, 10)} />
+        )}
+        {byGenre("historical").length > 0 && (
+          <ContentRow title="HISTORICAL" shows={byGenre("historical").slice(0, 10)} />
+        )}
+        {byGenre("action").length > 0 && (
+          <ContentRow title="ACTION" shows={byGenre("action").slice(0, 10)} />
+        )}
+        {byGenre("drama").length > 0 && (
+          <ContentRow title="DRAMA" shows={byGenre("drama").slice(0, 10)} />
+        )}
+        {shows.length === 0 && !loading && (
+          <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.25)", fontSize: 14 }}>
+            No content available yet. The admin can add content from the admin panel.
+          </div>
         )}
       </div>
     </div>
