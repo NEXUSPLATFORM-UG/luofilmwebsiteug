@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd ../.. && pnpm --filter @workspace/youku-website run build",
+  "outputDirectory": "dist/public",
+  "installCommand": "cd ../.. && pnpm install",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

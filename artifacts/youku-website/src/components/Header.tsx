@@ -302,6 +302,47 @@ export default function Header() {
             JOIN VIP
           </button>
 
+          {/* Admin Panel */}
+          <Link href="/admin">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "0 12px",
+                height: 32,
+                borderRadius: 6,
+                background: "rgba(99,102,241,0.15)",
+                border: "1px solid rgba(99,102,241,0.4)",
+                color: "#818cf8",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+                flexShrink: 0,
+                letterSpacing: "0.05em",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = "rgba(99,102,241,0.28)";
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(99,102,241,0.7)";
+                (e.currentTarget as HTMLDivElement).style.color = "#a5b4fc";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = "rgba(99,102,241,0.15)";
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(99,102,241,0.4)";
+                (e.currentTarget as HTMLDivElement).style.color = "#818cf8";
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              ADMIN
+            </div>
+          </Link>
+
           {/* Avatar */}
           <button
             style={{
