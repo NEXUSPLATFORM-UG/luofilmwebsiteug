@@ -1,40 +1,32 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const PLANS = [
   {
-    id: "monthly",
-    label: "Monthly Subscription",
-    discount: "40% off",
-    price: 3.59,
-    original: 5.99,
-    saved: 2.4,
+    id: "day1",
+    label: "1 Day Pass",
+    tag: "TRY IT",
+    price: 2500,
+    highlight: false,
+  },
+  {
+    id: "day3",
+    label: "3 Days Pass",
+    tag: "POPULAR",
+    price: 5000,
     highlight: true,
   },
   {
-    id: "quarterly",
-    label: "Quarterly Subscription",
-    discount: "40% off",
-    price: 10.49,
-    original: 17.49,
-    saved: 6.99,
+    id: "week1",
+    label: "1 Week Pass",
+    tag: "GREAT VALUE",
+    price: 10000,
     highlight: false,
   },
   {
-    id: "annual",
-    label: "Annual Subscription",
-    discount: "50% off",
-    price: 28.99,
-    original: 56.99,
-    saved: 27.99,
-    highlight: false,
-  },
-  {
-    id: "annual2",
-    label: "2-Year Subscription",
-    discount: "55% off",
-    price: 49.99,
-    original: 113.99,
-    saved: 63.99,
+    id: "month1",
+    label: "1 Month Pass",
+    tag: "BEST DEAL",
+    price: 20000,
     highlight: false,
   },
 ];
@@ -78,13 +70,25 @@ const BENEFITS = [
   },
 ];
 
+function formatUGX(amount: number) {
+  return "UGX " + amount.toLocaleString();
+}
+
+const VISIBLE = 2;
+
 interface VIPModalProps {
   onClose: () => void;
 }
 
 export default function VIPModal({ onClose }: VIPModalProps) {
-  const [selectedPlan, setSelectedPlan] = useState("monthly");
-  const plan = PLANS.find((p) => p.id === selectedPlan) || PLANS[0];
+  const [selectedPlan, setSelectedPlan] = useState("day3");
+  const [startIdx, setStartIdx] = useState(0);
+  const plan = PLANS.find((p) => p.id === selectedPlan) || PLANS[1];
+
+  const canPrev = startIdx > 0;
+  const canNext = startIdx + VISIBLE < PLANS.length;
+
+  const visiblePlans = PLANS.slice(startIdx, startIdx + VISIBLE);
 
   return (
     <div
@@ -100,7 +104,6 @@ export default function VIPModal({ onClose }: VIPModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* Backdrop */}
       <div
         style={{
           position: "absolute",
@@ -110,7 +113,6 @@ export default function VIPModal({ onClose }: VIPModalProps) {
         }}
       />
 
-      {/* Modal */}
       <div
         style={{
           position: "relative",
@@ -158,7 +160,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             ×
           </button>
 
-          {/* Log in / Sign up */}
+          {/* Header */}
           <div
             style={{
               display: "flex",
@@ -195,121 +197,180 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 gap: 4,
               }}
             >
-              Log in/Sign up
+              Log in / Sign up
               <span style={{ fontSize: 13, color: "#999" }}>&gt;</span>
             </button>
           </div>
 
-          {/* Plan cards */}
+          {/* Plan carousel */}
           <div
             style={{
               display: "flex",
-              gap: 10,
+              alignItems: "center",
+              gap: 8,
               marginBottom: 14,
-              overflowX: "auto",
-              paddingBottom: 4,
-              scrollbarWidth: "none",
             }}
           >
-            {PLANS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setSelectedPlan(p.id)}
-                style={{
-                  flexShrink: 0,
-                  width: 140,
-                  padding: "14px 12px 16px",
-                  borderRadius: 12,
-                  border: selectedPlan === p.id ? "2px solid #f5a623" : "2px solid #eee",
-                  background:
-                    selectedPlan === p.id
-                      ? "linear-gradient(160deg, #fff9ee 0%, #fff3d0 100%)"
-                      : "#fafafa",
-                  cursor: "pointer",
-                  textAlign: "center",
-                  position: "relative",
-                  transition: "all 0.15s",
-                }}
-              >
-                {/* Discount badge */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: -1,
-                    left: -1,
-                    background: "#ff4d4d",
-                    color: "#fff",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "2px 7px",
-                    borderRadius: "10px 0 10px 0",
-                  }}
-                >
-                  {p.discount}
-                </div>
+            {/* Left arrow */}
+            <button
+              onClick={() => setStartIdx((i) => Math.max(0, i - 1))}
+              disabled={!canPrev}
+              style={{
+                flexShrink: 0,
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                border: "1.5px solid",
+                borderColor: canPrev ? "#f5a623" : "#e0e0e0",
+                background: canPrev ? "#fff9ee" : "#f5f5f5",
+                color: canPrev ? "#c07800" : "#ccc",
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: canPrev ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s",
+              }}
+            >
+              ‹
+            </button>
 
-                <div
+            {/* Visible plan cards */}
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                flex: 1,
+              }}
+            >
+              {visiblePlans.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPlan(p.id)}
                   style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: selectedPlan === p.id ? "#c07800" : "#666",
-                    marginBottom: 10,
-                    marginTop: 10,
-                    lineHeight: 1.4,
+                    flex: 1,
+                    padding: "16px 12px 18px",
+                    borderRadius: 12,
+                    border: selectedPlan === p.id ? "2px solid #f5a623" : "2px solid #eee",
+                    background:
+                      selectedPlan === p.id
+                        ? "linear-gradient(160deg, #fff9ee 0%, #fff3d0 100%)"
+                        : "#fafafa",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    position: "relative",
+                    transition: "all 0.15s",
+                    minWidth: 0,
                   }}
                 >
-                  {p.label}
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    justifyContent: "center",
-                    gap: 1,
-                    marginBottom: 6,
-                  }}
-                >
-                  <span
+                  {/* Tag badge */}
+                  <div
                     style={{
-                      fontSize: 16,
+                      position: "absolute",
+                      top: -1,
+                      left: -1,
+                      background: p.highlight ? "#f5a623" : "#666",
+                      color: "#fff",
+                      fontSize: 10,
                       fontWeight: 700,
-                      color: selectedPlan === p.id ? "#c07800" : "#333",
+                      padding: "2px 7px",
+                      borderRadius: "10px 0 10px 0",
+                      letterSpacing: "0.04em",
                     }}
                   >
-                    $
-                  </span>
-                  <span
+                    {p.tag}
+                  </div>
+
+                  <div
                     style={{
-                      fontSize: 32,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: selectedPlan === p.id ? "#c07800" : "#666",
+                      marginBottom: 12,
+                      marginTop: 10,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {p.label}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 28,
                       fontWeight: 900,
                       color: selectedPlan === p.id ? "#c07800" : "#333",
                       lineHeight: 1,
+                      marginBottom: 4,
                     }}
                   >
-                    {p.price.toFixed(2).split(".")[0]}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: selectedPlan === p.id ? "#c07800" : "#333",
-                    }}
-                  >
-                    .{p.price.toFixed(2).split(".")[1]}
-                  </span>
-                </div>
+                    {(p.price / 1000).toFixed(0)}K
+                  </div>
 
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#bbb",
-                    textDecoration: "line-through",
-                  }}
-                >
-                  ${p.original.toFixed(2)}
-                </div>
-              </button>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: selectedPlan === p.id ? "#c07800" : "#999",
+                      fontWeight: 600,
+                    }}
+                  >
+                    UGX
+                  </div>
+                </button>
+              ))}
+
+              {/* Placeholder if fewer than VISIBLE plans are visible (shouldn't happen normally) */}
+              {visiblePlans.length < VISIBLE && (
+                <div style={{ flex: 1 }} />
+              )}
+            </div>
+
+            {/* Right arrow */}
+            <button
+              onClick={() => setStartIdx((i) => Math.min(PLANS.length - VISIBLE, i + 1))}
+              disabled={!canNext}
+              style={{
+                flexShrink: 0,
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                border: "1.5px solid",
+                borderColor: canNext ? "#f5a623" : "#e0e0e0",
+                background: canNext ? "#fff9ee" : "#f5f5f5",
+                color: canNext ? "#c07800" : "#ccc",
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: canNext ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s",
+              }}
+            >
+              ›
+            </button>
+          </div>
+
+          {/* Dot indicators */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 5,
+              marginBottom: 18,
+            }}
+          >
+            {PLANS.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: i >= startIdx && i < startIdx + VISIBLE ? 16 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  background: i >= startIdx && i < startIdx + VISIBLE ? "#f5a623" : "#ddd",
+                  transition: "all 0.2s",
+                }}
+              />
             ))}
           </div>
 
@@ -326,7 +387,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             }}
           >
             <span style={{ fontSize: 14 }}>•</span>
-            New subscribers get 40% off the first term!
+            Affordable access — start watching in seconds!
           </div>
 
           {/* Benefits */}
@@ -411,7 +472,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 textAlign: "center",
               }}
             >
-              Pay with the<br />YOUKU APP
+              Pay with the<br />LUO FILM APP
             </button>
             <div
               style={{
@@ -434,39 +495,46 @@ export default function VIPModal({ onClose }: VIPModalProps) {
           <div style={{ textAlign: "center", marginBottom: 10 }}>
             <div
               style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#999",
+                marginBottom: 4,
+                letterSpacing: "0.05em",
+              }}
+            >
+              {plan.label.toUpperCase()}
+            </div>
+            <div
+              style={{
                 display: "flex",
                 alignItems: "baseline",
                 justifyContent: "center",
-                gap: 2,
+                gap: 4,
+                flexWrap: "wrap",
               }}
             >
-              <span style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>$</span>
-              <span style={{ fontSize: 52, fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>
-                {plan.price.toFixed(2).split(".")[0]}
-              </span>
-              <span style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>
-                .{plan.price.toFixed(2).split(".")[1]}
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>UGX</span>
+              <span style={{ fontSize: 48, fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>
+                {plan.price.toLocaleString()}
               </span>
             </div>
-            {/* Saved badge */}
             <div style={{ marginTop: 8 }}>
               <span
                 style={{
                   display: "inline-block",
                   padding: "3px 14px",
                   borderRadius: 20,
-                  background: "linear-gradient(90deg, #ff4488, #ff6b9d)",
-                  color: "#fff",
+                  background: "linear-gradient(90deg, #f5a623, #ffc552)",
+                  color: "#3d2200",
                   fontSize: 12,
                   fontWeight: 700,
                 }}
               >
-                Saved ${plan.saved.toFixed(1)}
+                {plan.tag}
               </span>
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{ borderTop: "1px dashed #e8e8e8", margin: "14px 0" }} />
 
           {/* Payment method */}
@@ -488,7 +556,6 @@ export default function VIPModal({ onClose }: VIPModalProps) {
               background: "#f8fbff",
             }}
           >
-            {/* Alipay icon */}
             <div
               style={{
                 width: 38,
@@ -503,11 +570,10 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 fontWeight: 900,
               }}
             >
-              ¥
+              M
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>ALIPAY</div>
-            <div style={{ fontSize: 10, color: "#999" }}>Alipay·partner</div>
-            {/* Check badge */}
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>MOBILE MONEY</div>
+            <div style={{ fontSize: 10, color: "#999" }}>MTN · Airtel</div>
             <div
               style={{
                 position: "absolute",
@@ -540,7 +606,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
               background: "linear-gradient(90deg, #f5c842 0%, #ffdd9a 50%, #e8a800 100%)",
               border: "none",
               color: "#3d2200",
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: 800,
               cursor: "pointer",
               marginTop: 18,
@@ -554,10 +620,9 @@ export default function VIPModal({ onClose }: VIPModalProps) {
               (e.currentTarget as HTMLElement).style.filter = "brightness(1)";
             }}
           >
-            Pay now ${plan.price.toFixed(2)}
+            Pay {formatUGX(plan.price)}
           </button>
 
-          {/* Legal links */}
           <div
             style={{
               marginTop: 12,
@@ -577,7 +642,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 textDecoration: "underline",
               }}
             >
-              "VIP Membership Terms"
+              VIP Membership Terms
             </button>
             {" "}
             <button
@@ -590,7 +655,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 textDecoration: "underline",
               }}
             >
-              "Privacy Policy"
+              Privacy Policy
             </button>
           </div>
         </div>

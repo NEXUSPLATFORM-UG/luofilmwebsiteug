@@ -62,40 +62,6 @@ export default function HomePage() {
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
       <div style={{ height: 60 }} />
 
-      {/* Category tabs */}
-      <div
-        style={{
-          background: "#141414",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          height: 42,
-          gap: 0,
-          overflowX: "auto",
-        }}
-      >
-        {["FEATURED", "DRAMA", "MOVIE", "VARIETY", "SPORTS", "DOCUMENTARY", "ANIME", "KIDS"].map((tab, i) => (
-          <button
-            key={tab}
-            style={{
-              padding: "0 16px",
-              height: "100%",
-              fontSize: 13,
-              color: i === 0 ? "#00a9f5" : "rgba(255,255,255,0.6)",
-              background: "transparent",
-              border: "none",
-              borderBottom: i === 0 ? "2px solid #00a9f5" : "2px solid transparent",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              fontWeight: i === 0 ? 600 : 400,
-              transition: "color 0.2s",
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
 
       {/* Hero intswiper section */}
       <div
