@@ -445,8 +445,8 @@ export default function PlayPage() {
                         minWidth: 110, animation: "qualityPop 0.15s ease",
                       }}>
                         <style>{`@keyframes qualityPop { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
-                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(251,146,60,0.7)", textAlign: "center", paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
-                          SELECT QUALITY
+                        <div style={{ fontSize: 11, fontWeight: 400, color: "rgba(251,146,60,0.8)", textAlign: "center", paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
+                          Select Quality
                         </div>
                         {[
                           { label: "480p", sub: "SD · ~300MB" },
@@ -467,8 +467,8 @@ export default function PlayPage() {
                           onMouseEnter={e => (e.currentTarget.style.background = "rgba(251,146,60,0.12)")}
                           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                           >
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{q.label}</span>
-                            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{q.sub}</span>
+                            <span style={{ fontSize: 13, fontWeight: 400, color: "#fff" }}>{q.label}</span>
+                            <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.4)" }}>{q.sub}</span>
                           </button>
                         ))}
                       </div>
