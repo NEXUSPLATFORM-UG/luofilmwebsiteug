@@ -17,7 +17,7 @@ interface User {
   name: string;
   phone: string;
   email: string;
-  avatar?: string;
+  avatar: string;
 }
 
 export default function Header() {
@@ -39,13 +39,6 @@ export default function Header() {
     setShowUserMenu(false);
   }
 
-  const initials = user
-    ? user.name
-        .split(" ")
-        .map((n) => n.charAt(0).toUpperCase())
-        .slice(0, 2)
-        .join("")
-    : "";
 
   return (
     <>
@@ -378,33 +371,35 @@ export default function Header() {
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 style={{
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   borderRadius: "50%",
                   overflow: "hidden",
-                  background: user.avatar ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#00a9f5,#0076d6)",
-                  border: "1.5px solid rgba(0,169,245,0.5)",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "2px solid rgba(0,169,245,0.45)",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   padding: 0,
                   flexShrink: 0,
-                  transition: "border-color 0.2s",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#fff",
+                  transition: "border-color 0.2s, box-shadow 0.2s",
+                  boxShadow: "0 0 0 0 rgba(0,169,245,0)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.8)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 0 10px rgba(0,169,245,0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.45)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(0,169,245,0)";
                 }}
               >
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt="avatar"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  initials
-                )}
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               </button>
 
               {showUserMenu && (
@@ -428,10 +423,17 @@ export default function Header() {
                       animation: "slideDown 0.15s ease",
                     }}
                   >
-                    <div style={{ padding: "14px 16px 12px" }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{user.name}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
-                        {user.email || user.phone}
+                    <div style={{ padding: "14px 16px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        style={{ width: 40, height: 40, borderRadius: "50%", border: "1.5px solid rgba(0,169,245,0.35)", flexShrink: 0, objectFit: "cover", background: "#1a1a1a" }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {user.email || user.phone}
+                        </div>
                       </div>
                     </div>
                     <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
