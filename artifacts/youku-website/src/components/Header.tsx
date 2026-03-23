@@ -4,6 +4,8 @@ import VIPModal from "./VIPModal";
 import AuthModal from "./AuthModal";
 import { useAuth } from "../contexts/AuthContext";
 
+const ADMIN_EMAILS = ["mainplatform.nexus@gmail.com"];
+
 const navLinks = [
   { label: "HOME", path: "/" },
   { label: "DRAMA", path: "/drama" },
@@ -228,7 +230,7 @@ export default function Header() {
             JOIN VIP
           </button>
 
-          {user && profile?.role === "admin" && (
+          {user && ADMIN_EMAILS.includes(user.email || "") && (
             <Link href="/admin">
               <div
                 style={{

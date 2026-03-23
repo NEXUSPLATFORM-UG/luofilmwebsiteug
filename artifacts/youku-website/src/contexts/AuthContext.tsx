@@ -40,8 +40,6 @@ export function useAuth() {
   return ctx;
 }
 
-const ADMIN_EMAILS = ["mainplatform.nexus@gmail.com"];
-
 const googleProvider = new GoogleAuthProvider();
 
 function getDiceBearUrl(name: string, gender: string): string {
@@ -56,18 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   async function fetchProfile(u: User) {
-    const isAdmin = ADMIN_EMAILS.includes(u.email || "");
     const snap = await getDoc(doc(db, "users", u.uid));
     if (snap.exists()) {
-      const data = snap.data() as UserProfile;
-      setProfile({ ...data, role: isAdmin ? "admin" : data.role });
+      setProfile(snap.data() as UserProfile);
     } else {
       const p: UserProfile = {
         name: u.displayName || "User",
         email: u.email || "",
         phone: "",
         avatar: u.photoURL || getDiceBearUrl(u.displayName || "User", "female"),
-        role: isAdmin ? "admin" : "user",
+        role: "user",
       };
       setProfile(p);
     }
