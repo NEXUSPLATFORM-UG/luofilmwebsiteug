@@ -418,7 +418,6 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
                 </div>
               </div>
               <GenderSelect value={googleGender} onChange={setGoogleGender} />
-              <AgeGroupSelect value={googleAgeGroup} onChange={setGoogleAgeGroup} />
               <PhoneField value={googlePhone} onChange={setGooglePhone} valid={googlePhoneValid} touched={googlePhoneTouched} />
               <button type="submit" style={btn} disabled={loading}>{loading ? "Saving..." : "Complete Registration"}</button>
             </form>

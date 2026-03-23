@@ -511,9 +511,9 @@ export default function Header() {
                 padding: "0 16px",
                 height: 32,
                 borderRadius: 16,
-                background: "linear-gradient(135deg, #c0c0c0 0%, #d4af37 40%, #f5e27a 55%, #d4af37 70%, #a87c20 100%)",
+                background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)",
                 border: "none",
-                color: "#1a1200",
+                color: "#fff",
                 fontSize: 12,
                 fontWeight: 800,
                 cursor: "pointer",
@@ -521,15 +521,15 @@ export default function Header() {
                 letterSpacing: "0.08em",
                 transition: "filter 0.2s, box-shadow 0.2s",
                 marginLeft: 4,
-                boxShadow: "0 2px 10px rgba(212,175,55,0.35)",
+                boxShadow: "0 2px 10px rgba(168,85,247,0.4)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.filter = "brightness(1.12)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 18px rgba(212,175,55,0.55)";
+                (e.currentTarget as HTMLElement).style.filter = "brightness(1.15)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 18px rgba(168,85,247,0.6)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.filter = "brightness(1)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 10px rgba(212,175,55,0.35)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 10px rgba(168,85,247,0.4)";
               }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
