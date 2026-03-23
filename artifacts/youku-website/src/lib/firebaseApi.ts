@@ -262,10 +262,11 @@ export const fbApi = {
 
   publicContent: {
     listAll: async () => {
-      const snap = await getDocs(
-        query(collection(db, "content"), where("status", "==", "published"), orderBy("createdAt", "desc"))
-      );
-      return snap.docs.map(docToObj);
+      const snap = await getDocs(collection(db, "content"));
+      return snap.docs
+        .map(docToObj)
+        .filter((d: any) => d.status === "published")
+        .sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
     },
     getById: async (id: string) => {
       const snap = await getDoc(doc(db, "content", id));
