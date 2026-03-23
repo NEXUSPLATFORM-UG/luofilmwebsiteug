@@ -11275,10 +11275,24 @@
             </div>
         <script>
             (function () {
+                // Replace logo with site name
+                document.addEventListener('DOMContentLoaded', function () {
+                    var logos = document.querySelectorAll('.logo_logo_i18n, .logo_nav_logo');
+                    logos.forEach(function (el) {
+                        var span = document.createElement('span');
+                        span.textContent = 'TRUE LIGHT STUDIO';
+                        span.style.cssText = 'font-size:20px;font-weight:700;color:#fff;letter-spacing:1px;white-space:nowrap;';
+                        el.parentNode.replaceChild(span, el);
+                    });
+                    // Update page title
+                    document.title = 'TRUE LIGHT STUDIO - Drama, Film, Show, Anime';
+                });
+
+                // Open external detail page on poster/card click
                 document.addEventListener('click', function (e) {
                     var target = e.target;
                     while (target && target !== document) {
-                        var cls = target.className || '';
+                        var cls = (target.className && typeof target.className === 'string') ? target.className : '';
                         if (
                             cls.indexOf('intswiper_img_box') !== -1 ||
                             cls.indexOf('pack_pack_cover') !== -1 ||
@@ -11290,7 +11304,7 @@
                         ) {
                             e.preventDefault();
                             e.stopPropagation();
-                            window.location.href = '/play.html';
+                            window.open('https://www.youku.com/index/y404?type=showNoAccess&detail=dataError', '_blank');
                             return;
                         }
                         target = target.parentElement;
