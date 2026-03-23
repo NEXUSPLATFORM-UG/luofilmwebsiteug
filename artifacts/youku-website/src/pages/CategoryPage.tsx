@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { shows as staticShows } from "../data/shows";
-import type { Show } from "../data/shows";
 import { Star } from "lucide-react";
 import { fbApi } from "../lib/firebaseApi";
 
@@ -11,9 +9,23 @@ interface CategoryPageProps {
   description: string;
 }
 
-const GENRE_MAP: Record<string, string[]> = {
+interface Show {
+  id: string;
+  title: string;
+  type: string;
+  episodeCount?: number;
+  badge?: string;
+  genre?: string;
+  year?: number;
+  rating?: number;
+  description?: string;
+  coverUrl?: string;
+  thumbnailUrl?: string;
+}
+
+const GENRE_KEYWORDS: Record<string, string[]> = {
   drama: ["romance", "drama", "campus", "modern", "period", "medical", "thriller", "comedy"],
-  movie: ["action", "thriller", "historical", "wuxia", "fantasy", "mystery"],
+  movie: ["movie"],
   variety: ["comedy", "variety", "campus", "modern"],
   sports: ["action", "wuxia", "sports"],
   documentary: ["historical", "mystery", "documentary"],
@@ -37,8 +49,8 @@ function toShow(d: any): Show {
     episodeCount: d.episodeCount || 0,
     badge: d.badge || "none",
     genre: d.genre || "",
-    year: d.year || 2024,
-    rating: d.rating || 8.0,
+    year: d.year || new Date().getFullYear(),
+    rating: d.rating || 0,
     description: d.description || "",
     coverUrl: d.coverUrl || d.thumbnailUrl || "",
     thumbnailUrl: d.thumbnailUrl || d.coverUrl || "",
@@ -68,7 +80,7 @@ function ShowCard({ show }: { show: Show }) {
             {show.title}
           </div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {show.type === "series" ? `${show.episodeCount} EPS · ` : "MOVIE · "}{show.genre.split(" · ")[0].toUpperCase()}
+            {show.type === "series" ? `${show.episodeCount} EPS · ` : "MOVIE · "}{(show.genre || "").split(" · ")[0].toUpperCase()}
           </div>
         </div>
       </div>
@@ -77,26 +89,55 @@ function ShowCard({ show }: { show: Show }) {
 }
 
 export default function CategoryPage({ genre, title, description: _description }: CategoryPageProps) {
-  const keywords = GENRE_MAP[genre] || [];
+  const keywords = GENRE_KEYWORDS[genre] || [];
   const accentColor = GENRE_COLORS[genre] || "#00a9f5";
-  const [fireShows, setFireShows] = useState<Show[]>([]);
+  const [shows, setShows] = useState<Show[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fbApi.publicContent.listAll()
       .then((docs) => {
-        if (docs.length > 0) setFireShows(docs.map(toShow));
+        const all = docs.map(toShow);
+        if (genre === "movie") {
+          setShows(all.filter(s => s.type === "movie"));
+        } else {
+          const matched = all.filter(s =>
+            keywords.some(kw => (s.genre || "").toLowerCase().includes(kw))
+          );
+          setShows(matched);
+        }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [genre]);
 
-  const allShows = fireShows.length > 0
-    ? [...fireShows, ...staticShows.filter(s => !fireShows.find(f => f.id === s.id))]
-    : staticShows;
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0e0e0e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Loading...</div>
+      </div>
+    );
+  }
 
-  const filtered = allShows.filter((s) => keywords.some((kw) => s.genre.toLowerCase().includes(kw)));
-  const displayed = filtered.length > 0 ? filtered : allShows.slice(0, 12);
-  const featured = displayed[0];
-  const rest = displayed.slice(1);
+  if (shows.length === 0) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
+        <div style={{ height: 60 }} />
+        <div style={{ maxWidth: 1440, margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 32 }}>
+            <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
+            <span style={{ fontSize: 22, fontWeight: 700 }}>{title}</span>
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 14 }}>
+            No {title.toLowerCase()} content published yet. The admin can add content from the admin panel.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const featured = shows[0];
+  const rest = shows.slice(1);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
@@ -118,13 +159,13 @@ export default function CategoryPage({ genre, title, description: _description }
                   )}
                   <h2 style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>{featured.title}</h2>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                      <Star size={13} fill="#ffc552" color="#ffc552" />
-                      <span style={{ fontSize: 14, fontWeight: 700, color: "#ffc552" }}>{featured.rating}</span>
-                    </div>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
+                    {featured.rating ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <Star size={13} fill="#ffc552" color="#ffc552" />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#ffc552" }}>{featured.rating}</span>
+                      </div>
+                    ) : null}
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.year}</span>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.type === "series" ? `${featured.episodeCount} EPS` : "Movie"}</span>
                   </div>
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -144,7 +185,7 @@ export default function CategoryPage({ genre, title, description: _description }
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
             <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
             <span style={{ fontSize: 18, fontWeight: 700 }}>ALL {title}</span>
-            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{displayed.length} TITLES</span>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{shows.length} TITLES</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(136px, 1fr))", gap: 10 }}>
             {rest.map((show) => <ShowCard key={show.id} show={show} />)}
