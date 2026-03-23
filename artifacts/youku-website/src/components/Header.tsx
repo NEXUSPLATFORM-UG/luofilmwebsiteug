@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 
 const navLinks = [
-  { label: "Home", path: "/" },
-  { label: "Drama", path: "/?genre=drama" },
-  { label: "Movie", path: "/?genre=movie" },
-  { label: "All", path: "/?genre=all" },
+  { label: "首页", path: "/" },
+  { label: "剧集", path: "/?genre=drama" },
+  { label: "电影", path: "/?genre=movie" },
+  { label: "综艺", path: "/?genre=variety" },
+  { label: "体育", path: "/?genre=sports" },
+  { label: "纪录片", path: "/?genre=documentary" },
+  { label: "动漫", path: "/?genre=anime" },
 ];
 
 export default function Header() {
@@ -21,75 +24,116 @@ export default function Header() {
         left: 0,
         right: 0,
         zIndex: 100,
-        height: 70,
-        background: "rgba(10,10,10,0.95)",
-        backdropFilter: "blur(8px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        height: 60,
+        background: "#0e0e0e",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
         display: "flex",
         alignItems: "center",
-        padding: "0 24px",
-        gap: 32,
+        padding: "0 16px",
+        gap: 0,
       }}
     >
+      {/* Logo */}
       <Link href="/">
-        <div style={{ cursor: "pointer", userSelect: "none", flexShrink: 0 }}>
+        <div
+          style={{
+            cursor: "pointer",
+            userSelect: "none",
+            flexShrink: 0,
+            marginRight: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 0,
+          }}
+        >
+          {/* Youku-style logo mark */}
           <div
             style={{
-              fontSize: 17,
-              fontWeight: 900,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              background: "linear-gradient(135deg,#e8d5a3 0%,#f5e6c0 40%,#c9a84c 70%,#e8d5a3 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontFamily: "Georgia, 'Times New Roman', serif",
-              lineHeight: 1.1,
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "linear-gradient(135deg, #00a9f5 0%, #0076d6 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 8,
+              flexShrink: 0,
             }}
           >
-            TRUE LIGHT
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <polygon points="5,3 19,12 5,21" fill="white" />
+            </svg>
           </div>
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 600,
-              letterSpacing: "0.52em",
-              textTransform: "uppercase",
-              background: "linear-gradient(135deg,#c9a84c 0%,#e8d5a3 50%,#c9a84c 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontFamily: "Georgia, serif",
-              marginTop: -2,
-            }}
-          >
-            STUDIO
+          <div>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 900,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                background:
+                  "linear-gradient(135deg,#e8d5a3 0%,#f5e6c0 40%,#c9a84c 70%,#e8d5a3 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                lineHeight: 1.1,
+              }}
+            >
+              TRUE LIGHT
+            </div>
+            <div
+              style={{
+                fontSize: 8,
+                fontWeight: 600,
+                letterSpacing: "0.45em",
+                textTransform: "uppercase",
+                background:
+                  "linear-gradient(135deg,#c9a84c 0%,#e8d5a3 50%,#c9a84c 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                fontFamily: "Georgia, serif",
+                marginTop: -1,
+              }}
+            >
+              STUDIO
+            </div>
           </div>
         </div>
       </Link>
 
-      <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {/* Nav */}
+      <nav style={{ display: "flex", alignItems: "center", gap: 0, marginRight: 16 }}>
         {navLinks.map((link) => {
-          const isActive = link.path === "/" ? location === "/" : location.startsWith(link.path);
+          const isActive =
+            link.path === "/" ? location === "/" : location.startsWith(link.path);
           return (
             <Link key={link.label} href={link.path}>
               <span
                 style={{
-                  padding: "6px 14px",
+                  display: "block",
+                  padding: "0 12px",
+                  height: 60,
+                  lineHeight: "60px",
                   fontSize: 14,
                   fontWeight: isActive ? 600 : 400,
-                  color: isActive ? "#fff" : "rgba(255,255,255,0.6)",
-                  background: isActive ? "rgba(255,255,255,0.1)" : "transparent",
-                  borderRadius: 6,
+                  color: isActive ? "#fff" : "rgba(255,255,255,0.55)",
+                  borderBottom: isActive ? "2px solid #00a9f5" : "2px solid transparent",
                   cursor: "pointer",
                   transition: "all 0.2s",
-                  display: "block",
+                  whiteSpace: "nowrap",
+                  boxSizing: "border-box",
                 }}
                 onMouseEnter={(e) => {
-                  if (!isActive) (e.target as HTMLElement).style.color = "#fff";
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.color = "#fff";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isActive) (e.target as HTMLElement).style.color = "rgba(255,255,255,0.6)";
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)";
+                  }
                 }}
               >
                 {link.label}
@@ -101,94 +145,163 @@ export default function Header() {
 
       <div style={{ flex: 1 }} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      {/* Right side */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        {/* Search bar */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            width: searchFocused ? 246 : 246,
-            height: 36,
-            background: "rgba(255,255,255,0.08)",
-            border: searchFocused ? "1px solid rgba(0,169,245,0.6)" : "1px solid rgba(255,255,255,0.12)",
-            borderRadius: 18,
-            padding: "0 12px",
-            gap: 8,
+            width: 220,
+            height: 34,
+            background: "rgba(255,255,255,0.07)",
+            border: searchFocused
+              ? "1px solid rgba(0,169,245,0.7)"
+              : "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 17,
+            padding: "0 10px",
+            gap: 7,
             transition: "border 0.2s",
+            boxSizing: "border-box",
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={searchFocused ? "rgba(0,169,245,0.8)" : "rgba(255,255,255,0.35)"}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ flexShrink: 0, transition: "stroke 0.2s" }}
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
           </svg>
           <input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            placeholder="Search a show"
+            placeholder="搜索剧集、电影、综艺"
             style={{
               background: "transparent",
               border: "none",
               outline: "none",
               color: "#fff",
-              fontSize: 13,
+              fontSize: 12,
               width: "100%",
             }}
           />
           {searchValue && (
-            <button onClick={() => setSearchValue("")} style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1, cursor: "pointer", background: "none", border: "none" }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            <button
+              onClick={() => setSearchValue("")}
+              style={{
+                color: "rgba(255,255,255,0.3)",
+                lineHeight: 1,
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
             </button>
           )}
         </div>
 
-        <HeaderIconBtn title="Download App">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" />
+        {/* App download */}
+        <HeaderIconBtn title="下载App">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="5" y="2" width="14" height="20" rx="2" />
+            <path d="M12 18h.01" />
           </svg>
         </HeaderIconBtn>
 
-        <HeaderIconBtn title="Watch History">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+        {/* Watch history */}
+        <HeaderIconBtn title="历史记录">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
         </HeaderIconBtn>
 
-        <HeaderIconBtn title="Language">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-        </HeaderIconBtn>
-
+        {/* VIP Badge — Youku style solid gold gradient */}
         <a
           href="#"
           style={{
             display: "flex",
             alignItems: "center",
             gap: 5,
-            padding: "5px 12px",
-            borderRadius: 18,
-            border: "1px solid rgba(255,221,154,0.5)",
-            background: "transparent",
-            color: "#ffdd9a",
+            padding: "0 14px",
+            height: 32,
+            borderRadius: 16,
+            background: "linear-gradient(90deg, #f5c842 0%, #ffdd9a 45%, #e8a800 100%)",
+            color: "#3d2200",
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 700,
             textDecoration: "none",
             cursor: "pointer",
-            transition: "all 0.2s",
+            flexShrink: 0,
+            boxShadow: "0 2px 8px rgba(245,200,66,0.35)",
+            transition: "filter 0.2s, box-shadow 0.2s",
+            letterSpacing: "0.02em",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(255,221,154,0.1)";
+            (e.currentTarget as HTMLElement).style.filter = "brightness(1.08)";
+            (e.currentTarget as HTMLElement).style.boxShadow =
+              "0 3px 12px rgba(245,200,66,0.5)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.filter = "brightness(1)";
+            (e.currentTarget as HTMLElement).style.boxShadow =
+              "0 2px 8px rgba(245,200,66,0.35)";
           }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="#ffdd9a" stroke="none">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          {/* Crown icon */}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M2 19h20M3 19L5 9l4.5 4L12 4l2.5 9L19 9l2 10"
+              stroke="#3d2200"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
-          VIP
+          开通VIP
         </a>
 
+        {/* Avatar */}
         <button
           style={{
             width: 32,
@@ -196,11 +309,21 @@ export default function Header() {
             borderRadius: "50%",
             overflow: "hidden",
             background: "rgba(255,255,255,0.1)",
-            border: "none",
+            border: "1.5px solid rgba(255,255,255,0.15)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            padding: 0,
+            marginLeft: 4,
+            flexShrink: 0,
+            transition: "border-color 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.6)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
           }}
         >
           <img
@@ -214,13 +337,19 @@ export default function Header() {
   );
 }
 
-function HeaderIconBtn({ children, title }: { children: React.ReactNode; title: string }) {
+function HeaderIconBtn({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title: string;
+}) {
   return (
     <button
       title={title}
       style={{
-        width: 36,
-        height: 36,
+        width: 34,
+        height: 34,
         borderRadius: "50%",
         background: "transparent",
         border: "none",
@@ -228,15 +357,16 @@ function HeaderIconBtn({ children, title }: { children: React.ReactNode; title: 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "rgba(255,255,255,0.6)",
+        color: "rgba(255,255,255,0.5)",
         transition: "all 0.2s",
+        flexShrink: 0,
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.color = "#fff";
         (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)";
+        (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
         (e.currentTarget as HTMLElement).style.background = "transparent";
       }}
     >

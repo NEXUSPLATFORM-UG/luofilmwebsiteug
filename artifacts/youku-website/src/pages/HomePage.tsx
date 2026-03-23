@@ -60,7 +60,7 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-      <div style={{ height: 70 }} />
+      <div style={{ height: 60 }} />
 
       {/* Category tabs */}
       <div
