@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import VIPModal from "./VIPModal";
+import AuthModal from "./AuthModal";
 
 const navLinks = [
   { label: "HOME", path: "/" },
@@ -12,11 +13,39 @@ const navLinks = [
   { label: "ANIME", path: "/anime" },
 ];
 
+interface User {
+  name: string;
+  phone: string;
+  email: string;
+  avatar?: string;
+}
+
 export default function Header() {
   const [location] = useLocation();
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showVIP, setShowVIP] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  function handleAuth(u: User) {
+    setUser(u);
+    setShowAuth(false);
+  }
+
+  function handleLogout() {
+    setUser(null);
+    setShowUserMenu(false);
+  }
+
+  const initials = user
+    ? user.name
+        .split(" ")
+        .map((n) => n.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join("")
+    : "";
 
   return (
     <>
@@ -343,41 +372,180 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Avatar */}
-          <button
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              overflow: "hidden",
-              background: "rgba(255,255,255,0.1)",
-              border: "1.5px solid rgba(255,255,255,0.15)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-              marginLeft: 4,
-              flexShrink: 0,
-              transition: "border-color 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.6)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
-            }}
-          >
-            <img
-              src="https://img.alicdn.com/imgextra/i2/O1CN01lr1KAH1eIQrB1u9ZK_!!6000000003848-2-tps-138-138.png"
-              alt="avatar"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </button>
+          {/* Avatar / Login */}
+          {user ? (
+            <div style={{ position: "relative", marginLeft: 4 }}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  background: user.avatar ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#00a9f5,#0076d6)",
+                  border: "1.5px solid rgba(0,169,245,0.5)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 0,
+                  flexShrink: 0,
+                  transition: "border-color 0.2s",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#fff",
+                }}
+              >
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt="avatar"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  initials
+                )}
+              </button>
+
+              {showUserMenu && (
+                <>
+                  <div
+                    style={{ position: "fixed", inset: 0, zIndex: 150 }}
+                    onClick={() => setShowUserMenu(false)}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 10px)",
+                      right: 0,
+                      background: "#1a1a1a",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: 10,
+                      width: 200,
+                      zIndex: 160,
+                      overflow: "hidden",
+                      boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
+                      animation: "slideDown 0.15s ease",
+                    }}
+                  >
+                    <div style={{ padding: "14px 16px 12px" }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{user.name}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+                        {user.email || user.phone}
+                      </div>
+                    </div>
+                    <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+                    {[
+                      { label: "My Profile", icon: "👤" },
+                      { label: "Watch History", icon: "🕐" },
+                      { label: "My Watchlist", icon: "❤️" },
+                      { label: "Downloads", icon: "⬇️" },
+                    ].map(({ label, icon }) => (
+                      <button
+                        key={label}
+                        style={{
+                          width: "100%",
+                          padding: "10px 16px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          background: "transparent",
+                          border: "none",
+                          color: "rgba(255,255,255,0.65)",
+                          fontSize: 13,
+                          cursor: "pointer",
+                          textAlign: "left",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background = "transparent";
+                        }}
+                      >
+                        <span>{icon}</span>
+                        {label}
+                      </button>
+                    ))}
+                    <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        width: "100%",
+                        padding: "10px 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "transparent",
+                        border: "none",
+                        color: "#ff6b6b",
+                        fontSize: 13,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        transition: "background 0.15s",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,107,107,0.08)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = "transparent";
+                      }}
+                    >
+                      <span>🚪</span>
+                      Log Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAuth(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "0 14px",
+                height: 32,
+                borderRadius: 16,
+                background: "rgba(0,169,245,0.12)",
+                border: "1px solid rgba(0,169,245,0.35)",
+                color: "#00a9f5",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                flexShrink: 0,
+                letterSpacing: "0.04em",
+                transition: "all 0.2s",
+                marginLeft: 4,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(0,169,245,0.22)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.6)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(0,169,245,0.12)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.35)";
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              LOG IN
+            </button>
+          )}
         </div>
       </header>
 
       {showVIP && <VIPModal onClose={() => setShowVIP(false)} />}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onAuth={handleAuth}
+        />
+      )}
     </>
   );
 }
