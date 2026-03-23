@@ -1,4 +1,5 @@
 import { Switch, Route, useLocation } from "wouter";
+import { AuthProvider } from "./contexts/AuthContext";
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
 import PlayPage from "./pages/PlayPage";
@@ -71,11 +72,11 @@ function App() {
   const [location] = useLocation();
   const isAdmin = location.startsWith("/admin");
 
-  if (isAdmin) {
-    return <AdminApp />;
-  }
-
-  return <MainSite />;
+  return (
+    <AuthProvider>
+      {isAdmin ? <AdminApp /> : <MainSite />}
+    </AuthProvider>
+  );
 }
 
 export default App;

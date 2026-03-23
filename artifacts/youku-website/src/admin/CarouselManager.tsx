@@ -32,7 +32,7 @@ function CarouselForm({ initial, onSave, onClose, contentList }: any) {
   const save = async () => {
     setSaving(true);
     try {
-      const data = { ...form, contentId: form.contentId ? Number(form.contentId) : null };
+      const data = { ...form, contentId: form.contentId || null };
       if (initial?.id) await api.carousel.update(initial.id, data);
       else await api.carousel.create(data);
       onSave();
@@ -95,7 +95,7 @@ function FeaturedForm({ initial, onSave, onClose, contentList }: any) {
   const save = async () => {
     setSaving(true);
     try {
-      const data = { ...form, contentId: form.contentId ? Number(form.contentId) : null };
+      const data = { ...form, contentId: form.contentId || null };
       if (initial?.id) await api.featured.update(initial.id, data);
       else await api.featured.create(data);
       onSave();
@@ -145,7 +145,7 @@ export default function CarouselManager() {
   const load = () => {
     setLoading(true);
     Promise.all([api.carousel.list(), api.featured.list(), api.featured.contentList()])
-      .then(([c, f, cl]) => { setCarousel(c.items || []); setFeatured(f.items || []); setContentList(cl.items || []); })
+      .then(([c, f, cl]) => { setCarousel(c.carousel || []); setFeatured(f.featured || []); setContentList(cl.content || []); })
       .finally(() => setLoading(false));
   };
 

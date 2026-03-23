@@ -1,74 +1,66 @@
-const BASE = "/api/admin";
+import { fbApi, uploadFile } from "../lib/firebaseApi";
 
-async function req(path: string, method = "GET", body?: unknown) {
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
+export { uploadFile };
 
 export const api = {
-  stats: () => req("/stats"),
+  stats: () => fbApi.stats(),
 
   users: {
-    list: (params?: Record<string, string>) => req(`/users?${new URLSearchParams(params || {})}`),
-    get: (id: number) => req(`/users/${id}`),
-    create: (data: unknown) => req("/users", "POST", data),
-    update: (id: number, data: unknown) => req(`/users/${id}`, "PUT", data),
-    delete: (id: number) => req(`/users/${id}`, "DELETE"),
+    list: (params?: Record<string, string>) => fbApi.users.list(params),
+    get: (id: string) => fbApi.users.get(id),
+    create: (data: unknown) => fbApi.users.create(data),
+    update: (id: string, data: unknown) => fbApi.users.update(id, data),
+    delete: (id: string) => fbApi.users.delete(id),
   },
 
   content: {
-    list: (params?: Record<string, string>) => req(`/content?${new URLSearchParams(params || {})}`),
-    get: (id: number) => req(`/content/${id}`),
-    create: (data: unknown) => req("/content", "POST", data),
-    update: (id: number, data: unknown) => req(`/content/${id}`, "PUT", data),
-    delete: (id: number) => req(`/content/${id}`, "DELETE"),
+    list: (params?: Record<string, string>) => fbApi.content.list(params),
+    get: (id: string) => fbApi.content.get(id),
+    create: (data: unknown) => fbApi.content.create(data),
+    update: (id: string, data: unknown) => fbApi.content.update(id, data),
+    delete: (id: string) => fbApi.content.delete(id),
     episodes: {
-      list: (id: number) => req(`/content/${id}/episodes`),
-      create: (id: number, data: unknown) => req(`/content/${id}/episodes`, "POST", data),
-      update: (id: number, epId: number, data: unknown) => req(`/content/${id}/episodes/${epId}`, "PUT", data),
-      delete: (id: number, epId: number) => req(`/content/${id}/episodes/${epId}`, "DELETE"),
+      list: (id: string) => fbApi.content.episodes.list(id),
+      create: (id: string, data: unknown) => fbApi.content.episodes.create(id, data),
+      update: (id: string, epId: string, data: unknown) => fbApi.content.episodes.update(id, epId, data),
+      delete: (id: string, epId: string) => fbApi.content.episodes.delete(id, epId),
     },
   },
 
   carousel: {
-    list: () => req("/carousel/carousel"),
-    create: (data: unknown) => req("/carousel/carousel", "POST", data),
-    update: (id: number, data: unknown) => req(`/carousel/carousel/${id}`, "PUT", data),
-    delete: (id: number) => req(`/carousel/carousel/${id}`, "DELETE"),
+    list: () => fbApi.carousel.list().then((items) => ({ carousel: items })),
+    create: (data: unknown) => fbApi.carousel.create(data),
+    update: (id: string, data: unknown) => fbApi.carousel.update(id, data),
+    delete: (id: string) => fbApi.carousel.delete(id),
   },
 
   featured: {
-    list: () => req("/carousel/featured"),
-    create: (data: unknown) => req("/carousel/featured", "POST", data),
-    update: (id: number, data: unknown) => req(`/carousel/featured/${id}`, "PUT", data),
-    delete: (id: number) => req(`/carousel/featured/${id}`, "DELETE"),
-    contentList: () => req("/carousel/content-list"),
+    list: () => fbApi.featured.list().then((items) => ({ featured: items })),
+    create: (data: unknown) => fbApi.featured.create(data),
+    update: (id: string, data: unknown) => fbApi.featured.update(id, data),
+    delete: (id: string) => fbApi.featured.delete(id),
+    contentList: () => fbApi.featured.contentList().then((items) => ({ content: items })),
   },
 
   subscriptions: {
-    list: (params?: Record<string, string>) => req(`/subscriptions?${new URLSearchParams(params || {})}`),
-    create: (data: unknown) => req("/subscriptions", "POST", data),
-    update: (id: number, data: unknown) => req(`/subscriptions/${id}`, "PUT", data),
-    delete: (id: number) => req(`/subscriptions/${id}`, "DELETE"),
+    list: (params?: Record<string, string>) => fbApi.subscriptions.list(params),
+    create: (data: unknown) => fbApi.subscriptions.create(data),
+    update: (id: string, data: unknown) => fbApi.subscriptions.update(id, data),
+    delete: (id: string) => fbApi.subscriptions.delete(id),
   },
 
   wallet: {
-    get: () => req("/wallet"),
-    withdraw: (data: unknown) => req("/wallet/withdraw", "POST", data),
-    topup: (data: unknown) => req("/wallet/topup", "POST", data),
+    get: () => fbApi.wallet.get(),
+    withdraw: (data: unknown) => fbApi.wallet.withdraw(data),
+    topup: (data: unknown) => fbApi.wallet.topup(data),
   },
 
   transactions: {
-    list: (params?: Record<string, string>) => req(`/transactions?${new URLSearchParams(params || {})}`),
+    list: (params?: Record<string, string>) => fbApi.transactions.list(params),
   },
 
   activities: {
-    list: (params?: Record<string, string>) => req(`/activities?${new URLSearchParams(params || {})}`),
-    log: (data: unknown) => req("/activities", "POST", data),
+    list: (params?: Record<string, string>) => fbApi.activities.list(params),
+    log: (data: unknown) => fbApi.activities.log(data),
   },
 };

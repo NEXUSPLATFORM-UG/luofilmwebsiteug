@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import {
   Play,
@@ -16,11 +16,44 @@ import {
   Film,
 } from "lucide-react";
 import { shows } from "../data/shows";
+import type { Show } from "../data/shows";
+import { fbApi } from "../lib/firebaseApi";
+
+function toShow(d: any): Show {
+  return {
+    id: d.id,
+    title: d.title || "",
+    type: d.type || "series",
+    episodeCount: d.episodeCount || 0,
+    badge: d.badge || "none",
+    genre: d.genre || "",
+    year: d.year || 2024,
+    rating: d.rating || 8.0,
+    description: d.description || "",
+    coverUrl: d.coverUrl || d.thumbnailUrl || "",
+    thumbnailUrl: d.thumbnailUrl || d.coverUrl || "",
+  };
+}
 
 export default function PlayPage() {
   const params = useParams<{ id: string }>();
-  const show = shows.find((s) => s.id === params.id) || shows[0];
+  const [firestoreShow, setFirestoreShow] = useState<Show | null>(null);
+  const [episodes, setEpisodes] = useState<any[]>([]);
+  const staticShow = shows.find((s) => s.id === params.id) || shows[0];
 
+  useEffect(() => {
+    if (!params.id) return;
+    fbApi.publicContent.getById(params.id).then((d) => {
+      if (d) {
+        const s = toShow(d);
+        setFirestoreShow(s);
+        fbApi.content.episodes.list(params.id).then((r) => setEpisodes(r.episodes || [])).catch(() => {});
+        fbApi.content.incrementViews(params.id).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [params.id]);
+
+  const show = firestoreShow || staticShow;
   const isSeries = show.type === "series";
 
   const [currentEp, setCurrentEp] = useState(1);
@@ -38,11 +71,15 @@ export default function PlayPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoverPlayer, setHoverPlayer] = useState(false);
 
-  const episodes = Array.from({ length: show.episodeCount }, (_, i) => ({ number: i + 1 }));
+  const displayEpisodes = episodes.length > 0
+    ? episodes
+    : Array.from({ length: show.episodeCount }, (_, i) => ({ number: i + 1, episodeNumber: i + 1 }));
   const EPS_PER_PAGE = 30;
-  const totalPages = Math.ceil(episodes.length / EPS_PER_PAGE);
-  const visibleEpisodes = episodes.slice(epPage * EPS_PER_PAGE, (epPage + 1) * EPS_PER_PAGE);
+  const totalPages = Math.ceil(displayEpisodes.length / EPS_PER_PAGE);
+  const visibleEpisodes = displayEpisodes.slice(epPage * EPS_PER_PAGE, (epPage + 1) * EPS_PER_PAGE);
   const related = shows.filter((s) => s.id !== show.id).slice(0, 8);
+  const currentEpisodeData = displayEpisodes.find((e: any) => (e.episodeNumber || e.number) === currentEp);
+  const videoSrc = (currentEpisodeData as any)?.videoUrl || (show as any).videoUrl || "";
 
   const isVip = show.badge === "VIP";
 
@@ -100,8 +137,19 @@ export default function PlayPage() {
             }}
             onMouseEnter={() => setHoverPlayer(true)}
             onMouseLeave={() => setHoverPlayer(false)}
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={() => { if (!videoSrc) setIsPlaying(!isPlaying); }}
           >
+            {videoSrc && isPlaying ? (
+              <video
+                src={videoSrc}
+                autoPlay
+                controls
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
+                onPause={() => setIsPlaying(false)}
+                onPlay={() => setIsPlaying(true)}
+              />
+            ) : (
+            <>
             <img
               src={show.coverUrl}
               alt={show.title}
@@ -285,6 +333,8 @@ export default function PlayPage() {
                 </div>
               </div>
             </div>
+            </>
+            )}
           </div>
 
           {/* Show title + meta */}
@@ -584,27 +634,30 @@ export default function PlayPage() {
                       gap: 8,
                     }}
                   >
-                    {visibleEpisodes.map((ep) => (
-                      <button
-                        key={ep.number}
-                        onClick={() => setCurrentEp(ep.number)}
-                        style={{
-                          padding: "8px 0",
-                          fontSize: 13,
-                          fontWeight: currentEp === ep.number ? 600 : 400,
-                          borderRadius: 4,
-                          border: currentEp === ep.number
-                            ? "1px solid #00a9f5"
-                            : "1px solid rgba(255,255,255,0.1)",
-                          color: currentEp === ep.number ? "#00a9f5" : "rgba(255,255,255,0.55)",
-                          background: currentEp === ep.number ? "rgba(0,169,245,0.08)" : "rgba(255,255,255,0.03)",
-                          cursor: "pointer",
-                          transition: "all 0.15s",
-                        }}
-                      >
-                        {ep.number}
-                      </button>
-                    ))}
+                    {visibleEpisodes.map((ep: any) => {
+                      const epNum = ep.episodeNumber || ep.number;
+                      return (
+                        <button
+                          key={ep.id || epNum}
+                          onClick={() => setCurrentEp(epNum)}
+                          style={{
+                            padding: "8px 0",
+                            fontSize: 13,
+                            fontWeight: currentEp === epNum ? 600 : 400,
+                            borderRadius: 4,
+                            border: currentEp === epNum
+                              ? "1px solid #00a9f5"
+                              : "1px solid rgba(255,255,255,0.1)",
+                            color: currentEp === epNum ? "#00a9f5" : "rgba(255,255,255,0.55)",
+                            background: currentEp === epNum ? "rgba(0,169,245,0.08)" : "rgba(255,255,255,0.03)",
+                            cursor: "pointer",
+                            transition: "all 0.15s",
+                          }}
+                        >
+                          {epNum}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

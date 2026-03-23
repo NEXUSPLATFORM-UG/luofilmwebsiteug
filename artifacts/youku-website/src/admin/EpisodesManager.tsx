@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "wouter";
-import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
-import { api } from "./api";
+import { Plus, Edit, Trash2, ArrowLeft, Upload, X } from "lucide-react";
+import { api, uploadFile } from "./api";
 
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
@@ -12,7 +12,7 @@ const inp = {
 function Modal({ title, onClose, children }: any) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-      <div style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto" }}>
+      <div style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, width: "100%", maxWidth: 600, maxHeight: "90vh", overflow: "auto" }}>
         <div style={{ padding: "18px 24px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", justifyContent: "space-between" }}>
           <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#fff" }}>{title}</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 20 }}>×</button>
@@ -23,13 +23,63 @@ function Modal({ title, onClose, children }: any) {
   );
 }
 
+function FileUploadField({ label, urlKey, filePrefix, accept, form, setForm }: any) {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    setProgress(0);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `episodes/${filePrefix}_${Date.now()}.${ext}`;
+      const url = await uploadFile(path, file, setProgress);
+      setForm((f: any) => ({ ...f, [urlKey]: url }));
+    } catch (e) {
+      alert("Upload failed: " + String(e));
+    }
+    setUploading(false);
+    setProgress(0);
+  };
+
+  return (
+    <div>
+      <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>{label}</label>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <input style={{ ...inp, flex: 1 }} value={form[urlKey] || ""} onChange={e => setForm((f: any) => ({ ...f, [urlKey]: e.target.value }))} placeholder="https://... or upload file" />
+        {form[urlKey] && (
+          <button type="button" onClick={() => setForm((f: any) => ({ ...f, [urlKey]: "" }))}
+            style={{ padding: "6px 8px", background: "#ef444422", border: "none", borderRadius: 6, color: "#f87171", cursor: "pointer" }}>
+            <X size={13} />
+          </button>
+        )}
+      </div>
+      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
+        <input ref={fileRef} type="file" style={{ display: "none" }} accept={accept}
+          onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          style={{ padding: "5px 12px", background: uploading ? "#333" : "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.4)", borderRadius: 6, color: "#818cf8", cursor: uploading ? "not-allowed" : "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
+          <Upload size={12} /> {uploading ? `${Math.round(progress)}%...` : "Upload"}
+        </button>
+        {form[urlKey] && <span style={{ fontSize: 11, color: "#10b981" }}>✓ Ready</span>}
+      </div>
+      {uploading && (
+        <div style={{ marginTop: 6, height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 2 }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: "#6366f1", borderRadius: 2, transition: "width 0.2s" }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EpisodeForm({ seriesId, initial, onSave, onClose }: any) {
   const [form, setForm] = useState({
     seasonNumber: 1, episodeNumber: 1, title: "", description: "",
     videoUrl: "", thumbnailUrl: "", duration: 45, ...initial
   });
   const [saving, setSaving] = useState(false);
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   const save = async () => {
     setSaving(true);
@@ -40,6 +90,8 @@ function EpisodeForm({ seriesId, initial, onSave, onClose }: any) {
     } catch (e) { alert(String(e)); }
     setSaving(false);
   };
+
+  const epPrefix = `ep${form.seasonNumber}_${form.episodeNumber}_${seriesId}`;
 
   return (
     <div>
@@ -60,18 +112,16 @@ function EpisodeForm({ seriesId, initial, onSave, onClose }: any) {
           <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Description</label>
           <textarea style={{ ...inp, minHeight: 60, resize: "vertical" }} value={form.description} onChange={e => set("description", e.target.value)} />
         </div>
-        <div style={{ gridColumn: "1/-1" }}>
-          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Video URL</label>
-          <input style={inp} value={form.videoUrl} onChange={e => set("videoUrl", e.target.value)} placeholder="https://..." />
-        </div>
-        <div style={{ gridColumn: "1/-1" }}>
-          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Thumbnail URL</label>
-          <input style={inp} value={form.thumbnailUrl} onChange={e => set("thumbnailUrl", e.target.value)} placeholder="https://..." />
-        </div>
         <div>
           <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Duration (mins)</label>
           <input style={inp} type="number" value={form.duration} onChange={e => set("duration", Number(e.target.value))} />
         </div>
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <FileUploadField label="Video File" urlKey="videoUrl" filePrefix={`video_${epPrefix}`} accept="video/*" form={form} setForm={setForm} />
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <FileUploadField label="Thumbnail Image" urlKey="thumbnailUrl" filePrefix={`thumb_${epPrefix}`} accept="image/*" form={form} setForm={setForm} />
       </div>
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
         <button onClick={onClose} style={{ ...inp, width: "auto", cursor: "pointer" }}>Cancel</button>
@@ -85,7 +135,7 @@ function EpisodeForm({ seriesId, initial, onSave, onClose }: any) {
 
 export default function EpisodesManager() {
   const { id } = useParams<{ id: string }>();
-  const seriesId = Number(id);
+  const seriesId = id || "";
   const [seriesInfo, setSeriesInfo] = useState<any>(null);
   const [episodes, setEpisodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +154,7 @@ export default function EpisodesManager() {
 
   useEffect(() => { load(); }, [seriesId]);
 
-  const del = async (epId: number) => {
+  const del = async (epId: string) => {
     if (!confirm("Delete this episode?")) return;
     await api.content.episodes.delete(seriesId, epId);
     load();
@@ -112,8 +162,9 @@ export default function EpisodesManager() {
 
   const grouped: Record<number, any[]> = {};
   episodes.forEach(ep => {
-    if (!grouped[ep.seasonNumber]) grouped[ep.seasonNumber] = [];
-    grouped[ep.seasonNumber].push(ep);
+    const season = ep.seasonNumber || 1;
+    if (!grouped[season]) grouped[season] = [];
+    grouped[season].push(ep);
   });
 
   return (
@@ -139,20 +190,20 @@ export default function EpisodesManager() {
           <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.3)" }}>
             <p>No episodes yet. Add the first episode!</p>
           </div>
-        ) : Object.entries(grouped).map(([season, eps]) => (
+        ) : Object.entries(grouped).sort(([a], [b]) => Number(a) - Number(b)).map(([season, eps]) => (
           <div key={season} style={{ marginBottom: 24 }}>
             <h3 style={{ fontSize: 14, color: "#818cf8", fontWeight: 600, marginBottom: 12 }}>Season {season}</h3>
             <div style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                    {["Ep#", "Thumbnail", "Title", "Duration", "Views", "Actions"].map(h => (
+                    {["Ep#", "Thumbnail", "Title", "Duration", "Video", "Views", "Actions"].map(h => (
                       <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 12 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {eps.map((ep: any) => (
+                  {(eps as any[]).sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0)).map((ep: any) => (
                     <tr key={ep.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                       <td style={{ padding: "10px 14px", color: "#818cf8", fontWeight: 700 }}>E{ep.episodeNumber}</td>
                       <td style={{ padding: "10px 14px" }}>
@@ -161,9 +212,14 @@ export default function EpisodesManager() {
                           : <div style={{ width: 60, height: 38, borderRadius: 4, background: "#1a1a2e" }} />}
                       </td>
                       <td style={{ padding: "10px 14px", color: "#fff", maxWidth: 240 }}>
-                        <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ep.title}</div>
+                        <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ep.title || `Episode ${ep.episodeNumber}`}</div>
                       </td>
                       <td style={{ padding: "10px 14px", color: "rgba(255,255,255,0.5)" }}>{ep.duration ? `${ep.duration}m` : "-"}</td>
+                      <td style={{ padding: "10px 14px" }}>
+                        {ep.videoUrl
+                          ? <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 11, background: "#10b98122", color: "#34d399" }}>✓ Ready</span>
+                          : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>No video</span>}
+                      </td>
                       <td style={{ padding: "10px 14px", color: "rgba(255,255,255,0.5)" }}>{ep.views || 0}</td>
                       <td style={{ padding: "10px 14px" }}>
                         <div style={{ display: "flex", gap: 6 }}>

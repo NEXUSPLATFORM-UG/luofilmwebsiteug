@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Check, AlertCircle } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 type Tab = "login" | "register";
 type Step = "main" | "google-phone";
@@ -8,7 +9,6 @@ type AgeGroup = "adult" | "child";
 
 interface AuthModalProps {
   onClose: () => void;
-  onAuth: (user: { name: string; phone: string; email: string; avatar: string }) => void;
 }
 
 function getDiceBearUrl(name: string, gender: Gender, ageGroup: AgeGroup): string {
@@ -41,11 +41,13 @@ const GoogleIcon = () => (
   </svg>
 );
 
-export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
+export default function AuthModal({ onClose }: AuthModalProps) {
+  const { loginWithEmail, registerWithEmail, loginWithGoogle, completeGoogleRegistration } = useAuth();
+
   const [tab, setTab] = useState<Tab>("login");
   const [step, setStep] = useState<Step>("main");
 
-  const [loginPhone, setLoginPhone] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
   const [firstName, setFirstName] = useState("");
@@ -58,7 +60,8 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
   const [googlePhone, setGooglePhone] = useState("");
   const [googleGender, setGoogleGender] = useState<Gender>("female");
   const [googleAgeGroup, setGoogleAgeGroup] = useState<AgeGroup>("adult");
-  const [googleUser, setGoogleUser] = useState<{ name: string; email: string } | null>(null);
+  const [googleUserName, setGoogleUserName] = useState("");
+  const [googleUserEmail, setGoogleUserEmail] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,66 +70,76 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
   const emailValid = isValidEmail(regEmail);
   const phoneTouched = regPhone.length > 0;
   const phoneValid = isValidPhone(regPhone);
-  const loginPhoneTouched = loginPhone.length > 0;
-  const loginPhoneValid = isValidPhone(loginPhone);
+  const loginEmailTouched = loginEmail.length > 0;
+  const loginEmailValid = isValidEmail(loginEmail);
   const googlePhoneTouched = googlePhone.length > 0;
   const googlePhoneValid = isValidPhone(googlePhone);
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!loginPhoneValid) { setError("Enter a valid 10-digit phone number."); return; }
+    if (!loginEmailValid) { setError("Enter a valid email address."); return; }
     if (!loginPassword.trim()) { setError("Please enter your password."); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onAuth({ name: "User", phone: loginPhone, email: "", avatar: getDiceBearUrl("User", "female", "adult") });
+    try {
+      await loginWithEmail(loginEmail, loginPassword);
       onClose();
-    }, 800);
+    } catch (err: any) {
+      setError(err.message?.includes("invalid-credential") ? "Invalid email or password." : (err.message || "Login failed."));
+    }
+    setLoading(false);
   }
 
-  function handleRegister(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!firstName.trim() || !lastName.trim()) { setError("Enter your first and last name."); return; }
     if (!phoneValid) { setError("Enter a valid 10-digit phone number."); return; }
     if (!emailValid) { setError("Enter a valid email address."); return; }
-    if (!regPassword.trim()) { setError("Please create a password."); return; }
+    if (regPassword.length < 6) { setError("Password must be at least 6 characters."); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
       const name = `${firstName} ${lastName}`;
-      onAuth({ name, phone: regPhone, email: regEmail, avatar: getDiceBearUrl(name, gender, "adult") });
+      const avatar = getDiceBearUrl(name, gender, "adult");
+      await registerWithEmail(regEmail, regPassword, name, regPhone, gender, avatar);
       onClose();
-    }, 800);
+    } catch (err: any) {
+      setError(err.message?.includes("email-already-in-use") ? "Email already in use." : (err.message || "Registration failed."));
+    }
+    setLoading(false);
   }
 
-  function handleGoogleLogin() {
+  async function handleGoogleLogin() {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (tab === "register") {
-        setGoogleUser({ name: "Google User", email: "user@gmail.com" });
+    setError("");
+    try {
+      const result = await loginWithGoogle();
+      if (result.needsPhone) {
+        setGoogleUserName(result.user.displayName || "Google User");
+        setGoogleUserEmail(result.user.email || "");
         setStep("google-phone");
       } else {
-        onAuth({ name: "Google User", phone: "", email: "user@gmail.com", avatar: getDiceBearUrl("Google User", "female", "adult") });
         onClose();
       }
-    }, 800);
+    } catch (err: any) {
+      setError(err.message || "Google sign-in failed.");
+    }
+    setLoading(false);
   }
 
-  function handleGooglePhoneSubmit(e: React.FormEvent) {
+  async function handleGooglePhoneSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!googlePhoneValid) { setError("Enter a valid 10-digit phone number."); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (googleUser) {
-        onAuth({ name: googleUser.name, phone: googlePhone, email: googleUser.email, avatar: getDiceBearUrl(googleUser.name, googleGender, googleAgeGroup) });
-      }
+    try {
+      const avatar = getDiceBearUrl(googleUserName, googleGender, googleAgeGroup);
+      await completeGoogleRegistration(googlePhone, googleGender, avatar);
       onClose();
-    }, 700);
+    } catch (err: any) {
+      setError(err.message || "Failed to complete registration.");
+    }
+    setLoading(false);
   }
 
   const inp: React.CSSProperties = {
@@ -209,50 +222,44 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
           />
           {touched && (
             <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
-              {valid
-                ? <Check size={13} color="#4ade80" />
-                : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
+              {valid ? <Check size={13} color="#4ade80" /> : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
             </div>
           )}
         </div>
         {touched && !valid && (
-          <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>
-            Must be exactly 10 digits
-          </p>
+          <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>Must be exactly 10 digits</p>
         )}
       </div>
     );
   }
 
-  function EmailField() {
+  function EmailField({ value, onChange, valid, touched, label = "Email", placeholder = "you@example.com" }: {
+    value: string; onChange: (v: string) => void; valid: boolean; touched: boolean; label?: string; placeholder?: string;
+  }) {
     return (
       <div>
-        <label style={lbl}>Email</label>
+        <label style={lbl}>{label}</label>
         <div style={{ position: "relative" }}>
           <input
             className="auth-input"
             style={{
               ...inp,
               paddingRight: 32,
-              borderColor: emailTouched ? (emailValid ? "rgba(74,222,128,0.4)" : "rgba(255,100,100,0.4)") : "rgba(255,255,255,0.11)",
+              borderColor: touched ? (valid ? "rgba(74,222,128,0.4)" : "rgba(255,100,100,0.4)") : "rgba(255,255,255,0.11)",
             }}
             type="email"
-            placeholder="you@example.com"
-            value={regEmail}
-            onChange={(e) => setRegEmail(e.target.value)}
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
           />
-          {emailTouched && (
+          {touched && (
             <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
-              {emailValid
-                ? <Check size={13} color="#4ade80" />
-                : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
+              {valid ? <Check size={13} color="#4ade80" /> : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
             </div>
           )}
         </div>
-        {emailTouched && !emailValid && (
-          <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>
-            Enter a valid email address
-          </p>
+        {touched && !valid && (
+          <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>Enter a valid email address</p>
         )}
       </div>
     );
@@ -314,7 +321,7 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
 
   const avatarPreviewUrl =
     step === "google-phone"
-      ? getDiceBearUrl(googleUser?.name || "User", googleGender, googleAgeGroup)
+      ? getDiceBearUrl(googleUserName || "User", googleGender, googleAgeGroup)
       : tab === "register"
       ? getDiceBearUrl(firstName ? `${firstName} ${lastName}` : "User", gender, "adult")
       : null;
@@ -346,15 +353,11 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <style>{`
-          @keyframes authSlide {
-            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-          }
+          @keyframes authSlide { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
           .auth-input:focus { border-color: rgba(0,169,245,0.55) !important; }
           .auth-goog:hover { background: rgba(255,255,255,0.08) !important; }
         `}</style>
 
-        {/* Modal header */}
         <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {step === "google-phone" ? (
             <div>
@@ -385,14 +388,12 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
         </div>
 
         <div style={{ padding: "12px 16px 18px" }}>
-          {/* Error */}
           {error && (
             <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 6, padding: "6px 10px", fontSize: 11, color: "#fca5a5", marginBottom: 10 }}>
               {error}
             </div>
           )}
 
-          {/* Avatar preview */}
           {avatarPreviewUrl && (
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
               <div style={{ position: "relative" }}>
@@ -407,32 +408,35 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
             </div>
           )}
 
-          {/* ── Google phone step ── */}
           {step === "google-phone" && (
             <form onSubmit={handleGooglePhoneSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: 7 }}>
                 <GoogleIcon />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>{googleUser?.name}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{googleUser?.email}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>{googleUserName}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{googleUserEmail}</div>
                 </div>
               </div>
               <GenderSelect value={googleGender} onChange={setGoogleGender} />
+              <AgeGroupSelect value={googleAgeGroup} onChange={setGoogleAgeGroup} />
               <PhoneField value={googlePhone} onChange={setGooglePhone} valid={googlePhoneValid} touched={googlePhoneTouched} />
               <button type="submit" style={btn} disabled={loading}>{loading ? "Saving..." : "Complete Registration"}</button>
             </form>
           )}
 
-          {/* ── Login form ── */}
           {step === "main" && tab === "login" && (
             <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <PhoneField value={loginPhone} onChange={setLoginPhone} valid={loginPhoneValid} touched={loginPhoneTouched} autoFocus />
+              <EmailField
+                value={loginEmail}
+                onChange={setLoginEmail}
+                valid={loginEmailValid}
+                touched={loginEmailTouched}
+                label="Email"
+                placeholder="you@example.com"
+              />
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                   <label style={lbl}>Password</label>
-                  <button type="button" style={{ background: "none", border: "none", color: "#00a9f5", fontSize: 10, cursor: "pointer", padding: 0 }}>
-                    Forgot?
-                  </button>
                 </div>
                 <input className="auth-input" style={inp} type="password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} />
               </div>
@@ -450,7 +454,6 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
             </form>
           )}
 
-          {/* ── Register form ── */}
           {step === "main" && tab === "register" && (
             <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <GenderSelect value={gender} onChange={setGender} />
@@ -465,10 +468,10 @@ export default function AuthModal({ onClose, onAuth }: AuthModalProps) {
                 </div>
               </div>
               <PhoneField value={regPhone} onChange={setRegPhone} valid={phoneValid} touched={phoneTouched} />
-              <EmailField />
+              <EmailField value={regEmail} onChange={setRegEmail} valid={emailValid} touched={emailTouched} />
               <div>
                 <label style={lbl}>Password</label>
-                <input className="auth-input" style={inp} type="password" placeholder="••••••••" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} />
+                <input className="auth-input" style={inp} type="password" placeholder="Min 6 characters" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} />
               </div>
               <button type="submit" style={{ ...btn, marginTop: 2 }} disabled={loading}>{loading ? "Creating..." : "CREATE ACCOUNT"}</button>
               {divider}
