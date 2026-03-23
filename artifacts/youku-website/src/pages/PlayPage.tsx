@@ -380,38 +380,65 @@ export default function PlayPage() {
               {/* Action buttons */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <ActionBtn
-                  icon={<ThumbsUp size={15} fill={liked ? "#00a9f5" : "none"} color={liked ? "#00a9f5" : "rgba(255,255,255,0.6)"} />}
+                  icon={<ThumbsUp size={16} fill={liked ? "#fff" : "none"} color={liked ? "#fff" : "#60a5fa"} />}
                   label={liked ? "LIKED" : "LIKE"}
                   active={liked}
+                  color={{
+                    bg: "rgba(59,130,246,0.08)",
+                    border: "#3b82f6",
+                    glow: "rgba(59,130,246,0.4)",
+                    activeBg: "linear-gradient(135deg,#2563eb,#3b82f6)",
+                  }}
                   onClick={() => setLiked(!liked)}
                 />
                 <ActionBtn
-                  icon={<Heart size={15} fill={saved ? "#ff4d6d" : "none"} color={saved ? "#ff4d6d" : "rgba(255,255,255,0.6)"} />}
+                  icon={<Heart size={16} fill={saved ? "#fff" : "none"} color={saved ? "#fff" : "#f472b6"} />}
                   label={saved ? "SAVED" : "SAVE"}
                   active={saved}
-                  activeColor="#ff4d6d"
+                  color={{
+                    bg: "rgba(244,114,182,0.08)",
+                    border: "#f472b6",
+                    glow: "rgba(244,114,182,0.4)",
+                    activeBg: "linear-gradient(135deg,#db2777,#f472b6)",
+                  }}
                   onClick={() => setSaved(!saved)}
                 />
                 <ActionBtn
-                  icon={<Share2 size={15} color={shared ? "#00a9f5" : "rgba(255,255,255,0.6)"} />}
+                  icon={<Share2 size={16} color={shared ? "#fff" : "#34d399"} />}
                   label={shared ? "SHARED" : "SHARE"}
                   active={shared}
+                  color={{
+                    bg: "rgba(52,211,153,0.08)",
+                    border: "#34d399",
+                    glow: "rgba(52,211,153,0.4)",
+                    activeBg: "linear-gradient(135deg,#059669,#34d399)",
+                  }}
                   onClick={() => setShared(!shared)}
                 />
                 <ActionBtn
-                  icon={<Download size={15} color={downloaded ? "#00a9f5" : "rgba(255,255,255,0.6)"} />}
-                  label={downloaded ? "SAVED" : "DOWNLOAD"}
+                  icon={<Download size={16} color={downloaded ? "#fff" : "#fb923c"} />}
+                  label={downloaded ? "DONE" : "DOWNLOAD"}
                   active={downloaded}
+                  color={{
+                    bg: "rgba(251,146,60,0.08)",
+                    border: "#fb923c",
+                    glow: "rgba(251,146,60,0.4)",
+                    activeBg: "linear-gradient(135deg,#ea580c,#fb923c)",
+                  }}
                   onClick={() => setDownloaded(!downloaded)}
                 />
                 <ActionBtn
-                  icon={
-                    subtitlesOn
-                      ? <Check size={15} color="#00a9f5" />
-                      : <MessageSquare size={15} color="rgba(255,255,255,0.6)" />
-                  }
+                  icon={subtitlesOn
+                    ? <Check size={16} color="#fff" />
+                    : <MessageSquare size={16} color="#c084fc" />}
                   label={subtitlesOn ? "SUB ON" : "SUBTITLES"}
                   active={subtitlesOn}
+                  color={{
+                    bg: "rgba(192,132,252,0.08)",
+                    border: "#c084fc",
+                    glow: "rgba(192,132,252,0.4)",
+                    activeBg: "linear-gradient(135deg,#7c3aed,#c084fc)",
+                  }}
                   onClick={() => setSubtitlesOn(!subtitlesOn)}
                 />
               </div>
@@ -943,13 +970,13 @@ function ActionBtn({
   icon,
   label,
   active,
-  activeColor,
+  color,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
-  activeColor?: string;
+  color: { bg: string; border: string; glow: string; activeBg: string };
   onClick?: () => void;
 }) {
   return (
@@ -959,20 +986,26 @@ function ActionBtn({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 3,
-        background: "transparent",
-        border: "none",
+        justifyContent: "center",
+        gap: 5,
+        background: active ? color.activeBg : color.bg,
+        border: `1px solid ${active ? color.border : "rgba(255,255,255,0.08)"}`,
+        borderRadius: 10,
         cursor: "pointer",
-        padding: "4px 6px",
+        padding: "10px 14px",
+        minWidth: 68,
+        transition: "all 0.2s",
+        boxShadow: active ? `0 4px 16px ${color.glow}` : "0 1px 4px rgba(0,0,0,0.3)",
       }}
     >
       {icon}
-      <span
-        style={{
-          fontSize: 10,
-          color: active ? (activeColor || "#00a9f5") : "rgba(255,255,255,0.45)",
-        }}
-      >
+      <span style={{
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: "0.08em",
+        color: active ? "#fff" : "rgba(255,255,255,0.5)",
+        whiteSpace: "nowrap",
+      }}>
         {label}
       </span>
     </button>
