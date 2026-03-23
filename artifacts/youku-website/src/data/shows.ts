@@ -1,219 +1,70 @@
+export type BadgeType = "VIP" | "Express" | "Exclusive" | "none";
+
 export interface Show {
   id: string;
   title: string;
   episodeCount: number;
-  isVip: boolean;
-  badge?: "VIP" | "Exclusive" | "Express";
+  badge: BadgeType;
   genre: string;
   year: number;
   rating: number;
   description: string;
   coverUrl: string;
   thumbnailUrl: string;
-  episodes: Episode[];
 }
 
-export interface Episode {
-  number: number;
-  title: string;
-  thumbnail: string;
-  duration: string;
-}
+const OSS = "?x-oss-process=image/resize,w_385/interlace,1/quality,Q_80";
 
-const BASE = "?x-oss-process=image/resize,w_385/interlace,1/quality,Q_80";
+const IMGS = [
+  "//m.ykimg.com/05840000654A09E913EBC61B39CE297A",
+  "//m.ykimg.com/0584000064BA54931427220BD94687F1",
+  "//m.ykimg.com/0584000065E0849D2027901CB107BD2F",
+  "//m.ykimg.com/05840000636109B813EBC6095DF70CE8",
+  "//m.ykimg.com/0584000062C7F2301FD8520912A229F2",
+  "//m.ykimg.com/0584000068D0C04513EFA312E2C35926",
+  "//m.ykimg.com/05840000677C8A4113FAB41397BDC48E",
+  "//m.ykimg.com/0584000064B7AC3C13EBC60C0FD4FC43",
+];
+
+function img(i: number) {
+  return IMGS[i % IMGS.length] + OSS;
+}
 
 export const shows: Show[] = [
-  {
-    id: "love-is-panacea",
-    title: "Love is Panacea",
-    episodeCount: 34,
-    isVip: true,
-    badge: "VIP",
-    genre: "Romance · Medical Drama",
-    year: 2023,
-    rating: 8.7,
-    description:
-      "When Gu Yunzheng, an associate professor of neurosurgery, goes on a medical aid mission in Lacaya, he meets Su Wei'an, a local doctor. United by their passion for medicine and a shared mission, their professional bond gradually blossoms into a deep and tender love. Together they face challenges that test their courage, conviction, and the strength of their connection.",
-    coverUrl:
-      "https://m.ykimg.com/0542010165434D4EF8E973F1F64B42A2",
-    thumbnailUrl:
-      "https://m.ykimg.com/05840000654A09E913EBC61B39CE297A" + BASE,
-    episodes: Array.from({ length: 34 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail: "https://m.ykimg.com/0542010165434D4EF8E973F1F64B42A2",
-      duration: "45:00",
-    })),
-  },
-  {
-    id: "princess-werewolf",
-    title: "The Princess and the Werewolf",
-    episodeCount: 24,
-    isVip: true,
-    badge: "VIP",
-    genre: "Fantasy · Romance",
-    year: 2023,
-    rating: 8.4,
-    description:
-      "A headstrong princess discovers the man she's been arranged to marry is hiding a powerful secret. As ancient prophecies unfold, they must choose between duty and destiny — and the love growing between them.",
-    coverUrl:
-      "https://m.ykimg.com/0584000064BA54931427220BD94687F1" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/0584000064BA54931427220BD94687F1" + BASE,
-    episodes: Array.from({ length: 24 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/0584000064BA54931427220BD94687F1" + BASE,
-      duration: "42:00",
-    })),
-  },
-  {
-    id: "everyone-loves-me",
-    title: "Everyone Loves Me",
-    episodeCount: 30,
-    isVip: true,
-    badge: "VIP",
-    genre: "Romance · Comedy",
-    year: 2024,
-    rating: 8.9,
-    description:
-      "A cheerful and optimistic young woman navigates the complexities of modern love when three very different men fall for her at the same time. A witty, heartwarming story about finding real connection in an age of endless choices.",
-    coverUrl:
-      "https://m.ykimg.com/0584000065E0849D2027901CB107BD2F" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/0584000065E0849D2027901CB107BD2F" + BASE,
-    episodes: Array.from({ length: 30 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/0584000065E0849D2027901CB107BD2F" + BASE,
-      duration: "44:00",
-    })),
-  },
-  {
-    id: "snow-moon",
-    title: "The Snow Moon",
-    episodeCount: 36,
-    isVip: true,
-    badge: "Exclusive",
-    genre: "Historical · Romance",
-    year: 2023,
-    rating: 8.6,
-    description:
-      "In a kingdom ruled by snow and silence, a young court musician falls for a general who has sworn to never love again. Their forbidden romance unfolds across battlefields and palace halls, where every moment together could be their last.",
-    coverUrl:
-      "https://m.ykimg.com/05840000636109B813EBC6095DF70CE8" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/05840000636109B813EBC6095DF70CE8" + BASE,
-    episodes: Array.from({ length: 36 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/05840000636109B813EBC6095DF70CE8" + BASE,
-      duration: "46:00",
-    })),
-  },
-  {
-    id: "back-from-brink",
-    title: "Back From The Brink",
-    episodeCount: 40,
-    isVip: false,
-    badge: "Express",
-    genre: "Fantasy · Adventure",
-    year: 2023,
-    rating: 9.1,
-    description:
-      "A young man inherits a forbidden power that marks him for death — until he is saved by a dragon in human form. Bound by fate and chased by enemies, they embark on a legendary journey that rewrites the laws of heaven and earth.",
-    coverUrl:
-      "https://m.ykimg.com/0584000062C7F2301FD8520912A229F2" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/0584000062C7F2301FD8520912A229F2" + BASE,
-    episodes: Array.from({ length: 40 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/0584000062C7F2301FD8520912A229F2" + BASE,
-      duration: "47:00",
-    })),
-  },
-  {
-    id: "my-destiny",
-    title: "My Destiny",
-    episodeCount: 28,
-    isVip: true,
-    badge: "VIP",
-    genre: "Romance · Drama",
-    year: 2024,
-    rating: 8.3,
-    description:
-      "Two strangers find themselves inexplicably drawn together by a series of seemingly coincidental meetings. As they slowly uncover the invisible threads that have linked their lives for years, they must decide if destiny is something to be followed — or rewritten.",
-    coverUrl:
-      "https://m.ykimg.com/0584000068D0C04513EFA312E2C35926" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/0584000068D0C04513EFA312E2C35926" + BASE,
-    episodes: Array.from({ length: 28 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/0584000068D0C04513EFA312E2C35926" + BASE,
-      duration: "43:00",
-    })),
-  },
-  {
-    id: "beyond-times-gaze",
-    title: "Beyond Time's Gaze",
-    episodeCount: 32,
-    isVip: true,
-    badge: "VIP",
-    genre: "Sci-Fi · Romance",
-    year: 2024,
-    rating: 8.8,
-    description:
-      "A historian with the ability to glimpse the past meets an enigmatic man who seems to exist outside of time. Their impossible love story spans centuries, forcing them to question what is real, what is memory, and whether love can survive across ages.",
-    coverUrl:
-      "https://m.ykimg.com/05840000677C8A4113FAB41397BDC48E" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/05840000677C8A4113FAB41397BDC48E" + BASE,
-    episodes: Array.from({ length: 32 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/05840000677C8A4113FAB41397BDC48E" + BASE,
-      duration: "44:00",
-    })),
-  },
-  {
-    id: "threads-of-fate",
-    title: "Threads of Fate",
-    episodeCount: 38,
-    isVip: true,
-    badge: "Exclusive",
-    genre: "Wuxia · Historical",
-    year: 2023,
-    rating: 8.5,
-    description:
-      "Set against the backdrop of a turbulent war era, a skilled female warrior and a mysterious strategist fight on opposite sides of a conflict — yet find themselves falling for each other. Their love is forged in fire and tested by war, sacrifice, and betrayal.",
-    coverUrl:
-      "https://m.ykimg.com/0584000064B7AC3C13EBC60C0FD4FC43" + BASE,
-    thumbnailUrl:
-      "https://m.ykimg.com/0584000064B7AC3C13EBC60C0FD4FC43" + BASE,
-    episodes: Array.from({ length: 38 }, (_, i) => ({
-      number: i + 1,
-      title: `Episode ${i + 1}`,
-      thumbnail:
-        "https://m.ykimg.com/0584000064B7AC3C13EBC60C0FD4FC43" + BASE,
-      duration: "46:00",
-    })),
-  },
+  { id: "love-is-panacea", title: "Love is Panacea", episodeCount: 34, badge: "VIP", genre: "Romance · Medical", year: 2023, rating: 8.7, thumbnailUrl: img(0), coverUrl: "https://m.ykimg.com/0542010165434D4EF8E973F1F64B42A2", description: "When Gu Yunzheng, an associate professor of neurosurgery, goes on a medical aid mission in Lacaya, he meets Su Wei'an, a local doctor. United by their passion for medicine and a shared mission, their professional bond gradually blossoms into a deep and tender love. Together they face challenges that test their courage, conviction, and the strength of their connection." },
+  { id: "princess-werewolf", title: "The Princess and the Werewolf", episodeCount: 24, badge: "VIP", genre: "Fantasy · Romance", year: 2023, rating: 8.4, thumbnailUrl: img(1), coverUrl: img(1), description: "A headstrong princess discovers the man she is arranged to marry is hiding a powerful secret. As ancient prophecies unfold, they must choose between duty and destiny — and the love growing between them." },
+  { id: "everyone-loves-me", title: "Everyone Loves Me", episodeCount: 30, badge: "VIP", genre: "Romance · Comedy", year: 2024, rating: 8.9, thumbnailUrl: img(2), coverUrl: img(2), description: "A cheerful and optimistic young woman navigates the complexities of modern love when three very different men fall for her at the same time. A witty, heartwarming story about finding real connection in an age of endless choices." },
+  { id: "lighter-princess", title: "Lighter & Princess", episodeCount: 36, badge: "VIP", genre: "Romance · Campus", year: 2022, rating: 8.3, thumbnailUrl: img(3), coverUrl: img(3), description: "A campus romance between a rebellious programmer and a dedicated student blooms against the backdrop of university life, late-night coding, and dreams that push them beyond their comfort zones." },
+  { id: "immortal-samsara", title: "Immortal Samsara", episodeCount: 40, badge: "VIP", genre: "Xianxia · Romance", year: 2022, rating: 9.0, thumbnailUrl: img(4), coverUrl: img(4), description: "An immortal god and a mortal woman are bound by love across multiple lifetimes. Each reincarnation tests whether their souls will find each other again — and whether love can truly transcend fate and death." },
+  { id: "love-conspiracy", title: "Love Conspiracy", episodeCount: 28, badge: "VIP", genre: "Romance · Thriller", year: 2023, rating: 8.2, thumbnailUrl: img(5), coverUrl: img(5), description: "A woman caught in a dangerous web of corporate intrigue finds herself falling for the very man sent to spy on her. As lies unravel and feelings deepen, they must decide who to trust — and whether love can survive betrayal." },
+  { id: "she-rides-the-wind", title: "SHE RIDES THE WIND", episodeCount: 32, badge: "VIP", genre: "Wuxia · Action", year: 2022, rating: 8.6, thumbnailUrl: img(6), coverUrl: img(6), description: "A fearless young woman forges her own path in a world of martial arts and ancient rivalries. She rides the wind — literally and figuratively — as she fights for justice and discovers the truth about her origins." },
+  { id: "the-gods", title: "The Gods", episodeCount: 38, badge: "none", genre: "Fantasy · Historical", year: 2023, rating: 8.1, thumbnailUrl: img(7), coverUrl: img(7), description: "In an age when gods and mortals coexisted, one young deity defies heaven's laws to protect those he loves. His journey reshapes the divine world and rewrites the destiny of all who follow him." },
+  { id: "unveil-jadewind", title: "Unveil: Jadewind", episodeCount: 22, badge: "VIP", genre: "Mystery · Historical", year: 2024, rating: 8.5, thumbnailUrl: img(0), coverUrl: img(0), description: "A young female investigator uses her wits and courage to unravel a series of ancient mysteries tied to a legendary jade artifact. Every clue leads closer to a truth that could change everything." },
+  { id: "hidden-love", title: "Hidden Love", episodeCount: 25, badge: "VIP", genre: "Romance · Campus", year: 2023, rating: 9.1, thumbnailUrl: img(1), coverUrl: img(1), description: "A girl has secretly admired her older brother's best friend for years. When they're suddenly thrown together as adults, the feelings she has hidden for so long begin to surface — and she discovers they were never as one-sided as she thought." },
+  { id: "snow-moon", title: "The Snow Moon", episodeCount: 36, badge: "VIP", genre: "Historical · Romance", year: 2023, rating: 8.6, thumbnailUrl: img(2), coverUrl: img(2), description: "In a kingdom ruled by snow and silence, a young court musician falls for a general who has sworn never to love again. Their forbidden romance unfolds across battlefields and palace halls." },
+  { id: "my-destiny", title: "My Destiny", episodeCount: 28, badge: "Express", genre: "Romance · Drama", year: 2024, rating: 8.3, thumbnailUrl: img(3), coverUrl: img(3), description: "Two strangers find themselves inexplicably drawn together by a series of seemingly coincidental meetings. As they uncover the invisible threads linking their lives for years, they must decide if destiny is to be followed — or rewritten." },
+  { id: "affinity", title: "Affinity", episodeCount: 30, badge: "VIP", genre: "Romance · Period", year: 2023, rating: 8.0, thumbnailUrl: img(4), coverUrl: img(4), description: "Brought together by an ancient bond neither of them can explain, two souls navigate duty, tradition, and unexpected love in a sweeping period drama." },
+  { id: "demon-hunter", title: "The Demon Hunter", episodeCount: 42, badge: "VIP", genre: "Fantasy · Action", year: 2022, rating: 8.7, thumbnailUrl: img(5), coverUrl: img(5), description: "A legendary hunter of darkness is himself consumed by shadows. On his journey to reclaim his humanity, he discovers that the line between demon and hero is thinner than anyone imagined." },
+  { id: "love-in-clouds", title: "Love in The Clouds", episodeCount: 26, badge: "VIP", genre: "Romance · Modern", year: 2024, rating: 8.1, thumbnailUrl: img(6), coverUrl: img(6), description: "High above the city, two lonely hearts find unexpected company. A story of modern love, second chances, and the courage it takes to let someone in." },
+  { id: "first-frost", title: "The First Frost", episodeCount: 34, badge: "VIP", genre: "Romance · Drama", year: 2023, rating: 8.4, thumbnailUrl: img(7), coverUrl: img(7), description: "After a devastating heartbreak, a celebrated chef retreats to a remote mountain village — and finds herself thawing again in the presence of a quiet, steady man who asks for nothing but her time." },
+  { id: "princess-royal", title: "The Princess Royal", episodeCount: 36, badge: "VIP", genre: "Historical · Drama", year: 2023, rating: 8.8, thumbnailUrl: img(0), coverUrl: img(0), description: "A princess raised in isolation must navigate the treacherous politics of court life when she is forced to take her place in the royal family. She discovers that the palace is a battlefield — and she was born to win." },
+  { id: "wrong-carriage", title: "Wrong Carriage Right Groom", episodeCount: 24, badge: "VIP", genre: "Romance · Historical", year: 2023, rating: 8.6, thumbnailUrl: img(1), coverUrl: img(1), description: "A case of mistaken identity leads to an unexpected marriage — and an even more unexpected love. In imperial China, two strangers are thrown together by fate, and neither of them is quite what they seem." },
+  { id: "im-nobody", title: "I'm Nobody", episodeCount: 28, badge: "VIP", genre: "Xianxia · Romance", year: 2024, rating: 8.2, thumbnailUrl: img(2), coverUrl: img(2), description: "A spirit with no memory of her past must earn her place among the immortals. Along the way, she forms an unlikely bond with a cold-hearted deity — one who slowly remembers that he once loved her deeply." },
+  { id: "fly-towards-you", title: "When I Fly Towards You", episodeCount: 26, badge: "VIP", genre: "Romance · Campus", year: 2023, rating: 8.9, thumbnailUrl: img(3), coverUrl: img(3), description: "A high school romance blossoms between a driven basketball player and a quirky, artistic girl. Simple days, unforgettable feelings, and the bittersweet truth that first love leaves the deepest marks." },
+  { id: "seven-relics", title: "The Seven Relics of Ill Omen", episodeCount: 38, badge: "VIP", genre: "Mystery · Fantasy", year: 2023, rating: 8.3, thumbnailUrl: img(4), coverUrl: img(4), description: "Seven cursed artifacts. Seven terrible fates. One young woman determined to break the cycle. A dark fantasy epic about power, sacrifice, and the cost of saving the world." },
+  { id: "dear-mr-recluse", title: "Dear Mr. Recluse", episodeCount: 24, badge: "VIP", genre: "Romance · Modern", year: 2024, rating: 8.5, thumbnailUrl: img(5), coverUrl: img(5), description: "She writes him letters every day, never expecting a reply. He reads every one, never expecting to fall in love. A modern epistolary romance about two people who find each other one word at a time." },
+  { id: "way-home", title: "The Way Home", episodeCount: 32, badge: "VIP", genre: "Drama · Family", year: 2023, rating: 8.7, thumbnailUrl: img(6), coverUrl: img(6), description: "A woman returns to her childhood village after years in the city and rediscovers the family, friendships, and memories she left behind — including the man she never stopped thinking about." },
+  { id: "sweet-dreams", title: "Sweet Dreams", episodeCount: 30, badge: "VIP", genre: "Romance · Fantasy", year: 2022, rating: 8.4, thumbnailUrl: img(7), coverUrl: img(7), description: "A dream-walking sorceress and a rational, skeptical scientist are paired together to solve mysteries that exist between waking and sleep. The deeper they go, the harder it becomes to tell what is real — including their feelings." },
+  { id: "south-wind-knows", title: "South Wind Knows", episodeCount: 36, badge: "Express", genre: "Historical · Romance", year: 2023, rating: 8.6, thumbnailUrl: img(0), coverUrl: img(0), description: "Set in a prosperous dynasty, a renowned female merchant and a brilliant military strategist are caught between ambition and affection. Their rivalry becomes partnership, and their partnership becomes love." },
+  { id: "two-souls", title: "Two Souls in One", episodeCount: 28, badge: "VIP", genre: "Fantasy · Romance", year: 2023, rating: 8.1, thumbnailUrl: img(1), coverUrl: img(1), description: "When two opposing souls share one body, they must learn to coexist — and along the way, they discover that the differences between them are exactly what makes them complete." },
+  { id: "royal-nirvana", title: "Royal Nirvana", episodeCount: 48, badge: "VIP", genre: "Historical · Political", year: 2020, rating: 9.2, thumbnailUrl: img(2), coverUrl: img(2), description: "A crown prince who has been passed over for power bides his time with patience and intelligence, determined to reclaim his rightful place. A sweeping saga of ambition, loyalty, and the price of the throne." },
+  { id: "immortal-ascension", title: "The Immortal Ascension", episodeCount: 40, badge: "VIP", genre: "Xianxia · Adventure", year: 2023, rating: 8.4, thumbnailUrl: img(3), coverUrl: img(3), description: "A mortal cultivator begins the impossible climb to immortality. Each stage of ascension strips away what he thought he knew — about power, about love, and about who he truly is." },
+  { id: "generals-lady", title: "General's Lady", episodeCount: 32, badge: "VIP", genre: "Historical · Romance", year: 2021, rating: 8.8, thumbnailUrl: img(4), coverUrl: img(4), description: "A free-spirited woman is betrothed to a stoic general known for his cold demeanor on the battlefield. Behind closed palace doors, she discovers that the man is anything but cold — and far more fascinating than she expected." },
+  { id: "different-princess", title: "Different Princess", episodeCount: 26, badge: "VIP", genre: "Romance · Historical", year: 2022, rating: 8.2, thumbnailUrl: img(5), coverUrl: img(5), description: "Born without the grace and refinement expected of royalty, a spirited princess defies convention and wins the admiration of the kingdom — and the heart of a man who had long since given up on love." },
+  { id: "love-better-immortality", title: "Love Better Than Immortality", episodeCount: 44, badge: "VIP", genre: "Xianxia · Romance", year: 2019, rating: 8.3, thumbnailUrl: img(6), coverUrl: img(6), description: "In a world where immortals and humans are forbidden to love, one mortal girl dares to chase an immortal across realms. Her unwavering heart reshapes the laws of heaven itself." },
+  { id: "shining-just-for-you", title: "Shining Just for You", episodeCount: 24, badge: "VIP", genre: "Romance · Sports", year: 2022, rating: 8.0, thumbnailUrl: img(7), coverUrl: img(7), description: "A young athlete rediscovers her passion for skating with the help of a coach who sees potential in her that she has long stopped seeing in herself. A story about resilience, dreams, and love that cheers you on." },
+  { id: "story-of-pearl-girl", title: "The Story of Pearl Girl", episodeCount: 36, badge: "VIP", genre: "Historical · Drama", year: 2023, rating: 8.5, thumbnailUrl: img(0), coverUrl: img(0), description: "The remarkable life story of a pearl merchant's daughter who rises from humble origins to become one of the most influential women of her era, navigating betrayal, ambition, and a love that endures through it all." },
 ];
 
 export const bannerShows = shows.slice(0, 6);
-export const trendingShows = shows;
-export const dramaShows = shows.filter((s) =>
-  s.genre.toLowerCase().includes("romance")
-);
-export const movieShows = shows.filter((s) =>
-  s.genre.toLowerCase().includes("fantasy") ||
-  s.genre.toLowerCase().includes("historical")
-);
+export const trendingShows = shows.slice(0, 20);

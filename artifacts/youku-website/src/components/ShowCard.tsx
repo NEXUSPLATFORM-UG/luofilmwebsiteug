@@ -1,48 +1,117 @@
 import { Link } from "wouter";
 import type { Show } from "../data/shows";
 
-interface ShowCardProps {
-  show: Show;
-  size?: "sm" | "md" | "lg";
-}
-
-const badgeColors: Record<string, string> = {
-  VIP: "bg-gradient-to-r from-yellow-600 to-yellow-400 text-black",
-  Exclusive: "bg-gradient-to-r from-blue-600 to-blue-400 text-white",
-  Express: "bg-gradient-to-r from-red-600 to-red-400 text-white",
+const BADGE_STYLES: Record<string, { background: string; color: string; label: string }> = {
+  VIP: {
+    background: "linear-gradient(45deg,#ffc552,#ffdd9a)",
+    color: "#4e2d03",
+    label: "VIP",
+  },
+  Express: {
+    background: "linear-gradient(45deg,#00a3f5,#00c9fd)",
+    color: "#fff",
+    label: "Express",
+  },
+  Exclusive: {
+    background: "linear-gradient(45deg,#8819ff,#ad61ff)",
+    color: "#fff",
+    label: "Exclusive",
+  },
 };
 
-export default function ShowCard({ show, size = "md" }: ShowCardProps) {
+interface ShowCardProps {
+  show: Show;
+}
+
+export default function ShowCard({ show }: ShowCardProps) {
+  const badge = show.badge !== "none" ? BADGE_STYLES[show.badge] : null;
+
   return (
     <Link href={`/play/${show.id}`}>
-      <div className="group relative cursor-pointer rounded-lg overflow-hidden bg-gray-900 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-black/60 hover:z-10">
-        <div className="relative overflow-hidden" style={{ aspectRatio: "2/3" }}>
+      <div className="pack-card group cursor-pointer">
+        <div
+          className="pack-cover"
+          style={{
+            position: "relative",
+            paddingTop: "133.33%",
+            borderRadius: 10,
+            background: "#25252b",
+            overflow: "hidden",
+          }}
+        >
           <img
             src={show.thumbnailUrl}
             alt={show.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transition: "transform 0.4s ease",
+            }}
+            className="group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {show.badge && (
-            <div className={`absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded ${badgeColors[show.badge]}`}>
-              {show.badge}
-            </div>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: "100%",
+              height: 50,
+              backgroundImage:
+                "linear-gradient(180deg,transparent,rgba(0,0,0,.35) 60%,rgba(0,0,0,.55))",
+              borderRadius: "0 0 4px 4px",
+              zIndex: 10,
+            }}
+          />
+          {badge && (
+            <span
+              style={{
+                position: "absolute",
+                right: 0,
+                top: 0,
+                zIndex: 15,
+                height: 18,
+                lineHeight: "18px",
+                padding: "1px 6px",
+                borderRadius: "0 10px 0 10px",
+                background: badge.background,
+                color: badge.color,
+                fontSize: 12,
+                fontWeight: 700,
+                display: "block",
+              }}
+            >
+              {badge.label}
+            </span>
           )}
-
-          <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-            <button className="w-full py-1.5 rounded-md bg-white/90 hover:bg-white text-black text-xs font-semibold transition-colors">
-              ▶ Play Now
-            </button>
-          </div>
         </div>
-
-        <div className="p-2 pb-3">
-          <h3 className="text-white text-sm font-medium leading-tight line-clamp-1 group-hover:text-yellow-300 transition-colors">
+        <div
+          style={{
+            paddingTop: 9,
+            color: "rgba(255,255,255,0.87)",
+            overflow: "hidden",
+            maxHeight: 44,
+          }}
+        >
+          <div
+            style={{
+              color: "#fff",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              fontSize: 14,
+              fontWeight: 500,
+              lineHeight: "22px",
+            }}
+            className="group-hover:text-[#00a9f5] transition-colors"
+            title={show.title}
+          >
             {show.title}
-          </h3>
-          <p className="text-gray-500 text-xs mt-0.5 line-clamp-1">{show.genre}</p>
+          </div>
         </div>
       </div>
     </Link>
