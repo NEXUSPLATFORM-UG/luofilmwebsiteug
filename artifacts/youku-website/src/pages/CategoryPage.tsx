@@ -137,7 +137,6 @@ export default function CategoryPage({ genre, title, description: _description }
   }
 
   const featured = shows[0];
-  const rest = shows.slice(1);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
@@ -151,7 +150,7 @@ export default function CategoryPage({ genre, title, description: _description }
             </div>
             <Link href={`/play/${featured.id}`}>
               <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", cursor: "pointer", height: 280, background: "#1a1a1a" }}>
-                <img src={featured.coverUrl} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
+                <img src={featured.coverUrl || featured.thumbnailUrl} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.85) 40%, transparent)" }} />
                 <div style={{ position: "absolute", bottom: 28, left: 28, maxWidth: 480 }}>
                   {featured.badge !== "none" && (
@@ -188,7 +187,7 @@ export default function CategoryPage({ genre, title, description: _description }
             <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{shows.length} TITLES</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(136px, 1fr))", gap: 10 }}>
-            {rest.map((show) => <ShowCard key={show.id} show={show} />)}
+            {shows.map((show) => <ShowCard key={show.id} show={show} />)}
           </div>
         </div>
       </div>
