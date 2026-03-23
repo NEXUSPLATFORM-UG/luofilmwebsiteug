@@ -123,7 +123,7 @@ function ShowCard({ show }: { show: Show }) {
               textOverflow: "ellipsis",
             }}
           >
-            {show.episodeCount} EPS · {show.genre.split(" · ")[0].toUpperCase()}
+            {show.type === "series" ? `${show.episodeCount} EPS · ` : "MOVIE · "}{show.genre.split(" · ")[0].toUpperCase()}
           </div>
         </div>
       </div>
@@ -245,7 +245,7 @@ export default function CategoryPage({ genre, title, description: _description }
                     </span>
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
-                      {featured.episodeCount} EPS
+                      {featured.type === "series" ? `${featured.episodeCount} EPS` : "Movie"}
                     </span>
                   </div>
                   <p

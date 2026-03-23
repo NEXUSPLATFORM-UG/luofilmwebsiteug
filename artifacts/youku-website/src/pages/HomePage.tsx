@@ -429,7 +429,7 @@ function SideShowCard({ show }: { show: Show }) {
             {show.title}
           </div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
-            {show.episodeCount} EPS
+            {show.type === "series" ? `${show.episodeCount} EPS` : "Movie"}
           </div>
         </div>
       </div>
@@ -487,7 +487,7 @@ function MiniShowCard({ show }: { show: Show }) {
             {show.title}
           </div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-            {show.genre} · {show.episodeCount} EPS
+            {show.genre} · {show.type === "series" ? `${show.episodeCount} EPS` : "Movie"}
           </div>
         </div>
         {show.badge && show.badge !== "none" && (
@@ -735,7 +735,7 @@ function ContentCard({ show, rank }: { show: Show; rank: number }) {
               textOverflow: "ellipsis",
             }}
           >
-            {show.episodeCount} EPS · {show.genre.split(" · ")[0].toUpperCase()}
+            {show.type === "series" ? `${show.episodeCount} EPS · ` : "MOVIE · "}{show.genre.split(" · ")[0].toUpperCase()}
           </div>
         </div>
       </div>

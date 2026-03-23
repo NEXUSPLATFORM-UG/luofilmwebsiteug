@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, Link } from "wouter";
 import {
   Play,
-  ChevronLeft,
   Star,
   Share2,
   Heart,
@@ -13,6 +12,8 @@ import {
   SkipForward,
   ThumbsUp,
   MessageSquare,
+  Check,
+  Film,
 } from "lucide-react";
 import { shows } from "../data/shows";
 
@@ -20,10 +21,18 @@ export default function PlayPage() {
   const params = useParams<{ id: string }>();
   const show = shows.find((s) => s.id === params.id) || shows[0];
 
+  const isSeries = show.type === "series";
+
   const [currentEp, setCurrentEp] = useState(1);
   const [epPage, setEpPage] = useState(0);
-  const [activeTab, setActiveTab] = useState<"EPISODES" | "RECOMMENDED" | "SYNOPSIS">("EPISODES");
+  const [activeTab, setActiveTab] = useState<"EPISODES" | "RECOMMENDED" | "SYNOPSIS">(
+    isSeries ? "EPISODES" : "RECOMMENDED"
+  );
   const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [shared, setShared] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [subtitlesOn, setSubtitlesOn] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoverPlayer, setHoverPlayer] = useState(false);
 
@@ -34,6 +43,10 @@ export default function PlayPage() {
   const related = shows.filter((s) => s.id !== show.id).slice(0, 8);
 
   const isVip = show.badge === "VIP";
+
+  const tabs = isSeries
+    ? (["EPISODES", "RECOMMENDED", "SYNOPSIS"] as const)
+    : (["RECOMMENDED", "SYNOPSIS"] as const);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
@@ -139,9 +152,11 @@ export default function PlayPage() {
                   <p style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>
                     {show.title}
                   </p>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
-                    EPISODE {currentEp}
-                  </p>
+                  {isSeries && (
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
+                      EPISODE {currentEp}
+                    </p>
+                  )}
                 </div>
                 {isVip && (
                   <div
@@ -203,28 +218,32 @@ export default function PlayPage() {
                   <CtrlBtn onClick={() => setIsPlaying(!isPlaying)}>
                     <Play size={16} fill="white" color="white" />
                   </CtrlBtn>
-                  <CtrlBtn>
-                    <SkipForward size={16} />
-                  </CtrlBtn>
+                  {isSeries && (
+                    <CtrlBtn>
+                      <SkipForward size={16} />
+                    </CtrlBtn>
+                  )}
                   <CtrlBtn>
                     <Volume2 size={16} />
                   </CtrlBtn>
                   <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
-                    00:00 / 45:00
+                    00:00 / {isSeries ? "45:00" : "1:52:00"}
                   </span>
-                  <button
-                    style={{
-                      fontSize: 11,
-                      color: "rgba(255,255,255,0.7)",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "none",
-                      borderRadius: 3,
-                      padding: "2px 8px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    NEXT EP
-                  </button>
+                  {isSeries && (
+                    <button
+                      style={{
+                        fontSize: 11,
+                        color: "rgba(255,255,255,0.7)",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "none",
+                        borderRadius: 3,
+                        padding: "2px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      NEXT EP
+                    </button>
+                  )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <button
@@ -240,19 +259,21 @@ export default function PlayPage() {
                   >
                     SPEED
                   </button>
-                  <button
-                    style={{
-                      fontSize: 11,
-                      color: "rgba(255,255,255,0.7)",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "none",
-                      borderRadius: 3,
-                      padding: "2px 8px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    EPISODES
-                  </button>
+                  {isSeries && (
+                    <button
+                      style={{
+                        fontSize: 11,
+                        color: "rgba(255,255,255,0.7)",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "none",
+                        borderRadius: 3,
+                        padding: "2px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      EPISODES
+                    </button>
+                  )}
                   <CtrlBtn>
                     <Settings size={14} />
                   </CtrlBtn>
@@ -291,6 +312,24 @@ export default function PlayPage() {
                       VIP
                     </span>
                   )}
+                  {!isSeries && (
+                    <span
+                      style={{
+                        padding: "1px 8px",
+                        borderRadius: 2,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        background: "rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.7)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                    >
+                      <Film size={10} />
+                      MOVIE
+                    </span>
+                  )}
                   <h1 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
                     {show.title}
                   </h1>
@@ -314,10 +353,14 @@ export default function PlayPage() {
                   <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
                     {show.year}
                   </span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
-                    {show.episodeCount} EPS
-                  </span>
+                  {isSeries && (
+                    <>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
+                        {show.episodeCount} EPS
+                      </span>
+                    </>
+                  )}
                   <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
                   {show.genre.split(" · ").map((g) => (
                     <span
@@ -343,20 +386,33 @@ export default function PlayPage() {
                   onClick={() => setLiked(!liked)}
                 />
                 <ActionBtn
-                  icon={<Heart size={15} color="rgba(255,255,255,0.6)" />}
-                  label="SAVE"
+                  icon={<Heart size={15} fill={saved ? "#ff4d6d" : "none"} color={saved ? "#ff4d6d" : "rgba(255,255,255,0.6)"} />}
+                  label={saved ? "SAVED" : "SAVE"}
+                  active={saved}
+                  activeColor="#ff4d6d"
+                  onClick={() => setSaved(!saved)}
                 />
                 <ActionBtn
-                  icon={<Share2 size={15} color="rgba(255,255,255,0.6)" />}
-                  label="SHARE"
+                  icon={<Share2 size={15} color={shared ? "#00a9f5" : "rgba(255,255,255,0.6)"} />}
+                  label={shared ? "SHARED" : "SHARE"}
+                  active={shared}
+                  onClick={() => setShared(!shared)}
                 />
                 <ActionBtn
-                  icon={<Download size={15} color="rgba(255,255,255,0.6)" />}
-                  label="DOWNLOAD"
+                  icon={<Download size={15} color={downloaded ? "#00a9f5" : "rgba(255,255,255,0.6)"} />}
+                  label={downloaded ? "SAVED" : "DOWNLOAD"}
+                  active={downloaded}
+                  onClick={() => setDownloaded(!downloaded)}
                 />
                 <ActionBtn
-                  icon={<MessageSquare size={15} color="rgba(255,255,255,0.6)" />}
-                  label="SUBTITLES"
+                  icon={
+                    subtitlesOn
+                      ? <Check size={15} color="#00a9f5" />
+                      : <MessageSquare size={15} color="rgba(255,255,255,0.6)" />
+                  }
+                  label={subtitlesOn ? "SUB ON" : "SUBTITLES"}
+                  active={subtitlesOn}
+                  onClick={() => setSubtitlesOn(!subtitlesOn)}
                 />
               </div>
             </div>
@@ -371,7 +427,7 @@ export default function PlayPage() {
                 gap: 0,
               }}
             >
-              {(["EPISODES", "RECOMMENDED", "SYNOPSIS"] as const).map((tab) => (
+              {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -394,7 +450,7 @@ export default function PlayPage() {
             </div>
 
             <div style={{ marginTop: 14 }}>
-              {activeTab === "EPISODES" && (
+              {activeTab === "EPISODES" && isSeries && (
                 <div>
                   {/* Episode range selectors */}
                   {totalPages > 1 && (
@@ -504,13 +560,14 @@ export default function PlayPage() {
                       </h2>
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {[
+                          ["TYPE", isSeries ? "Series" : "Movie"],
                           ["GENRE", show.genre],
                           ["YEAR", String(show.year)],
-                          ["EPISODES", `${show.episodeCount} EPS`],
+                          ...(isSeries ? [["EPISODES", `${show.episodeCount} EPS`]] : []),
                           ["RATING", String(show.rating)],
                         ].map(([k, v]) => (
                           <div key={k} style={{ display: "flex", gap: 10, fontSize: 13 }}>
-                            <span style={{ color: "rgba(255,255,255,0.35)", width: 60 }}>{k}</span>
+                            <span style={{ color: "rgba(255,255,255,0.35)", width: 70 }}>{k}</span>
                             <span style={{ color: "rgba(255,255,255,0.75)" }}>{v}</span>
                           </div>
                         ))}
@@ -581,6 +638,26 @@ export default function PlayPage() {
                               {s.badge}
                             </span>
                           )}
+                          {s.type === "movie" && (
+                            <span
+                              style={{
+                                position: "absolute",
+                                bottom: 4,
+                                left: 4,
+                                fontSize: 10,
+                                fontWeight: 600,
+                                padding: "1px 5px",
+                                borderRadius: 3,
+                                background: "rgba(0,0,0,0.7)",
+                                color: "rgba(255,255,255,0.8)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 3,
+                              }}
+                            >
+                              MOVIE
+                            </span>
+                          )}
                         </div>
                         <div
                           style={{
@@ -601,7 +678,7 @@ export default function PlayPage() {
                             marginTop: 2,
                           }}
                         >
-                          {s.episodeCount} EPS
+                          {s.type === "series" ? `${s.episodeCount} EPS` : "Movie"}
                         </div>
                       </div>
                     </Link>
@@ -670,9 +747,16 @@ export default function PlayPage() {
                     <span style={{ fontSize: 12, color: "#ffc552", fontWeight: 600 }}>
                       {show.rating}
                     </span>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-                      · {show.episodeCount} EPS
-                    </span>
+                    {isSeries && (
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                        · {show.episodeCount} EPS
+                      </span>
+                    )}
+                    {!isSeries && (
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                        · Movie
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -809,7 +893,7 @@ export default function PlayPage() {
                             marginTop: 2,
                           }}
                         >
-                          {s.episodeCount} EPS
+                          {s.type === "series" ? `${s.episodeCount} EPS` : "Movie"}
                         </div>
                         <div
                           style={{
@@ -859,11 +943,13 @@ function ActionBtn({
   icon,
   label,
   active,
+  activeColor,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
+  activeColor?: string;
   onClick?: () => void;
 }) {
   return (
@@ -884,7 +970,7 @@ function ActionBtn({
       <span
         style={{
           fontSize: 10,
-          color: active ? "#00a9f5" : "rgba(255,255,255,0.45)",
+          color: active ? (activeColor || "#00a9f5") : "rgba(255,255,255,0.45)",
         }}
       >
         {label}
