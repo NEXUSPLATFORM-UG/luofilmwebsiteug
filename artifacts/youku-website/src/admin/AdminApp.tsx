@@ -13,15 +13,19 @@ import ActivitiesManager from "./ActivitiesManager";
 import Settings from "./Settings";
 import { useAuth } from "../contexts/AuthContext";
 
+const ADMIN_EMAILS = ["mainplatform.nexus@gmail.com"];
+
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const [, navigate] = useLocation();
 
+  const isAdmin = !!user && ADMIN_EMAILS.includes(user.email || "");
+
   useEffect(() => {
-    if (!loading && (!user || (user as any).role !== "admin")) {
+    if (!loading && !isAdmin) {
       navigate("/");
     }
-  }, [user, loading, navigate]);
+  }, [isAdmin, loading, navigate]);
 
   if (loading) {
     return (
@@ -31,7 +35,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user || (user as any).role !== "admin") {
+  if (!isAdmin) {
     return (
       <div style={{ minHeight: "100vh", background: "#0d0d16", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
         <div style={{ color: "#f87171", fontSize: 16, fontWeight: 600 }}>Access Denied</div>
