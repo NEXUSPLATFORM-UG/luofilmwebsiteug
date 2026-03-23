@@ -508,30 +508,31 @@ export default function Header() {
                 display: "flex",
                 alignItems: "center",
                 gap: 7,
-                padding: "0 14px",
+                padding: "0 16px",
                 height: 32,
                 borderRadius: 16,
-                background: "rgba(0,169,245,0.12)",
-                border: "1px solid rgba(0,169,245,0.35)",
-                color: "#00a9f5",
-                fontSize: 13,
-                fontWeight: 600,
+                background: "linear-gradient(135deg, #c0c0c0 0%, #d4af37 40%, #f5e27a 55%, #d4af37 70%, #a87c20 100%)",
+                border: "none",
+                color: "#1a1200",
+                fontSize: 12,
+                fontWeight: 800,
                 cursor: "pointer",
                 flexShrink: 0,
-                letterSpacing: "0.04em",
-                transition: "all 0.2s",
+                letterSpacing: "0.08em",
+                transition: "filter 0.2s, box-shadow 0.2s",
                 marginLeft: 4,
+                boxShadow: "0 2px 10px rgba(212,175,55,0.35)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(0,169,245,0.22)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.6)";
+                (e.currentTarget as HTMLElement).style.filter = "brightness(1.12)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 18px rgba(212,175,55,0.55)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(0,169,245,0.12)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,169,245,0.35)";
+                (e.currentTarget as HTMLElement).style.filter = "brightness(1)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 10px rgba(212,175,55,0.35)";
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
