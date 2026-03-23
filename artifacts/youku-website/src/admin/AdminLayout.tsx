@@ -152,7 +152,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             fontSize: 13, fontWeight: 700
           }}>A</div>
         </div>
-        <div style={S.content}>
+        <style>{`
+          .admin-content select,
+          .admin-content select option {
+            background-color: #1a1a2e !important;
+            color: #e2e8f0 !important;
+          }
+          .admin-content select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 10px center !important;
+            padding-right: 32px !important;
+            cursor: pointer;
+          }
+          .admin-content select:focus {
+            outline: none;
+            border-color: rgba(99,102,241,0.6) !important;
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+          }
+          .admin-content select option:hover,
+          .admin-content select option:checked {
+            background-color: #2d2d4e !important;
+            color: #a5b4fc !important;
+          }
+        `}</style>
+        <div className="admin-content" style={S.content}>
           {children}
         </div>
       </div>
