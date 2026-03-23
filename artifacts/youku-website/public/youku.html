@@ -11273,5 +11273,30 @@
                 <script crossorigin='true' src='https://g.alicdn.com/AWSC/AWSC/awsc.js'></script>
                 <script crossorigin='true' src='//g.alicdn.com/kplayer/index-player/0.0.19/index.js'></script>
             </div>
+        <script>
+            (function () {
+                document.addEventListener('click', function (e) {
+                    var target = e.target;
+                    while (target && target !== document) {
+                        var cls = target.className || '';
+                        if (
+                            cls.indexOf('intswiper_img_box') !== -1 ||
+                            cls.indexOf('pack_pack_cover') !== -1 ||
+                            (target.tagName === 'A' && target.closest && (
+                                target.closest('.pack_pack_cover') ||
+                                target.closest('.pack_title') ||
+                                target.closest('.intswiper_sub_item_box')
+                            ))
+                        ) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = '/play.html';
+                            return;
+                        }
+                        target = target.parentElement;
+                    }
+                }, true);
+            })();
+        </script>
         </body>
     </html>
