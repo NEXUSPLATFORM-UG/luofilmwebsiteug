@@ -22,7 +22,7 @@ export default function PlayPage() {
 
   const [currentEp, setCurrentEp] = useState(1);
   const [epPage, setEpPage] = useState(0);
-  const [activeTab, setActiveTab] = useState<"选集" | "推荐" | "简介">("选集");
+  const [activeTab, setActiveTab] = useState<"EPISODES" | "RECOMMENDED" | "SYNOPSIS">("EPISODES");
   const [liked, setLiked] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoverPlayer, setHoverPlayer] = useState(false);
@@ -53,7 +53,7 @@ export default function PlayPage() {
         }}
       >
         <Link href="/">
-          <span style={{ cursor: "pointer", color: "rgba(255,255,255,0.35)" }}>首页</span>
+          <span style={{ cursor: "pointer", color: "rgba(255,255,255,0.35)" }}>HOME</span>
         </Link>
         <span>&gt;</span>
         <span style={{ color: "rgba(255,255,255,0.5)" }}>{show.genre.split(" · ")[0]}</span>
@@ -140,7 +140,7 @@ export default function PlayPage() {
                     {show.title}
                   </p>
                   <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
-                    第{currentEp}集
+                    EPISODE {currentEp}
                   </p>
                 </div>
                 {isVip && (
@@ -154,7 +154,7 @@ export default function PlayPage() {
                       fontWeight: 700,
                     }}
                   >
-                    ★ VIP 专享内容
+                    ★ VIP EXCLUSIVE
                   </div>
                 )}
               </div>
@@ -223,7 +223,7 @@ export default function PlayPage() {
                       cursor: "pointer",
                     }}
                   >
-                    下一集
+                    NEXT EP
                   </button>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -238,7 +238,7 @@ export default function PlayPage() {
                       cursor: "pointer",
                     }}
                   >
-                    倍速
+                    SPEED
                   </button>
                   <button
                     style={{
@@ -251,7 +251,7 @@ export default function PlayPage() {
                       cursor: "pointer",
                     }}
                   >
-                    选集
+                    EPISODES
                   </button>
                   <CtrlBtn>
                     <Settings size={14} />
@@ -316,7 +316,7 @@ export default function PlayPage() {
                   </span>
                   <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
                   <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
-                    共{show.episodeCount}集
+                    {show.episodeCount} EPS
                   </span>
                   <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>|</span>
                   {show.genre.split(" · ").map((g) => (
@@ -338,25 +338,25 @@ export default function PlayPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <ActionBtn
                   icon={<ThumbsUp size={15} fill={liked ? "#00a9f5" : "none"} color={liked ? "#00a9f5" : "rgba(255,255,255,0.6)"} />}
-                  label={liked ? "已点赞" : "点赞"}
+                  label={liked ? "LIKED" : "LIKE"}
                   active={liked}
                   onClick={() => setLiked(!liked)}
                 />
                 <ActionBtn
                   icon={<Heart size={15} color="rgba(255,255,255,0.6)" />}
-                  label="收藏"
+                  label="SAVE"
                 />
                 <ActionBtn
                   icon={<Share2 size={15} color="rgba(255,255,255,0.6)" />}
-                  label="分享"
+                  label="SHARE"
                 />
                 <ActionBtn
                   icon={<Download size={15} color="rgba(255,255,255,0.6)" />}
-                  label="下载"
+                  label="DOWNLOAD"
                 />
                 <ActionBtn
                   icon={<MessageSquare size={15} color="rgba(255,255,255,0.6)" />}
-                  label="弹幕"
+                  label="SUBTITLES"
                 />
               </div>
             </div>
@@ -371,7 +371,7 @@ export default function PlayPage() {
                 gap: 0,
               }}
             >
-              {(["选集", "推荐", "简介"] as const).map((tab) => (
+              {(["EPISODES", "RECOMMENDED", "SYNOPSIS"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -394,7 +394,7 @@ export default function PlayPage() {
             </div>
 
             <div style={{ marginTop: 14 }}>
-              {activeTab === "选集" && (
+              {activeTab === "EPISODES" && (
                 <div>
                   {/* Episode range selectors */}
                   {totalPages > 1 && (
@@ -428,8 +428,8 @@ export default function PlayPage() {
                       marginBottom: 10,
                     }}
                   >
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>排列</span>
-                    {["正序", "倒序"].map((s, i) => (
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>SORT</span>
+                    {["ASC", "DESC"].map((s, i) => (
                       <button
                         key={s}
                         style={{
@@ -478,7 +478,7 @@ export default function PlayPage() {
                 </div>
               )}
 
-              {activeTab === "简介" && (
+              {activeTab === "SYNOPSIS" && (
                 <div>
                   <div
                     style={{
@@ -504,13 +504,13 @@ export default function PlayPage() {
                       </h2>
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {[
-                          ["类型", show.genre],
-                          ["年份", String(show.year)],
-                          ["集数", `共${show.episodeCount}集`],
-                          ["评分", String(show.rating)],
+                          ["GENRE", show.genre],
+                          ["YEAR", String(show.year)],
+                          ["EPISODES", `${show.episodeCount} EPS`],
+                          ["RATING", String(show.rating)],
                         ].map(([k, v]) => (
                           <div key={k} style={{ display: "flex", gap: 10, fontSize: 13 }}>
-                            <span style={{ color: "rgba(255,255,255,0.35)", width: 40 }}>{k}</span>
+                            <span style={{ color: "rgba(255,255,255,0.35)", width: 60 }}>{k}</span>
                             <span style={{ color: "rgba(255,255,255,0.75)" }}>{v}</span>
                           </div>
                         ))}
@@ -530,7 +530,7 @@ export default function PlayPage() {
                 </div>
               )}
 
-              {activeTab === "推荐" && (
+              {activeTab === "RECOMMENDED" && (
                 <div
                   style={{
                     display: "grid",
@@ -601,7 +601,7 @@ export default function PlayPage() {
                             marginTop: 2,
                           }}
                         >
-                          {s.episodeCount}集
+                          {s.episodeCount} EPS
                         </div>
                       </div>
                     </Link>
@@ -671,7 +671,7 @@ export default function PlayPage() {
                       {show.rating}
                     </span>
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-                      · {show.episodeCount}集
+                      · {show.episodeCount} EPS
                     </span>
                   </div>
                 </div>
@@ -691,7 +691,7 @@ export default function PlayPage() {
                       cursor: "pointer",
                     }}
                   >
-                    ★ 开通VIP · 立即观看
+                    ★ JOIN VIP · WATCH NOW
                   </button>
                 </div>
               )}
@@ -716,7 +716,7 @@ export default function PlayPage() {
                     background: "#00a9f5",
                   }}
                 />
-                <span style={{ fontSize: 14, fontWeight: 600 }}>相关推荐</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>RELATED</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {related.slice(0, 6).map((s) => (
@@ -809,7 +809,7 @@ export default function PlayPage() {
                             marginTop: 2,
                           }}
                         >
-                          {s.episodeCount}集
+                          {s.episodeCount} EPS
                         </div>
                         <div
                           style={{

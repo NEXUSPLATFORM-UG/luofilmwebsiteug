@@ -75,7 +75,7 @@ export default function HomePage() {
           overflowX: "auto",
         }}
       >
-        {["推荐", "剧集", "电影", "综艺", "体育", "纪录片", "动漫", "少儿"].map((tab, i) => (
+        {["FEATURED", "DRAMA", "MOVIE", "VARIETY", "SPORTS", "DOCUMENTARY", "ANIME", "KIDS"].map((tab, i) => (
           <button
             key={tab}
             style={{
@@ -229,7 +229,7 @@ export default function HomePage() {
                       cursor: "pointer",
                     }}
                   >
-                    ▶ 立即播放
+                    ▶ PLAY NOW
                   </button>
                 </Link>
                 <Link href={`/play/${currentShow.id}`}>
@@ -248,7 +248,7 @@ export default function HomePage() {
                       cursor: "pointer",
                     }}
                   >
-                    详情
+                    DETAILS
                   </button>
                 </Link>
               </div>
@@ -356,13 +356,13 @@ export default function HomePage() {
 
       {/* Content rows */}
       <div style={{ padding: "8px 12px 40px", maxWidth: 1440, margin: "0 auto" }}>
-        <ContentRow title="热播剧集" subtitle="猜你喜欢" shows={trendingShows.slice(0, 10)} />
+        <ContentRow title="HOT SERIES" subtitle="RECOMMENDED" shows={trendingShows.slice(0, 10)} />
         <ContentRow
-          title="爱情剧场"
+          title="ROMANCE"
           shows={shows.filter((s) => s.genre.toLowerCase().includes("romance")).slice(0, 10)}
         />
         <ContentRow
-          title="仙侠玄幻"
+          title="FANTASY & WUXIA"
           shows={shows
             .filter(
               (s) =>
@@ -372,7 +372,7 @@ export default function HomePage() {
             .slice(0, 10)}
         />
         <ContentRow
-          title="历史古装"
+          title="HISTORICAL"
           shows={shows
             .filter(
               (s) =>
@@ -463,7 +463,7 @@ function SideShowCard({ show }: { show: Show }) {
             {show.title}
           </div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
-            {show.episodeCount}集全
+            {show.episodeCount} EPS
           </div>
         </div>
       </div>
@@ -521,7 +521,7 @@ function MiniShowCard({ show }: { show: Show }) {
             {show.title}
           </div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-            {show.genre} · {show.episodeCount}集
+            {show.genre} · {show.episodeCount} EPS
           </div>
         </div>
         {show.badge && show.badge !== "none" && (
@@ -629,7 +629,7 @@ function ContentRow({ title, subtitle, shows }: { title: string; subtitle?: stri
               marginLeft: 4,
             }}
           >
-            全部 &gt;
+            ALL &gt;
           </button>
         </div>
       </div>
@@ -769,7 +769,7 @@ function ContentCard({ show, rank }: { show: Show; rank: number }) {
               textOverflow: "ellipsis",
             }}
           >
-            {show.episodeCount}集 · {show.genre.split(" · ")[0]}
+            {show.episodeCount} EPS · {show.genre.split(" · ")[0].toUpperCase()}
           </div>
         </div>
       </div>

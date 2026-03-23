@@ -503,9 +503,9 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 fontWeight: 900,
               }}
             >
-              支
+              ¥
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>AlipayC.N.</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>ALIPAY</div>
             <div style={{ fontSize: 10, color: "#999" }}>Alipay·partner</div>
             {/* Check badge */}
             <div

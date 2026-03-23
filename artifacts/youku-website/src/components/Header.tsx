@@ -3,13 +3,13 @@ import { Link, useLocation } from "wouter";
 import VIPModal from "./VIPModal";
 
 const navLinks = [
-  { label: "首页", path: "/" },
-  { label: "剧集", path: "/?genre=drama" },
-  { label: "电影", path: "/?genre=movie" },
-  { label: "综艺", path: "/?genre=variety" },
-  { label: "体育", path: "/?genre=sports" },
-  { label: "纪录片", path: "/?genre=documentary" },
-  { label: "动漫", path: "/?genre=anime" },
+  { label: "HOME", path: "/" },
+  { label: "DRAMA", path: "/?genre=drama" },
+  { label: "MOVIE", path: "/?genre=movie" },
+  { label: "VARIETY", path: "/?genre=variety" },
+  { label: "SPORTS", path: "/?genre=sports" },
+  { label: "DOCUMENTARY", path: "/?genre=documentary" },
+  { label: "ANIME", path: "/?genre=anime" },
 ];
 
 export default function Header() {
@@ -82,7 +82,7 @@ export default function Header() {
                   lineHeight: 1.1,
                 }}
               >
-                TRUE LIGHT
+                LUO FILM
               </div>
               <div
                 style={{
@@ -99,7 +99,7 @@ export default function Header() {
                   marginTop: -1,
                 }}
               >
-                STUDIO
+                .SITE
               </div>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function Header() {
               onChange={(e) => setSearchValue(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              placeholder="搜索剧集、电影、综艺"
+              placeholder="SEARCH SHOWS, MOVIES, VARIETY..."
               style={{
                 background: "transparent",
                 border: "none",
@@ -225,7 +225,7 @@ export default function Header() {
           </div>
 
           {/* App download */}
-          <HeaderIconBtn title="下载App">
+          <HeaderIconBtn title="DOWNLOAD APP">
             <svg
               width="17"
               height="17"
@@ -242,7 +242,7 @@ export default function Header() {
           </HeaderIconBtn>
 
           {/* Watch history */}
-          <HeaderIconBtn title="历史记录">
+          <HeaderIconBtn title="WATCH HISTORY">
             <svg
               width="17"
               height="17"
@@ -299,7 +299,7 @@ export default function Header() {
                 strokeLinejoin="round"
               />
             </svg>
-            开通VIP
+            JOIN VIP
           </button>
 
           {/* Avatar */}

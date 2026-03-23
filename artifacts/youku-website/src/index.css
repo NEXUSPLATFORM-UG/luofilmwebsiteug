@@ -394,11 +394,21 @@
 
 html, body, #root {
   background-color: #0a0a0a;
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+* {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+input, button, select, textarea {
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 ::-webkit-scrollbar {
