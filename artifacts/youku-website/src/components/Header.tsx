@@ -4,12 +4,12 @@ import VIPModal from "./VIPModal";
 
 const navLinks = [
   { label: "HOME", path: "/" },
-  { label: "DRAMA", path: "/?genre=drama" },
-  { label: "MOVIE", path: "/?genre=movie" },
-  { label: "VARIETY", path: "/?genre=variety" },
-  { label: "SPORTS", path: "/?genre=sports" },
-  { label: "DOCUMENTARY", path: "/?genre=documentary" },
-  { label: "ANIME", path: "/?genre=anime" },
+  { label: "DRAMA", path: "/drama" },
+  { label: "MOVIE", path: "/movie" },
+  { label: "VARIETY", path: "/variety" },
+  { label: "SPORTS", path: "/sports" },
+  { label: "DOCUMENTARY", path: "/documentary" },
+  { label: "ANIME", path: "/anime" },
 ];
 
 export default function Header() {

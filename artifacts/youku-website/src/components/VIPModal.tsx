@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 const PLANS = [
   {
     id: "day1",
     label: "1 Day Pass",
     tag: "TRY IT",
+    tagColor: "#888",
     price: 2500,
     highlight: false,
   },
@@ -12,6 +13,7 @@ const PLANS = [
     id: "day3",
     label: "3 Days Pass",
     tag: "POPULAR",
+    tagColor: "#f5a623",
     price: 5000,
     highlight: true,
   },
@@ -19,6 +21,7 @@ const PLANS = [
     id: "week1",
     label: "1 Week Pass",
     tag: "GREAT VALUE",
+    tagColor: "#e05a7a",
     price: 10000,
     highlight: false,
   },
@@ -26,6 +29,7 @@ const PLANS = [
     id: "month1",
     label: "1 Month Pass",
     tag: "BEST DEAL",
+    tagColor: "#059669",
     price: 20000,
     highlight: false,
   },
@@ -74,21 +78,13 @@ function formatUGX(amount: number) {
   return "UGX " + amount.toLocaleString();
 }
 
-const VISIBLE = 2;
-
 interface VIPModalProps {
   onClose: () => void;
 }
 
 export default function VIPModal({ onClose }: VIPModalProps) {
   const [selectedPlan, setSelectedPlan] = useState("day3");
-  const [startIdx, setStartIdx] = useState(0);
   const plan = PLANS.find((p) => p.id === selectedPlan) || PLANS[1];
-
-  const canPrev = startIdx > 0;
-  const canNext = startIdx + VISIBLE < PLANS.length;
-
-  const visiblePlans = PLANS.slice(startIdx, startIdx + VISIBLE);
 
   return (
     <div
@@ -104,6 +100,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
+      {/* Backdrop */}
       <div
         style={{
           position: "absolute",
@@ -113,6 +110,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
         }}
       />
 
+      {/* Modal */}
       <div
         style={{
           position: "relative",
@@ -160,7 +158,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             ×
           </button>
 
-          {/* Header */}
+          {/* Log in / Sign up */}
           <div
             style={{
               display: "flex",
@@ -202,175 +200,110 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             </button>
           </div>
 
-          {/* Plan carousel */}
+          {/* Plan cards — all 4 visible in a scrollable row */}
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: 8,
+              gap: 10,
               marginBottom: 14,
+              overflowX: "auto",
+              paddingBottom: 4,
+              scrollbarWidth: "none",
             }}
           >
-            {/* Left arrow */}
-            <button
-              onClick={() => setStartIdx((i) => Math.max(0, i - 1))}
-              disabled={!canPrev}
-              style={{
-                flexShrink: 0,
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                border: "1.5px solid",
-                borderColor: canPrev ? "#f5a623" : "#e0e0e0",
-                background: canPrev ? "#fff9ee" : "#f5f5f5",
-                color: canPrev ? "#c07800" : "#ccc",
-                fontSize: 16,
-                fontWeight: 700,
-                cursor: canPrev ? "pointer" : "default",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s",
-              }}
-            >
-              ‹
-            </button>
-
-            {/* Visible plan cards */}
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                flex: 1,
-              }}
-            >
-              {visiblePlans.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setSelectedPlan(p.id)}
+            {PLANS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPlan(p.id)}
+                style={{
+                  flexShrink: 0,
+                  width: 130,
+                  padding: "14px 10px 16px",
+                  borderRadius: 12,
+                  border: selectedPlan === p.id ? "2px solid #f5a623" : "2px solid #eee",
+                  background:
+                    selectedPlan === p.id
+                      ? "linear-gradient(160deg, #fff9ee 0%, #fff3d0 100%)"
+                      : "#fafafa",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  position: "relative",
+                  transition: "all 0.15s",
+                }}
+              >
+                {/* Tag badge */}
+                <div
                   style={{
-                    flex: 1,
-                    padding: "16px 12px 18px",
-                    borderRadius: 12,
-                    border: selectedPlan === p.id ? "2px solid #f5a623" : "2px solid #eee",
-                    background:
-                      selectedPlan === p.id
-                        ? "linear-gradient(160deg, #fff9ee 0%, #fff3d0 100%)"
-                        : "#fafafa",
-                    cursor: "pointer",
-                    textAlign: "center",
-                    position: "relative",
-                    transition: "all 0.15s",
-                    minWidth: 0,
+                    position: "absolute",
+                    top: -1,
+                    left: -1,
+                    background: p.tagColor,
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "2px 7px",
+                    borderRadius: "10px 0 10px 0",
+                    letterSpacing: "0.03em",
                   }}
                 >
-                  {/* Tag badge */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: -1,
-                      left: -1,
-                      background: p.highlight ? "#f5a623" : "#666",
-                      color: "#fff",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      padding: "2px 7px",
-                      borderRadius: "10px 0 10px 0",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    {p.tag}
-                  </div>
+                  {p.tag}
+                </div>
 
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: selectedPlan === p.id ? "#c07800" : "#666",
-                      marginBottom: 12,
-                      marginTop: 10,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {p.label}
-                  </div>
+                {/* Plan label */}
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: selectedPlan === p.id ? "#c07800" : "#666",
+                    marginBottom: 10,
+                    marginTop: 12,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {p.label}
+                </div>
 
-                  <div
-                    style={{
-                      fontSize: 28,
-                      fontWeight: 900,
-                      color: selectedPlan === p.id ? "#c07800" : "#333",
-                      lineHeight: 1,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {(p.price / 1000).toFixed(0)}K
-                  </div>
-
-                  <div
+                {/* Price — large number */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    justifyContent: "center",
+                    gap: 2,
+                    marginBottom: 4,
+                  }}
+                >
+                  <span
                     style={{
                       fontSize: 11,
-                      color: selectedPlan === p.id ? "#c07800" : "#999",
-                      fontWeight: 600,
+                      fontWeight: 700,
+                      color: selectedPlan === p.id ? "#c07800" : "#888",
                     }}
                   >
                     UGX
-                  </div>
-                </button>
-              ))}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 26,
+                      fontWeight: 900,
+                      color: selectedPlan === p.id ? "#c07800" : "#333",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {(p.price / 1000).toFixed(0)}K
+                  </span>
+                </div>
 
-              {/* Placeholder if fewer than VISIBLE plans are visible (shouldn't happen normally) */}
-              {visiblePlans.length < VISIBLE && (
-                <div style={{ flex: 1 }} />
-              )}
-            </div>
-
-            {/* Right arrow */}
-            <button
-              onClick={() => setStartIdx((i) => Math.min(PLANS.length - VISIBLE, i + 1))}
-              disabled={!canNext}
-              style={{
-                flexShrink: 0,
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                border: "1.5px solid",
-                borderColor: canNext ? "#f5a623" : "#e0e0e0",
-                background: canNext ? "#fff9ee" : "#f5f5f5",
-                color: canNext ? "#c07800" : "#ccc",
-                fontSize: 16,
-                fontWeight: 700,
-                cursor: canNext ? "pointer" : "default",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s",
-              }}
-            >
-              ›
-            </button>
-          </div>
-
-          {/* Dot indicators */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 5,
-              marginBottom: 18,
-            }}
-          >
-            {PLANS.map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: i >= startIdx && i < startIdx + VISIBLE ? 16 : 6,
-                  height: 6,
-                  borderRadius: 3,
-                  background: i >= startIdx && i < startIdx + VISIBLE ? "#f5a623" : "#ddd",
-                  transition: "all 0.2s",
-                }}
-              />
+                {/* Full amount */}
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: selectedPlan === p.id ? "#d4a000" : "#bbb",
+                  }}
+                >
+                  {p.price.toLocaleString()} UGX
+                </div>
+              </button>
             ))}
           </div>
 
@@ -495,7 +428,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
           <div style={{ textAlign: "center", marginBottom: 10 }}>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 700,
                 color: "#999",
                 marginBottom: 4,
@@ -513,8 +446,8 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 flexWrap: "wrap",
               }}
             >
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>UGX</span>
-              <span style={{ fontSize: 48, fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>UGX</span>
+              <span style={{ fontSize: 46, fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>
                 {plan.price.toLocaleString()}
               </span>
             </div>
@@ -524,9 +457,9 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                   display: "inline-block",
                   padding: "3px 14px",
                   borderRadius: 20,
-                  background: "linear-gradient(90deg, #f5a623, #ffc552)",
-                  color: "#3d2200",
-                  fontSize: 12,
+                  background: plan.tagColor,
+                  color: "#fff",
+                  fontSize: 11,
                   fontWeight: 700,
                 }}
               >
@@ -535,6 +468,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             </div>
           </div>
 
+          {/* Divider */}
           <div style={{ borderTop: "1px dashed #e8e8e8", margin: "14px 0" }} />
 
           {/* Payment method */}
@@ -542,38 +476,34 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             Choose Payment Method
           </div>
 
+          {/* Mobile Money image */}
           <div
             style={{
-              border: "2px solid #1677ff",
+              border: "2px solid #f5a623",
               borderRadius: 10,
               padding: "10px 12px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 4,
+              gap: 6,
               marginBottom: 8,
               position: "relative",
-              background: "#f8fbff",
+              background: "#fffdf5",
+              cursor: "pointer",
             }}
           >
-            <div
+            <img
+              src="https://www.galaxyfm.co.ug/wp-content/uploads/2018/05/Airtel-MTN-Money-logo-horz-.jpg"
+              alt="Airtel Money & MTN Mobile Money"
               style={{
-                width: 38,
-                height: 38,
-                borderRadius: 8,
-                background: "linear-gradient(135deg, #1677ff, #00a3f5)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontSize: 18,
-                fontWeight: 900,
+                width: "100%",
+                maxWidth: 160,
+                height: "auto",
+                objectFit: "contain",
+                borderRadius: 4,
               }}
-            >
-              M
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>MOBILE MONEY</div>
-            <div style={{ fontSize: 10, color: "#999" }}>MTN · Airtel</div>
+            />
+            <div style={{ fontSize: 10, color: "#999" }}>Mobile Money · Instant Activation</div>
             <div
               style={{
                 position: "absolute",
@@ -582,7 +512,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
                 width: 18,
                 height: 18,
                 borderRadius: "50%",
-                background: "#1677ff",
+                background: "#f5a623",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -623,6 +553,7 @@ export default function VIPModal({ onClose }: VIPModalProps) {
             Pay {formatUGX(plan.price)}
           </button>
 
+          {/* Legal links */}
           <div
             style={{
               marginTop: 12,

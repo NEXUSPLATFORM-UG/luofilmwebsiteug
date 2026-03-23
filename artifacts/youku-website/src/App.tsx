@@ -2,6 +2,7 @@ import { Switch, Route } from "wouter";
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
 import PlayPage from "./pages/PlayPage";
+import CategoryPage from "./pages/CategoryPage";
 
 function App() {
   return (
@@ -10,6 +11,48 @@ function App() {
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/play/:id" component={PlayPage} />
+        <Route path="/drama">
+          <CategoryPage
+            genre="drama"
+            title="DRAMA"
+            description="Love stories, modern tales, and emotional journeys — the best drama series curated for you."
+          />
+        </Route>
+        <Route path="/movie">
+          <CategoryPage
+            genre="movie"
+            title="MOVIE"
+            description="Action-packed adventures, thrilling mysteries, and epic historical tales on the big screen."
+          />
+        </Route>
+        <Route path="/variety">
+          <CategoryPage
+            genre="variety"
+            title="VARIETY"
+            description="Laugh, be entertained, and discover your next favourite variety show."
+          />
+        </Route>
+        <Route path="/sports">
+          <CategoryPage
+            genre="sports"
+            title="SPORTS"
+            description="High-intensity action and martial arts — for those who love the thrill of competition."
+          />
+        </Route>
+        <Route path="/documentary">
+          <CategoryPage
+            genre="documentary"
+            title="DOCUMENTARY"
+            description="Explore real stories, history, and the mysteries of our world in stunning detail."
+          />
+        </Route>
+        <Route path="/anime">
+          <CategoryPage
+            genre="anime"
+            title="ANIME"
+            description="Fantasy worlds, epic journeys, and unforgettable characters in animated form."
+          />
+        </Route>
         <Route>
           <div className="flex items-center justify-center min-h-screen text-gray-500">
             <div className="text-center">
