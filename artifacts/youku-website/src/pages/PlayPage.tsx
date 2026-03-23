@@ -1,21 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import {
-  Play,
   Star,
   Share2,
   Heart,
   Download,
-  Settings,
-  Maximize,
-  Volume2,
-  SkipForward,
   ThumbsUp,
   MessageSquare,
   Check,
   Film,
 } from "lucide-react";
 import { fbApi } from "../lib/firebaseApi";
+import VideoPlayer from "../components/VideoPlayer";
 
 function getEmbedInfo(url: string): { type: "video" | "iframe"; src: string } {
   if (!url) return { type: "video", src: "" };
@@ -74,8 +70,6 @@ export default function PlayPage() {
   const [showQualityPicker, setShowQualityPicker] = useState(false);
   const [downloadQuality, setDownloadQuality] = useState("");
   const [subtitlesOn, setSubtitlesOn] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hoverPlayer, setHoverPlayer] = useState(false);
   const [related, setRelated] = useState<any[]>([]);
 
   useEffect(() => {
@@ -84,7 +78,6 @@ export default function PlayPage() {
     setShow(null);
     setEpisodes([]);
     setRelated([]);
-    setIsPlaying(false);
     fbApi.publicContent.getById(params.id).then((d) => {
       if (d) {
         setShow(toShow(d));
@@ -169,227 +162,43 @@ export default function PlayPage() {
         {/* Main content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Video player */}
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              background: "#000",
-              borderRadius: 6,
-              overflow: "hidden",
-              aspectRatio: "16/9",
-              cursor: "pointer",
-            }}
-            onMouseEnter={() => setHoverPlayer(true)}
-            onMouseLeave={() => setHoverPlayer(false)}
-            onClick={() => { if (videoSrc) setIsPlaying(true); }}
-          >
-            {videoSrc && isPlaying ? (() => {
-              const embed = getEmbedInfo(videoSrc);
-              return embed.type === "iframe" ? (
-                <iframe
-                  src={embed.src}
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", background: "#000" }}
-                />
-              ) : (
-                <video
-                  src={embed.src}
-                  autoPlay
-                  controls
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
-                  onPause={() => setIsPlaying(false)}
-                  onPlay={() => setIsPlaying(true)}
-                />
-              );
-            })() : (
-            <>
-            <img
-              src={show.coverUrl}
-              alt={show.title}
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                opacity: 0.35,
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "rgba(0,0,0,0.45)",
-              }}
-            />
-
-            {/* Center play button */}
-            {!isPlaying && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
-              >
+          {videoSrc ? (() => {
+            const embed = getEmbedInfo(videoSrc);
+            if (embed.type === "iframe") {
+              return (
                 <div
-                  style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    background: "rgba(0,169,245,0.9)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 4px 20px rgba(0,169,245,0.5)",
-                    transition: "transform 0.2s",
-                  }}
+                  onContextMenu={e => e.preventDefault()}
+                  style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#000", borderRadius: 8, overflow: "hidden" }}
                 >
-                  <Play size={28} fill="#fff" color="#fff" style={{ marginLeft: 3 }} />
+                  <iframe
+                    src={embed.src}
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", background: "#000" }}
+                  />
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <p style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>
-                    {show.title}
-                  </p>
-                  {isSeries && (
-                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
-                      EPISODE {currentEp}
-                    </p>
-                  )}
-                </div>
-                {isVip && (
-                  <div
-                    style={{
-                      padding: "6px 20px",
-                      borderRadius: 20,
-                      background: "linear-gradient(90deg,#ffc552,#ffdd9a)",
-                      color: "#4e2d03",
-                      fontSize: 13,
-                      fontWeight: 700,
-                    }}
-                  >
-                    ★ VIP EXCLUSIVE
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Control bar */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                padding: "24px 16px 10px",
-                background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)",
-                opacity: hoverPlayer ? 1 : 0,
-                transition: "opacity 0.2s",
-              }}
-            >
-              {/* Progress bar */}
-              <div
-                style={{
-                  height: 3,
-                  background: "rgba(255,255,255,0.2)",
-                  borderRadius: 2,
-                  marginBottom: 10,
-                  cursor: "pointer",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: "0%",
-                    background: "#00a9f5",
-                    borderRadius: 2,
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <CtrlBtn onClick={() => setIsPlaying(!isPlaying)}>
-                    <Play size={16} fill="white" color="white" />
-                  </CtrlBtn>
-                  {isSeries && (
-                    <CtrlBtn>
-                      <SkipForward size={16} />
-                    </CtrlBtn>
-                  )}
-                  <CtrlBtn>
-                    <Volume2 size={16} />
-                  </CtrlBtn>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
-                    00:00 / {isSeries ? "45:00" : "1:52:00"}
-                  </span>
-                  {isSeries && (
-                    <button
-                      style={{
-                        fontSize: 11,
-                        color: "rgba(255,255,255,0.7)",
-                        background: "rgba(255,255,255,0.1)",
-                        border: "none",
-                        borderRadius: 3,
-                        padding: "2px 8px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      NEXT EP
-                    </button>
-                  )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <button
-                    style={{
-                      fontSize: 11,
-                      color: "rgba(255,255,255,0.7)",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "none",
-                      borderRadius: 3,
-                      padding: "2px 8px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    SPEED
-                  </button>
-                  {isSeries && (
-                    <button
-                      style={{
-                        fontSize: 11,
-                        color: "rgba(255,255,255,0.7)",
-                        background: "rgba(255,255,255,0.1)",
-                        border: "none",
-                        borderRadius: 3,
-                        padding: "2px 8px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      EPISODES
-                    </button>
-                  )}
-                  <CtrlBtn>
-                    <Settings size={14} />
-                  </CtrlBtn>
-                  <CtrlBtn>
-                    <Maximize size={14} />
-                  </CtrlBtn>
-                </div>
+              );
+            }
+            return (
+              <VideoPlayer
+                src={embed.src}
+                poster={show.coverUrl}
+                title={isSeries ? `${show.title} · Episode ${currentEp}` : show.title}
+              />
+            );
+          })() : (
+            <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#111", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+              {show.coverUrl && (
+                <img src={show.coverUrl} alt={show.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, borderRadius: 8 }} />
+              )}
+              <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>🎬</div>
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, margin: 0 }}>
+                  {isSeries ? "Select an episode below to start watching" : "No video uploaded yet"}
+                </p>
               </div>
             </div>
-            </>
-            )}
-          </div>
+          )}
 
           {/* Show title + meta */}
           <div style={{ marginTop: 14 }}>
@@ -1098,26 +907,6 @@ export default function PlayPage() {
         </aside>
       </div>
     </div>
-  );
-}
-
-function CtrlBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "transparent",
-        border: "none",
-        color: "rgba(255,255,255,0.85)",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 0,
-      }}
-    >
-      {children}
-    </button>
   );
 }
 
