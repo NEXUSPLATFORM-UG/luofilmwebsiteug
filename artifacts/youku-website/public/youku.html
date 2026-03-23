@@ -11275,6 +11275,10 @@
             </div>
         <script>
             (function () {
+                // Suppress unhandled errors from Youku's third-party scripts
+                window.onerror = function(msg, src, line, col, err) { return true; };
+                window.addEventListener('unhandledrejection', function(e) { e.preventDefault(); });
+
                 // Replace logo with site name
                 document.addEventListener('DOMContentLoaded', function () {
                     var logos = document.querySelectorAll('.logo_logo_i18n, .logo_nav_logo');
