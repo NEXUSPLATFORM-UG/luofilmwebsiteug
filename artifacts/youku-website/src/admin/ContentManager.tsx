@@ -120,9 +120,16 @@ function ContentForm({ initial, onSave, onClose }: any) {
             <input style={inp} type="number" value={form.duration} onChange={e => set("duration", Number(e.target.value))} />
           </div>
         ) : (
-          <div>
-            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Episode Count</label>
-            <input style={inp} type="number" value={form.episodeCount} onChange={e => set("episodeCount", Number(e.target.value))} />
+          <div style={{ gridColumn: "1/-1" }}>
+            <div style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 8, padding: "12px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <span style={{ fontSize: 18, lineHeight: 1 }}>📺</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#a5b4fc", marginBottom: 4 }}>Series Episodes</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+                  After saving this series, click <strong style={{ color: "#a5b4fc" }}>"Manage Episodes"</strong> from the content list to add each episode with its video stream link.
+                </div>
+              </div>
+            </div>
           </div>
         )}
         <div>
@@ -246,16 +253,20 @@ export default function ContentManager() {
                 </td>
                 <td style={{ padding: "10px 14px", color: "rgba(255,255,255,0.5)" }}>{c.views || 0}</td>
                 <td style={{ padding: "10px 14px" }}>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => setModal(c)} style={{ padding: "5px 8px", background: "#6366f122", border: "none", borderRadius: 6, color: "#818cf8", cursor: "pointer" }}><Edit size={13} /></button>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button onClick={() => setModal(c)} style={{ padding: "5px 8px", background: "#6366f122", border: "none", borderRadius: 6, color: "#818cf8", cursor: "pointer" }}><Edit size={13} /></button>
+                      <button onClick={() => del(c.id)} disabled={deleting === c.id} style={{ padding: "5px 8px", background: "#ef444422", border: "none", borderRadius: 6, color: "#f87171", cursor: "pointer" }}>
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                     {c.type === "series" && (
                       <Link href={`/admin/content/${c.id}/episodes`}>
-                        <button style={{ padding: "5px 8px", background: "#10b98122", border: "none", borderRadius: 6, color: "#34d399", cursor: "pointer" }}><List size={13} /></button>
+                        <button style={{ padding: "5px 10px", background: "#10b981", border: "none", borderRadius: 6, color: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
+                          <List size={11} /> Manage Episodes
+                        </button>
                       </Link>
                     )}
-                    <button onClick={() => del(c.id)} disabled={deleting === c.id} style={{ padding: "5px 8px", background: "#ef444422", border: "none", borderRadius: 6, color: "#f87171", cursor: "pointer" }}>
-                      <Trash2 size={13} />
-                    </button>
                   </div>
                 </td>
               </tr>

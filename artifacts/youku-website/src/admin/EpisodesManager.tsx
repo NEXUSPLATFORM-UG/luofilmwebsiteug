@@ -149,8 +149,13 @@ export default function EpisodesManager() {
       {loading ? (
         <p style={{ color: "rgba(255,255,255,0.4)" }}>Loading...</p>
       ) : Object.keys(grouped).length === 0 ? (
-        <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.3)" }}>
-          <p>No episodes yet. Add your first episode!</p>
+        <div style={{ textAlign: "center", padding: 60 }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>📺</div>
+          <div style={{ color: "#fff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No episodes yet</div>
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 24 }}>Click "Add Episode" above to add each episode with its video stream link.</div>
+          <button onClick={() => setModal("create")} style={{ padding: "10px 24px", background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            + Add First Episode
+          </button>
         </div>
       ) : (
         Object.entries(grouped).sort(([a], [b]) => Number(a) - Number(b)).map(([season, eps]) => (
