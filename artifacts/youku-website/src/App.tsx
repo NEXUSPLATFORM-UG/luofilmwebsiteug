@@ -1,10 +1,11 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
 import PlayPage from "./pages/PlayPage";
 import CategoryPage from "./pages/CategoryPage";
+import AdminApp from "./admin/AdminApp";
 
-function App() {
+function MainSite() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       <Header />
@@ -64,6 +65,17 @@ function App() {
       </Switch>
     </div>
   );
+}
+
+function App() {
+  const [location] = useLocation();
+  const isAdmin = location.startsWith("/admin");
+
+  if (isAdmin) {
+    return <AdminApp />;
+  }
+
+  return <MainSite />;
 }
 
 export default App;
