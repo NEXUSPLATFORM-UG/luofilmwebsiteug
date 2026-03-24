@@ -669,13 +669,12 @@ input, button, select, textarea {
     display: none !important;
   }
 
-  /* Benefits section */
+  /* Benefits section — hidden on mobile */
   .vip-benefits-title {
-    font-size: 12px !important;
-    margin-bottom: 8px !important;
+    display: none !important;
   }
   .vip-benefits-grid {
-    gap: 7px 10px !important;
+    display: none !important;
   }
   .vip-benefit-item {
     gap: 7px !important;
