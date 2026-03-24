@@ -9,9 +9,12 @@ import {
   MessageSquare,
   Check,
   Film,
+  Lock,
 } from "lucide-react";
 import { fbApi } from "../lib/firebaseApi";
 import VideoPlayer from "../components/VideoPlayer";
+import VIPModal from "../components/VIPModal";
+import { useAuth } from "../contexts/AuthContext";
 
 function getEmbedInfo(url: string): { type: "video" | "iframe"; src: string } {
   if (!url) return { type: "video", src: "" };
@@ -56,6 +59,7 @@ function toShow(d: any): Show {
 
 export default function PlayPage() {
   const params = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [show, setShow] = useState<Show | null>(null);
   const [rawData, setRawData] = useState<any>(null);
   const [episodes, setEpisodes] = useState<any[]>([]);
@@ -75,6 +79,8 @@ export default function PlayPage() {
   const [subtitlesOn, setSubtitlesOn] = useState(false);
   const [related, setRelated] = useState<any[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+  const [showVIP, setShowVIP] = useState(false);
   const anonId = fbApi.userActions.getAnonId();
 
   useEffect(() => {
@@ -98,6 +104,14 @@ export default function PlayPage() {
       }
     }).catch(() => {}).finally(() => setLoadingShow(false));
   }, [params.id]);
+
+  useEffect(() => {
+    if (user === undefined) return;
+    if (!user) { setIsSubscribed(false); return; }
+    fbApi.subscriptions.checkActive(user.uid)
+      .then(setIsSubscribed)
+      .catch(() => setIsSubscribed(false));
+  }, [user]);
 
   useEffect(() => {
     const defaultTitle = "LUOFILM.SITE — VJ PAUL FREE DOWNLOAD";
@@ -297,6 +311,7 @@ export default function PlayPage() {
     : (["RECOMMENDED", "SYNOPSIS"] as const);
 
   return (
+    <>
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
       {toast && (
         <div style={{
@@ -349,7 +364,35 @@ export default function PlayPage() {
         {/* Main content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Video player */}
-          {videoSrc ? (() => {
+          {isSubscribed === false ? (
+            /* Subscription gate */
+            <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#0a0a18", borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              {show.coverUrl && (
+                <img src={show.coverUrl} alt={show.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.18, filter: "blur(4px)" }} />
+              )}
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))" }} />
+              <div style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "0 24px" }}>
+                <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                  <Lock size={26} color="#ffc552" />
+                </div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>VIP Subscription Required</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24, lineHeight: 1.6 }}>
+                  Subscribe to unlock unlimited watching and downloading.<br />Plans from <strong style={{ color: "#ffc552" }}>UGX 2,500</strong> — activate instantly!
+                </div>
+                <button
+                  onClick={() => setShowVIP(true)}
+                  style={{ padding: "12px 36px", borderRadius: 30, background: "linear-gradient(90deg,#f5c842,#e8a800)", border: "none", color: "#3d2200", fontSize: 15, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px rgba(245,200,66,0.5)" }}
+                >
+                  Subscribe to Watch
+                </button>
+                {!user && (
+                  <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                    Already subscribed? <span style={{ color: "#ffc552", cursor: "pointer" }} onClick={() => setShowVIP(true)}>Log in</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : videoSrc ? (() => {
             const embed = getEmbedInfo(videoSrc);
             if (embed.type === "iframe") {
               return (
@@ -521,7 +564,7 @@ export default function PlayPage() {
                 />
                 <div style={{ position: "relative" }}>
                   <ActionBtn
-                    icon={<Download size={14} color={downloaded ? "#fff" : "#fb923c"} />}
+                    icon={isSubscribed ? <Download size={14} color={downloaded ? "#fff" : "#fb923c"} /> : <Lock size={14} color="#fb923c" />}
                     label={downloaded ? `${downloadQuality}` : "DOWNLOAD"}
                     active={downloaded}
                     color={{
@@ -531,6 +574,7 @@ export default function PlayPage() {
                       activeBg: "linear-gradient(135deg,#ea580c,#fb923c)",
                     }}
                     onClick={() => {
+                      if (!isSubscribed) { setShowVIP(true); return; }
                       if (downloaded) { setDownloaded(false); setDownloadQuality(""); }
                       else setShowQualityPicker(!showQualityPicker);
                     }}
@@ -1101,6 +1145,17 @@ export default function PlayPage() {
         </aside>
       </div>
     </div>
+
+    {showVIP && (
+      <VIPModal
+        onClose={() => setShowVIP(false)}
+        onSubscribed={() => {
+          setIsSubscribed(true);
+          setShowVIP(false);
+        }}
+      />
+    )}
+    </>
   );
 }
 

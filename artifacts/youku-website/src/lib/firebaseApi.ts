@@ -208,6 +208,24 @@ export const fbApi = {
       await deleteDoc(doc(db, "subscriptions", id));
       return { id };
     },
+    checkActive: async (userId: string): Promise<boolean> => {
+      if (!userId) return false;
+      const snap = await getDocs(
+        query(
+          collection(db, "subscriptions"),
+          where("userId", "==", userId),
+          where("status", "==", "active")
+        )
+      );
+      const now = Date.now();
+      return snap.docs.some((d) => {
+        const data = d.data();
+        const expiresAt = data.expiresAt instanceof Timestamp
+          ? data.expiresAt.toMillis()
+          : (typeof data.expiresAt === "number" ? data.expiresAt : 0);
+        return expiresAt > now;
+      });
+    },
   },
 
   wallet: {
