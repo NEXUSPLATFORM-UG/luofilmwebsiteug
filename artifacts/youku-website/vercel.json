@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd ../.. && pnpm --filter @workspace/youku-website run build",
-  "outputDirectory": "dist/public",
+  "outputDirectory": "dist",
   "installCommand": "cd ../.. && pnpm install",
   "rewrites": [
     { "source": "/play/:id", "destination": "/api/og?id=:id" },

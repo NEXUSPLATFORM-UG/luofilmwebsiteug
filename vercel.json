@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "pnpm --filter @workspace/youku-website run build",
-  "outputDirectory": "artifacts/youku-website/dist/public",
+  "outputDirectory": "artifacts/youku-website/dist",
   "installCommand": "pnpm install",
   "rewrites": [
     {
