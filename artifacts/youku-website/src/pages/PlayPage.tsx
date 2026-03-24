@@ -339,7 +339,7 @@ export default function PlayPage() {
         </div>
       )}
 
-      <div style={{ height: 60 }} />
+      <div className="mobile-header-spacer" style={{ height: 54 }} />
 
       {/* Breadcrumb */}
       <div

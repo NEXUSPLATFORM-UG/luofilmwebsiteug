@@ -134,7 +134,7 @@ export default function CategoryPage({ genre, title, description: _description }
   if (shows.length === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-        <div className="category-header-spacer" style={{ height: 60 }} />
+        <div style={{ height: 54 }} />
         <div style={{ maxWidth: 1440, margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 32 }}>
             <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
@@ -152,7 +152,7 @@ export default function CategoryPage({ genre, title, description: _description }
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-      <div className="category-header-spacer" style={{ height: 60 }} />
+      <div style={{ height: 54 }} />
       <div className="category-page-pad" style={{ maxWidth: 1440, margin: "0 auto", padding: "32px 20px 60px" }}>
         {featured && (
           <div style={{ marginBottom: 40 }}>
@@ -198,7 +198,7 @@ export default function CategoryPage({ genre, title, description: _description }
             <span style={{ fontSize: 18, fontWeight: 700 }}>ALL {title}</span>
             <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{shows.length} TITLES</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(136px, 1fr))", gap: 10 }}>
+          <div className="category-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10 }}>
             {shows.map((show) => <ShowCard key={show.id} show={show} />)}
           </div>
         </div>

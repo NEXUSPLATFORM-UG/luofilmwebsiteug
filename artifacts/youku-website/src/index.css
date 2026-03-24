@@ -429,9 +429,17 @@ input, button, select, textarea {
   background: #555;
 }
 
+/* mobile-only: visible only on mobile */
+.mobile-only {
+  display: none !important;
+}
+
 @media (max-width: 767px) {
   .desktop-only {
     display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
   }
   .mobile-bottom-nav {
     display: flex !important;
@@ -439,6 +447,13 @@ input, button, select, textarea {
   .mobile-pb {
     padding-bottom: 64px !important;
   }
+
+  /* Header */
+  .mobile-header-spacer {
+    height: 54px !important;
+  }
+
+  /* Carousel */
   .carousel-mobile-full {
     width: 100% !important;
     min-width: unset !important;
@@ -448,32 +463,36 @@ input, button, select, textarea {
     display: none !important;
   }
   .carousel-wrapper {
-    padding: 4px 0 !important;
+    padding: 2px 0 !important;
     gap: 0 !important;
   }
   .carousel-title {
-    font-size: 15px !important;
+    font-size: 13px !important;
+    margin-bottom: 3px !important;
   }
   .carousel-desc {
-    font-size: 11px !important;
+    font-size: 10px !important;
     -webkit-line-clamp: 2 !important;
+    margin-bottom: 8px !important;
   }
   .carousel-actions {
-    gap: 6px !important;
+    gap: 5px !important;
   }
   .carousel-btn {
-    padding: 5px 13px !important;
-    font-size: 12px !important;
+    padding: 4px 12px !important;
+    font-size: 11px !important;
   }
   .carousel-overlay {
-    padding: 14px 12px 14px !important;
+    padding: 10px 10px 10px !important;
   }
+
+  /* Play page */
   .play-sidebar {
     display: none !important;
   }
   .play-action-btns {
     flex-wrap: wrap !important;
-    gap: 6px !important;
+    gap: 5px !important;
   }
   .play-action-btn-label {
     display: none !important;
@@ -483,62 +502,79 @@ input, button, select, textarea {
     gap: 0 !important;
   }
   .play-title {
-    font-size: 15px !important;
+    font-size: 14px !important;
   }
   .play-meta {
-    font-size: 11px !important;
-    gap: 6px !important;
-    margin-top: 5px !important;
+    font-size: 10px !important;
+    gap: 5px !important;
+    margin-top: 4px !important;
   }
   .play-breadcrumb {
-    padding: 6px 8px !important;
-    font-size: 11px !important;
+    padding: 5px 8px !important;
+    font-size: 10px !important;
   }
   .play-tabs button {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
   }
+
+  /* Category pages */
   .category-featured {
-    height: 170px !important;
+    height: 150px !important;
   }
   .category-featured-inner {
-    bottom: 10px !important;
-    left: 12px !important;
-    right: 12px !important;
+    bottom: 8px !important;
+    left: 10px !important;
+    right: 10px !important;
   }
   .category-featured-title {
-    font-size: 16px !important;
-    margin-bottom: 4px !important;
+    font-size: 14px !important;
+    margin-bottom: 3px !important;
   }
   .category-featured-desc {
     display: none !important;
   }
   .category-featured-btns {
-    margin-top: 8px !important;
-  }
-  .category-header-spacer {
-    height: 60px !important;
-  }
-  .category-page-pad {
-    padding: 16px 10px 80px !important;
-  }
-  .content-row-section {
-    margin-bottom: 16px !important;
-  }
-  .content-row-title {
-    font-size: 13px !important;
-  }
-  .mobile-header-compact {
-    padding: 0 10px !important;
+    margin-top: 6px !important;
     gap: 6px !important;
   }
-  .mobile-vip-btn {
-    padding: 0 10px !important;
+  .category-featured-btns button {
+    padding: 5px 14px !important;
     font-size: 11px !important;
   }
-  .mobile-login-btn {
-    padding: 0 10px !important;
+  .category-header-spacer {
+    height: 54px !important;
+  }
+  .category-page-pad {
+    padding: 12px 8px 80px !important;
+  }
+  .category-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  /* Content rows (home page) */
+  .content-row-section {
+    margin-bottom: 14px !important;
+  }
+  .content-row-title {
+    font-size: 12px !important;
+  }
+  .content-card {
+    width: 96px !important;
+  }
+  .content-card-title {
     font-size: 11px !important;
+  }
+  .content-card-sub {
+    font-size: 9px !important;
+  }
+  .content-row-scroll {
+    gap: 6px !important;
+  }
+  .content-row-header {
+    margin-bottom: 7px !important;
+    padding: 0 2px !important;
   }
 }
 

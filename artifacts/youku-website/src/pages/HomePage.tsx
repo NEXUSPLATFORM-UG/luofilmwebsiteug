@@ -174,7 +174,7 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-      <div style={{ height: 60 }} />
+      <div className="mobile-header-spacer" style={{ height: 54 }} />
 
       {bannerShows.length === 0 ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400, color: "rgba(255,255,255,0.3)", fontSize: 15 }}>
@@ -340,24 +340,24 @@ function ContentRow({ title, subtitle, shows }: { title: string; subtitle?: stri
   };
 
   return (
-    <section style={{ marginBottom: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ display: "inline-block", width: 3, height: 16, borderRadius: 2, background: "#00a9f5" }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{title}</span>
-          {subtitle && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{subtitle}</span>}
+    <section className="content-row-section" style={{ marginBottom: 24 }}>
+      <div className="content-row-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ display: "inline-block", width: 3, height: 14, borderRadius: 2, background: "#00a9f5" }} />
+          <span className="content-row-title" style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{title}</span>
+          {subtitle && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginLeft: 2 }}>{subtitle}</span>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <button onClick={() => scroll("left")} style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <ChevronLeft size={14} />
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <button onClick={() => scroll("left")} style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <ChevronLeft size={12} />
           </button>
-          <button onClick={() => scroll("right")} style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <ChevronRight size={14} />
+          <button onClick={() => scroll("right")} style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <ChevronRight size={12} />
           </button>
-          <button style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer", marginLeft: 4 }}>ALL &gt;</button>
+          <button style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer", marginLeft: 2 }}>ALL &gt;</button>
         </div>
       </div>
-      <div ref={scrollRef} style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
+      <div ref={scrollRef} className="content-row-scroll" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
         {shows.map((show, idx) => <ContentCard key={show.id} show={show} rank={idx + 1} />)}
       </div>
     </section>
@@ -380,28 +380,28 @@ function ContentCard({ show, rank }: { show: Show; rank: number }) {
   }
   return (
     <Link href={`/play/${show.id}`}>
-      <div style={{ flexShrink: 0, width: 136, cursor: "pointer" }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={handleClick}>
-        <div style={{ position: "relative", paddingTop: "133.33%", borderRadius: 6, overflow: "hidden", background: "#1a1a1a" }}>
+      <div className="content-card" style={{ flexShrink: 0, width: 128, cursor: "pointer" }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={handleClick}>
+        <div style={{ position: "relative", paddingTop: "133.33%", borderRadius: 5, overflow: "hidden", background: "#1a1a1a" }}>
           <img src={show.thumbnailUrl} alt={show.title} loading="lazy"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.35s ease" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, backgroundImage: "linear-gradient(180deg, transparent, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55))" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 44, backgroundImage: "linear-gradient(180deg, transparent, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55))" }} />
           {show.badge && show.badge !== "none" && (
             <span style={{
-              position: "absolute", top: 0, right: 0, height: 18, lineHeight: "18px", padding: "0 6px",
-              borderRadius: "0 6px 0 6px", fontSize: 11, fontWeight: 700,
+              position: "absolute", top: 0, right: 0, height: 16, lineHeight: "16px", padding: "0 5px",
+              borderRadius: "0 5px 0 5px", fontSize: 10, fontWeight: 700,
               background: show.badge === "VIP" ? "linear-gradient(45deg,#ffc552,#ffdd9a)" : show.badge === "Express" ? "linear-gradient(45deg,#00a3f5,#00c9fd)" : "linear-gradient(45deg,#8819ff,#ad61ff)",
               color: show.badge === "VIP" ? "#4e2d03" : "#fff",
             }}>{show.badge}</span>
           )}
           {rank <= 3 && (
-            <span style={{ position: "absolute", bottom: 6, left: 6, fontSize: 22, fontWeight: 900, color: rank === 1 ? "#ffc552" : rank === 2 ? "#c0c0c0" : "#cd7f32", lineHeight: 1, textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>{rank}</span>
+            <span style={{ position: "absolute", bottom: 5, left: 5, fontSize: 20, fontWeight: 900, color: rank === 1 ? "#ffc552" : rank === 2 ? "#c0c0c0" : "#cd7f32", lineHeight: 1, textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>{rank}</span>
           )}
         </div>
-        <div style={{ paddingTop: 7, paddingBottom: 4 }}>
-          <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: hovered ? "#00a9f5" : "rgba(255,255,255,0.9)", transition: "color 0.2s" }}>
+        <div style={{ paddingTop: 5, paddingBottom: 3 }}>
+          <div className="content-card-title" style={{ fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: hovered ? "#00a9f5" : "rgba(255,255,255,0.9)", transition: "color 0.2s" }}>
             {show.title}
           </div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+          <div className="content-card-sub" style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>
             {show.type === "series" ? `${show.episodeCount} EPS` : "Movie"}
           </div>
         </div>
