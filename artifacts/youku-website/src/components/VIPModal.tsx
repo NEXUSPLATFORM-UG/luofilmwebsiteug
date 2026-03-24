@@ -211,8 +211,8 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
         <div className="vip-modal-left" style={{ flex: 1, padding: "24px 24px 28px", minWidth: 0, borderRight: "1px solid #f0f0f0" }}>
           <button onClick={() => { if (!isProcessing) onClose(); }} style={{ position: "absolute", top: 14, left: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", cursor: isProcessing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#666", lineHeight: 1 }}>×</button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingLeft: 4 }}>
-            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #ffe0a3, #ffc552)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🐱</div>
+          <div className="vip-user-info" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingLeft: 4 }}>
+            <div className="vip-user-avatar" style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #ffe0a3, #ffc552)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🐱</div>
             {user ? (
               <div style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1a" }}>
                 {profile?.name || user.email}
@@ -226,10 +226,11 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
           </div>
 
           {/* Plan cards */}
-          <div style={{ display: "flex", gap: 10, marginBottom: 14, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+          <div className="vip-plan-cards-row" style={{ display: "flex", gap: 10, marginBottom: 14, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
             {plans.map(p => (
               <button
                 key={p.id}
+                className="vip-plan-card"
                 onClick={() => { if (!isProcessing) { setSelectedPlan(p.id); if (step === 2) setStep(1); } }}
                 style={{
                   flexShrink: 0, width: 130, padding: "14px 10px 16px", borderRadius: 12,
@@ -239,31 +240,31 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
                 }}
               >
                 <div style={{ position: "absolute", top: -1, left: -1, background: p.tagColor, color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: "10px 0 10px 0", letterSpacing: "0.03em" }}>{p.tag}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: selectedPlan === p.id ? "#c07800" : "#666", marginBottom: 10, marginTop: 12, lineHeight: 1.4 }}>{p.label}</div>
+                <div className="vip-plan-label" style={{ fontSize: 12, fontWeight: 600, color: selectedPlan === p.id ? "#c07800" : "#666", marginBottom: 10, marginTop: 12, lineHeight: 1.4 }}>{p.label}</div>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 2, marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: selectedPlan === p.id ? "#c07800" : "#888" }}>UGX</span>
-                  <span style={{ fontSize: 22, fontWeight: 900, color: selectedPlan === p.id ? "#c07800" : "#333", lineHeight: 1 }}>
+                  <span className="vip-plan-ugx" style={{ fontSize: 11, fontWeight: 700, color: selectedPlan === p.id ? "#c07800" : "#888" }}>UGX</span>
+                  <span className="vip-plan-price" style={{ fontSize: 22, fontWeight: 900, color: selectedPlan === p.id ? "#c07800" : "#333", lineHeight: 1 }}>
                     {p.price >= 1000 ? `${(p.price / 1000).toFixed(0)}K` : p.price.toLocaleString()}
                   </span>
                 </div>
-                <div style={{ fontSize: 10, color: selectedPlan === p.id ? "#d4a000" : "#bbb" }}>{p.price.toLocaleString()} UGX</div>
+                <div className="vip-plan-full" style={{ fontSize: 10, color: selectedPlan === p.id ? "#d4a000" : "#bbb" }}>{p.price.toLocaleString()} UGX</div>
               </button>
             ))}
           </div>
 
-          <div style={{ fontSize: 12, color: "#f5a623", marginBottom: 22, paddingLeft: 2, display: "flex", alignItems: "center", gap: 5 }}>
+          <div className="vip-affordable" style={{ fontSize: 12, color: "#f5a623", marginBottom: 22, paddingLeft: 2, display: "flex", alignItems: "center", gap: 5 }}>
             <span style={{ fontSize: 14 }}>•</span>
             Affordable access — start watching in seconds!
           </div>
 
-          <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>VIP Membership Benefits</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
+          <div className="vip-benefits-title" style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>VIP Membership Benefits</div>
+          <div className="vip-benefits-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
             {BENEFITS.map(b => (
-              <div key={b.title} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 8, background: b.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: b.icon.length > 1 ? 10 : 16, fontWeight: 900, color: b.color, flexShrink: 0 }}>{b.icon}</div>
+              <div key={b.title} className="vip-benefit-item" style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div className="vip-benefit-icon" style={{ width: 34, height: 34, borderRadius: 8, background: b.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: b.icon.length > 1 ? 10 : 16, fontWeight: 900, color: b.color, flexShrink: 0 }}>{b.icon}</div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{b.title}</div>
-                  <div style={{ fontSize: 11, color: "#999", marginTop: 2, lineHeight: 1.4 }}>{b.desc}</div>
+                  <div className="vip-benefit-name" style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{b.title}</div>
+                  <div className="vip-benefit-desc" style={{ fontSize: 11, color: "#999", marginTop: 2, lineHeight: 1.4 }}>{b.desc}</div>
                 </div>
               </div>
             ))}
@@ -382,7 +383,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 22, paddingBottom: 18, borderBottom: "1px dashed #e8e8e8" }}>
+              <div className="vip-qr-block" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 22, paddingBottom: 18, borderBottom: "1px dashed #e8e8e8" }}>
                 <button style={{ flex: 1, padding: "8px 10px", borderRadius: 8, border: "1.5px solid #ff6b35", background: "#fff", color: "#ff6b35", fontSize: 12, fontWeight: 600, cursor: "pointer", lineHeight: 1.3, textAlign: "center" }}>
                   Pay with the<br />LUO FILM APP
                 </button>
@@ -391,22 +392,22 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
                 </div>
               </div>
 
-              <div style={{ textAlign: "center", marginBottom: 10 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#999", marginBottom: 4, letterSpacing: "0.05em" }}>{plan.label.toUpperCase()}</div>
+              <div className="vip-right-price-block" style={{ textAlign: "center", marginBottom: 10 }}>
+                <div className="vip-right-plan-name" style={{ fontSize: 12, fontWeight: 700, color: "#999", marginBottom: 4, letterSpacing: "0.05em" }}>{plan.label.toUpperCase()}</div>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>UGX</span>
-                  <span style={{ fontSize: 42, fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>{plan.price.toLocaleString()}</span>
+                  <span className="vip-right-ugx" style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>UGX</span>
+                  <span className="vip-right-price" style={{ fontSize: 42, fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>{plan.price.toLocaleString()}</span>
                 </div>
                 <div style={{ marginTop: 8 }}>
                   <span style={{ display: "inline-block", padding: "3px 14px", borderRadius: 20, background: plan.tagColor, color: "#fff", fontSize: 11, fontWeight: 700 }}>{plan.tag}</span>
                 </div>
               </div>
 
-              <div style={{ borderTop: "1px dashed #e8e8e8", margin: "14px 0" }} />
+              <div className="vip-right-divider" style={{ borderTop: "1px dashed #e8e8e8", margin: "14px 0" }} />
 
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: "#1a1a1a" }}>Choose Payment Method</div>
+              <div className="vip-payment-title" style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: "#1a1a1a" }}>Choose Payment Method</div>
 
-              <div style={{ border: "2px solid #f5a623", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginBottom: 8, position: "relative", background: "#fffdf5", cursor: "pointer" }}>
+              <div className="vip-payment-method" style={{ border: "2px solid #f5a623", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginBottom: 8, position: "relative", background: "#fffdf5", cursor: "pointer" }}>
                 <img src="https://www.galaxyfm.co.ug/wp-content/uploads/2018/05/Airtel-MTN-Money-logo-horz-.jpg" alt="Airtel Money & MTN Mobile Money" style={{ width: "100%", maxWidth: 160, height: "auto", objectFit: "contain", borderRadius: 4 }} />
                 <div style={{ fontSize: 10, color: "#999" }}>Mobile Money · Instant Activation</div>
                 <div style={{ position: "absolute", bottom: -1, right: -1, width: 18, height: 18, borderRadius: "50%", background: "#f5a623", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff", fontWeight: 700 }}>✓</div>
@@ -417,6 +418,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
               <div style={{ flex: 1 }} />
 
               <button
+                className="vip-pay-btn"
                 onClick={handlePayClick}
                 style={{ width: "100%", padding: "14px", borderRadius: 30, background: "linear-gradient(90deg,#f5c842 0%,#ffdd9a 50%,#e8a800 100%)", border: "none", color: "#3d2200", fontSize: 15, fontWeight: 800, cursor: "pointer", marginTop: 18, boxShadow: "0 4px 16px rgba(245,200,66,0.45)", transition: "filter 0.2s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = "brightness(1.06)"; }}
@@ -425,7 +427,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
                 Pay {formatUGX(plan.price)}
               </button>
 
-              <div style={{ marginTop: 12, textAlign: "center", fontSize: 10, color: "#1677ff", lineHeight: 1.6 }}>
+              <div className="vip-terms" style={{ marginTop: 12, textAlign: "center", fontSize: 10, color: "#1677ff", lineHeight: 1.6 }}>
                 <button style={{ background: "none", border: "none", color: "#1677ff", fontSize: 10, cursor: "pointer", textDecoration: "underline" }}>VIP Membership Terms</button>
                 {" "}
                 <button style={{ background: "none", border: "none", color: "#1677ff", fontSize: 10, cursor: "pointer", textDecoration: "underline" }}>Privacy Policy</button>
