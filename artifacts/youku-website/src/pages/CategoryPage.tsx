@@ -111,10 +111,21 @@ export default function CategoryPage({ genre, title, description: _description }
       .then((docs) => {
         const all = docs.map(toShow);
         if (genre === "movie") {
+          // Movies page: all content with type "movie"
           setShows(all.filter(s => s.type === "movie"));
-        } else {
-          const matched = all.filter(s =>
+        } else if (genre === "drama") {
+          // Drama page: all series + anything whose genre matches drama keywords
+          setShows(all.filter(s =>
+            s.type === "series" ||
             keywords.some(kw => (s.genre || "").toLowerCase().includes(kw))
+          ));
+        } else {
+          // Other pages: genre keyword match, but also include series that match
+          const matched = all.filter(s =>
+            keywords.some(kw =>
+              (s.genre || "").toLowerCase().includes(kw) ||
+              (s.title || "").toLowerCase().includes(kw)
+            )
           );
           setShows(matched);
         }
