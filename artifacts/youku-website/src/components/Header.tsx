@@ -34,6 +34,7 @@ export default function Header() {
   return (
     <>
       <header
+        className="desktop-header"
         style={{
           position: "fixed",
           top: 0,

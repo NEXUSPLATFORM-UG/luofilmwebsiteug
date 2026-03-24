@@ -1,6 +1,7 @@
 import { Switch, Route, useLocation } from "wouter";
 import { AuthProvider } from "./contexts/AuthContext";
 import Header from "./components/Header";
+import MobileBottomNav from "./components/MobileBottomNav";
 import HomePage from "./pages/HomePage";
 import PlayPage from "./pages/PlayPage";
 import CategoryPage from "./pages/CategoryPage";
@@ -8,8 +9,9 @@ import AdminApp from "./admin/AdminApp";
 
 function MainSite() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[#0a0a0a] mobile-pb">
       <Header />
+      <MobileBottomNav />
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/play/:id" component={PlayPage} />

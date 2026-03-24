@@ -174,16 +174,16 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-      <div style={{ height: 60 }} />
+      <div className="mobile-header-spacer" style={{ height: 60 }} />
 
       {bannerShows.length === 0 ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400, color: "rgba(255,255,255,0.3)", fontSize: 15 }}>
           No content published yet. Add content from the admin panel.
         </div>
       ) : (
-        <div style={{ display: "flex", gap: 8, padding: "10px 12px", maxWidth: 1440, margin: "0 auto", boxSizing: "border-box" }}>
-          <div style={{ flex: "0 0 auto", position: "relative" }}>
-            <div style={{ width: "calc(56vw - 20px)", minWidth: 480, maxWidth: 760, position: "relative", overflow: "hidden", borderRadius: 6, background: "#1a1a1a" }}>
+        <div className="carousel-wrapper" style={{ display: "flex", gap: 8, padding: "10px 12px", maxWidth: 1440, margin: "0 auto", boxSizing: "border-box" }}>
+          <div style={{ flex: "0 0 auto", position: "relative", width: "100%" }}>
+            <div className="carousel-mobile-full" style={{ width: "calc(56vw - 20px)", minWidth: 480, maxWidth: 760, position: "relative", overflow: "hidden", borderRadius: 6, background: "#1a1a1a" }}>
               <div style={{ paddingTop: "56.25%" }} />
               <img
                 key={currentShow.id}
@@ -197,7 +197,7 @@ export default function HomePage() {
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)" }} />
 
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 20px 20px" }}>
+              <div className="carousel-overlay" style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 20px 20px" }}>
                 {currentShow.badge && currentShow.badge !== "none" && (
                   <span style={{
                     display: "inline-block", padding: "1px 8px", borderRadius: 2, fontSize: 11, fontWeight: 700, marginBottom: 8,
@@ -205,20 +205,20 @@ export default function HomePage() {
                     color: currentShow.badge === "VIP" ? "#4e2d03" : "#fff",
                   }}>{currentShow.badge}</span>
                 )}
-                <h2 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.3, marginBottom: 6, textShadow: "0 1px 4px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                <h2 className="carousel-title" style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.3, marginBottom: 6, textShadow: "0 1px 4px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                   {currentShow.title}
                 </h2>
-                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 12, maxWidth: 380 }}>
+                <p className="carousel-desc" style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 12, maxWidth: 380 }}>
                   {currentShow.description}
                 </p>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div className="carousel-actions" style={{ display: "flex", gap: 8 }}>
                   <Link href={`/play/${currentShow.id}`}>
-                    <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "#00a9f5", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                    <button className="carousel-btn" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "#00a9f5", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}>
                       ▶ PLAY NOW
                     </button>
                   </Link>
                   <Link href={`/play/${currentShow.id}`}>
-                    <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 500, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
+                    <button className="carousel-btn" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 20, background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 500, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
                       DETAILS
                     </button>
                   </Link>
@@ -240,7 +240,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+          <div className="carousel-side-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
             <div style={{ display: "flex", gap: 8, flex: "0 0 auto" }}>
               {sideShows.map((show) => <SideShowCard key={show.id} show={show} />)}
             </div>
