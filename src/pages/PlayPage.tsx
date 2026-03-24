@@ -387,6 +387,8 @@ export default function PlayPage() {
       <div
         className="play-main-layout"
         style={{
+          maxWidth: 1000,
+          margin: "0 auto",
           padding: "0 16px 40px",
           display: "flex",
           gap: 16,

@@ -587,7 +587,8 @@ input, button, select, textarea {
     font-size: 12px !important;
   }
   .content-card {
-    width: 96px !important;
+    width: 100% !important;
+    flex-shrink: 1 !important;
   }
   .content-card-title {
     font-size: 11px !important;
@@ -596,11 +597,17 @@ input, button, select, textarea {
     font-size: 9px !important;
   }
   .content-row-scroll {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    overflow-x: unset !important;
     gap: 6px !important;
   }
   .content-row-header {
     margin-bottom: 7px !important;
     padding: 0 2px !important;
+  }
+  .content-row-nav {
+    display: none !important;
   }
 
   /* Play page recommended grid */

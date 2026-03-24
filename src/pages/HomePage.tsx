@@ -347,7 +347,7 @@ function ContentRow({ title, subtitle, shows, categoryHref }: { title: string; s
           <span className="content-row-title" style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{title}</span>
           {subtitle && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginLeft: 2 }}>{subtitle}</span>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <div className="content-row-nav" style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <button onClick={() => scroll("left")} style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
             <ChevronLeft size={12} />
           </button>
