@@ -215,7 +215,12 @@ export default function VIPModal({ onClose, onSubscribed, onOpenAuth }: VIPModal
           <button onClick={() => { if (!isProcessing) onClose(); }} style={{ position: "absolute", top: 14, left: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", cursor: isProcessing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#666", lineHeight: 1 }}>×</button>
 
           <div className="vip-user-info" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingLeft: 4 }}>
-            <div className="vip-user-avatar" style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #ffe0a3, #ffc552)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🐱</div>
+            <img
+              src={profile?.avatar || user?.photoURL || `https://api.dicebear.com/9.x/lorelei/svg?seed=${user?.uid || "guest"}`}
+              alt="avatar"
+              className="vip-user-avatar"
+              style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", background: "#f0e0c0", border: "2px solid rgba(245,166,35,0.3)", flexShrink: 0 }}
+            />
             {user ? (
               <div style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1a" }}>
                 {profile?.name || user.email}
