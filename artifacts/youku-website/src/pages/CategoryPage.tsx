@@ -167,10 +167,6 @@ export default function CategoryPage({ genre, title, description: _description }
       <div className="category-page-pad" style={{ maxWidth: 1440, margin: "0 auto", padding: "32px 20px 60px" }}>
         {featured && (
           <div style={{ marginBottom: 40 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div className="cat-section-bar" style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
-              <span className="cat-section-label" style={{ fontSize: 18, fontWeight: 700 }}>FEATURED</span>
-            </div>
             <Link href={`/play/${featured.id}`}>
               <div className="category-featured" style={{ position: "relative", borderRadius: 10, overflow: "hidden", cursor: "pointer", height: 280, background: "#1a1a1a" }}>
                 <img src={featured.coverUrl || featured.thumbnailUrl} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
