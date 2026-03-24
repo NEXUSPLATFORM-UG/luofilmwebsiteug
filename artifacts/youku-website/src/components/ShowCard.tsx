@@ -1,5 +1,7 @@
 import { Link } from "wouter";
 import type { Show } from "../data/shows";
+import { fbApi } from "../lib/firebaseApi";
+import { auth } from "../lib/firebase";
 
 const BADGE_STYLES: Record<string, { background: string; color: string; label: string }> = {
   VIP: {
@@ -23,12 +25,25 @@ interface ShowCardProps {
   show: Show;
 }
 
+function logContentClick(show: Show) {
+  const u = auth.currentUser;
+  fbApi.activities.log({
+    userId: u?.uid || null,
+    userName: u?.displayName || null,
+    userEmail: u?.email || null,
+    actionType: "content_click",
+    contentId: show.id,
+    contentTitle: show.title,
+    page: window.location.pathname,
+  }).catch(() => {});
+}
+
 export default function ShowCard({ show }: ShowCardProps) {
   const badge = show.badge !== "none" ? BADGE_STYLES[show.badge] : null;
 
   return (
     <Link href={`/play/${show.id}`}>
-      <div className="pack-card group cursor-pointer">
+      <div className="pack-card group cursor-pointer" onClick={() => logContentClick(show)}>
         <div
           className="pack-cover"
           style={{

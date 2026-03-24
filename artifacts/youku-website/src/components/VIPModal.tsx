@@ -80,18 +80,16 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
         status: "active",
         paymentMethod: "mobile_money",
         expiresAt,
-      });
-      await fbApi.transactions.create({
-        userId: user.uid,
-        userEmail: user.email || profile?.email || "",
-        userName: profile?.name || user.displayName || "",
-        userPhone: phone.trim(),
-        plan: plan.id,
-        amount: plan.price,
-        type: "subscription",
-        status: "completed",
-        description: `${plan.label} subscription — Mobile Money`,
         reference: `SUB-${Date.now()}`,
+      });
+      await fbApi.activities.log({
+        userId: user.uid,
+        userName: profile?.name || user.displayName || "",
+        userEmail: user.email || profile?.email || "",
+        userPhone: phone.trim(),
+        actionType: "subscription",
+        page: window.location.pathname,
+        metadata: JSON.stringify({ plan: plan.id, planLabel: plan.label, amount: plan.price }),
       });
       setStep(3);
       onSubscribed?.();

@@ -85,6 +85,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loginWithEmail(email: string, password: string) {
     const cred = await signInWithEmailAndPassword(auth, email, password);
     await fetchProfile(cred.user);
+    const snap2 = await getDoc(doc(db, "users", cred.user.uid));
+    const profileData = snap2.exists() ? snap2.data() : {};
+    await setDoc(doc(db, "activities", `login_${Date.now()}`), {
+      userId: cred.user.uid,
+      userName: cred.user.displayName || profileData.name || "",
+      userEmail: cred.user.email || email,
+      userPhone: profileData.phone || "",
+      actionType: "login",
+      page: "auth",
+      createdAt: serverTimestamp(),
+    });
   }
 
   async function registerWithEmail(email: string, password: string, name: string, phone: string, gender: string, avatar: string) {
@@ -100,6 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setDoc(doc(db, "activities", `${Date.now()}`), {
       userId: cred.user.uid,
       userName: name,
+      userEmail: email,
+      userPhone: phone,
       actionType: "register",
       page: "auth",
       createdAt: serverTimestamp(),
@@ -136,6 +149,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setDoc(doc(db, "activities", `${Date.now()}`), {
       userId: user.uid,
       userName: p.name,
+      userEmail: p.email,
+      userPhone: phone,
       actionType: "register",
       page: "auth",
       createdAt: serverTimestamp(),

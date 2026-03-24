@@ -198,6 +198,30 @@ export const fbApi = {
     },
     create: async (data: any) => {
       const ref2 = await addDoc(collection(db, "subscriptions"), { ...data, createdAt: serverTimestamp() });
+      if (data.status === "active" && data.amount > 0) {
+        const txData = {
+          userId: data.userId || null,
+          userName: data.userName || null,
+          userEmail: data.userEmail || null,
+          userPhone: data.userPhone || data.phone || null,
+          type: "subscription",
+          amount: data.amount,
+          status: "completed",
+          description: `${data.planLabel || data.plan || "Subscription"} — ${data.paymentMethod || "payment"}`,
+          reference: data.reference || `SUB-${Date.now()}`,
+        };
+        await addDoc(collection(db, "transactions"), { ...txData, createdAt: serverTimestamp() });
+        const walletRef = doc(db, "wallet", "main");
+        const walletSnap = await getDoc(walletRef);
+        const current = walletSnap.exists() ? (walletSnap.data().balance || 0) : 0;
+        const totalEarned = walletSnap.exists() ? (walletSnap.data().totalEarned || 0) : 0;
+        await setDoc(walletRef, {
+          balance: current + data.amount,
+          totalEarned: totalEarned + data.amount,
+          currency: "UGX",
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      }
       return { id: ref2.id };
     },
     update: async (id: string, data: any) => {
@@ -262,6 +286,25 @@ export const fbApi = {
       let txs = snap.docs.map(docToObj);
       if (params?.type) txs = txs.filter((t: any) => t.type === params.type);
       return { transactions: txs };
+    },
+    create: async (data: any) => {
+      const ref2 = await addDoc(collection(db, "transactions"), {
+        ...data,
+        createdAt: serverTimestamp(),
+      });
+      if (data.type === "subscription" && data.status === "completed" && data.amount > 0) {
+        const walletRef = doc(db, "wallet", "main");
+        const walletSnap = await getDoc(walletRef);
+        const current = walletSnap.exists() ? (walletSnap.data().balance || 0) : 0;
+        const totalEarned = walletSnap.exists() ? (walletSnap.data().totalEarned || 0) : 0;
+        await setDoc(walletRef, {
+          balance: current + data.amount,
+          totalEarned: totalEarned + data.amount,
+          currency: "UGX",
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      }
+      return { id: ref2.id };
     },
   },
 

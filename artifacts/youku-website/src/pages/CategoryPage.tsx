@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Star } from "lucide-react";
 import { fbApi } from "../lib/firebaseApi";
+import { auth } from "../lib/firebase";
 
 interface CategoryPageProps {
   genre: string;
@@ -93,6 +94,17 @@ export default function CategoryPage({ genre, title, description: _description }
   const accentColor = GENRE_COLORS[genre] || "#00a9f5";
   const [shows, setShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cu = auth.currentUser;
+    fbApi.activities.log({
+      userId: cu?.uid || null,
+      userName: cu?.displayName || null,
+      userEmail: cu?.email || null,
+      actionType: "page_view",
+      page: `/${genre}`,
+    }).catch(() => {});
+  }, [genre]);
 
   useEffect(() => {
     fbApi.publicContent.listAll()

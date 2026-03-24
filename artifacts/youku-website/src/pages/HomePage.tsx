@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fbApi } from "../lib/firebaseApi";
+import { auth } from "../lib/firebase";
 
 interface Show {
   id: string;
@@ -76,6 +77,17 @@ export default function HomePage() {
   const [shows, setShows] = useState<Show[]>([]);
   const [bannerShows, setBannerShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cu = auth.currentUser;
+    fbApi.activities.log({
+      userId: cu?.uid || null,
+      userName: cu?.displayName || null,
+      userEmail: cu?.email || null,
+      actionType: "page_view",
+      page: "/",
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -354,9 +366,21 @@ function ContentRow({ title, subtitle, shows }: { title: string; subtitle?: stri
 
 function ContentCard({ show, rank }: { show: Show; rank: number }) {
   const [hovered, setHovered] = useState(false);
+  function handleClick() {
+    const cu = auth.currentUser;
+    fbApi.activities.log({
+      userId: cu?.uid || null,
+      userName: cu?.displayName || null,
+      userEmail: cu?.email || null,
+      actionType: "content_click",
+      contentId: show.id,
+      contentTitle: show.title,
+      page: "/",
+    }).catch(() => {});
+  }
   return (
     <Link href={`/play/${show.id}`}>
-      <div style={{ flexShrink: 0, width: 136, cursor: "pointer" }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <div style={{ flexShrink: 0, width: 136, cursor: "pointer" }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={handleClick}>
         <div style={{ position: "relative", paddingTop: "133.33%", borderRadius: 6, overflow: "hidden", background: "#1a1a1a" }}>
           <img src={show.thumbnailUrl} alt={show.title} loading="lazy"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.35s ease" }} />

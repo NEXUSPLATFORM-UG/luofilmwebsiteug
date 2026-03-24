@@ -12,6 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 import { fbApi } from "../lib/firebaseApi";
+import { auth } from "../lib/firebase";
 import VideoPlayer from "../components/VideoPlayer";
 import VIPModal from "../components/VIPModal";
 import { useAuth } from "../contexts/AuthContext";
@@ -98,6 +99,16 @@ export default function PlayPage() {
           fbApi.content.episodes.list(params.id).then((r) => setEpisodes(r.episodes || [])).catch(() => {});
         }
         fbApi.content.incrementViews(params.id).catch(() => {});
+        const cu = auth.currentUser;
+        fbApi.activities.log({
+          userId: cu?.uid || null,
+          userName: cu?.displayName || null,
+          userEmail: cu?.email || null,
+          actionType: "page_view",
+          contentId: params.id,
+          contentTitle: d.title || "",
+          page: `/play/${params.id}`,
+        }).catch(() => {});
         fbApi.publicContent.listAll().then((all: any[]) => {
           setRelated(all.filter((x: any) => x.id !== params.id).slice(0, 12));
         }).catch(() => {});
