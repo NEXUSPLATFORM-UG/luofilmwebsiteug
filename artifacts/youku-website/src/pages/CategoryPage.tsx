@@ -168,8 +168,8 @@ export default function CategoryPage({ genre, title, description: _description }
         {featured && (
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
-              <span style={{ fontSize: 18, fontWeight: 700 }}>FEATURED</span>
+              <div className="cat-section-bar" style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
+              <span className="cat-section-label" style={{ fontSize: 18, fontWeight: 700 }}>FEATURED</span>
             </div>
             <Link href={`/play/${featured.id}`}>
               <div className="category-featured" style={{ position: "relative", borderRadius: 10, overflow: "hidden", cursor: "pointer", height: 280, background: "#1a1a1a" }}>
@@ -180,15 +180,15 @@ export default function CategoryPage({ genre, title, description: _description }
                     <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 3, fontSize: 11, fontWeight: 700, background: "linear-gradient(90deg,#ffc552,#ffdd9a)", color: "#4e2d03", marginBottom: 8 }}>{featured.badge}</span>
                   )}
                   <h2 className="category-featured-title" style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>{featured.title}</h2>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                  <div className="cat-featured-meta" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
                     {featured.rating ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
                         <Star size={13} fill="#ffc552" color="#ffc552" />
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#ffc552" }}>{featured.rating}</span>
+                        <span className="cat-featured-rating" style={{ fontSize: 14, fontWeight: 700, color: "#ffc552" }}>{featured.rating}</span>
                       </div>
                     ) : null}
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.year}</span>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.type === "series" ? `${featured.episodeCount} EPS` : "Movie"}</span>
+                    <span className="cat-featured-info" style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.year}</span>
+                    <span className="cat-featured-info" style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.type === "series" ? `${featured.episodeCount} EPS` : "Movie"}</span>
                   </div>
                   <p className="category-featured-desc" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                     {featured.description}
@@ -205,9 +205,9 @@ export default function CategoryPage({ genre, title, description: _description }
 
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-            <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
-            <span style={{ fontSize: 18, fontWeight: 700 }}>ALL {title}</span>
-            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{shows.length} TITLES</span>
+            <div className="cat-section-bar" style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
+            <span className="cat-section-label" style={{ fontSize: 18, fontWeight: 700 }}>ALL {title}</span>
+            <span className="cat-count-label" style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{shows.length} TITLES</span>
           </div>
           <div className="category-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10 }}>
             {shows.map((show) => <ShowCard key={show.id} show={show} />)}

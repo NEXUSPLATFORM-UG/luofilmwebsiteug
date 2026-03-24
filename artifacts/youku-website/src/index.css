@@ -559,6 +559,25 @@ input, button, select, textarea {
   .cat-card-sub {
     font-size: 9px !important;
   }
+  .cat-section-label {
+    font-size: 13px !important;
+  }
+  .cat-section-bar {
+    height: 13px !important;
+  }
+  .cat-count-label {
+    font-size: 10px !important;
+  }
+  .cat-featured-rating {
+    font-size: 11px !important;
+  }
+  .cat-featured-info {
+    font-size: 10px !important;
+  }
+  .cat-featured-meta {
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
 
   /* Content rows (home page) */
   .content-row-section {
