@@ -561,16 +561,16 @@ input, button, select, textarea {
     font-size: 12px !important;
   }
   .content-card {
-    width: 96px !important;
+    width: 162px !important;
   }
   .content-card-title {
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
   .content-card-sub {
-    font-size: 9px !important;
+    font-size: 10px !important;
   }
   .content-row-scroll {
-    gap: 6px !important;
+    gap: 10px !important;
   }
   .content-row-header {
     margin-bottom: 7px !important;
