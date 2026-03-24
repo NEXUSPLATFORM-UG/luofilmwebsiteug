@@ -549,7 +549,7 @@ input, button, select, textarea {
     padding: 12px 8px 80px !important;
   }
   .category-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
   }
   .cat-card-title {
