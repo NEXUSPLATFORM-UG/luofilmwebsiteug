@@ -549,8 +549,15 @@ input, button, select, textarea {
     padding: 12px 8px 80px !important;
   }
   .category-grid {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
-    gap: 7px !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+  }
+  .cat-card-title {
+    font-size: 10px !important;
+    line-height: 14px !important;
+  }
+  .cat-card-sub {
+    font-size: 9px !important;
   }
 
   /* Content rows (home page) */

@@ -76,11 +76,11 @@ function ShowCard({ show }: { show: Show }) {
             }}>{show.badge}</span>
           )}
         </div>
-        <div style={{ paddingTop: 7, paddingBottom: 4 }}>
-          <div style={{ fontSize: 13, fontWeight: 500, color: hovered ? "#00a9f5" : "rgba(255,255,255,0.9)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: "20px", transition: "color 0.2s" }} title={show.title}>
+        <div style={{ paddingTop: 6, paddingBottom: 4 }}>
+          <div className="cat-card-title" style={{ fontSize: 13, fontWeight: 500, color: hovered ? "#00a9f5" : "rgba(255,255,255,0.9)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: "18px", transition: "color 0.2s" }} title={show.title}>
             {show.title}
           </div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div className="cat-card-sub" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {show.type === "series" ? `${show.episodeCount} EPS · ` : "MOVIE · "}{(show.genre || "").split(" · ")[0].toUpperCase()}
           </div>
         </div>
