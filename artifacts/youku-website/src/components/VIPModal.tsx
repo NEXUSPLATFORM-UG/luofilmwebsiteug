@@ -239,7 +239,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
                   cursor: isProcessing ? "not-allowed" : "pointer", textAlign: "center", position: "relative", transition: "all 0.15s",
                 }}
               >
-                <div style={{ position: "absolute", top: -1, left: -1, background: p.tagColor, color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: "10px 0 10px 0", letterSpacing: "0.03em" }}>{p.tag}</div>
+                <div style={{ position: "absolute", top: -1, left: -1, background: p.tagColor, color: "#fff", fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: "10px 0 10px 0", letterSpacing: "0.03em" }}>{p.tag}</div>
                 <div className="vip-plan-label" style={{ fontSize: 12, fontWeight: 600, color: selectedPlan === p.id ? "#c07800" : "#666", marginBottom: 10, marginTop: 12, lineHeight: 1.4 }}>{p.label}</div>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 2, marginBottom: 4 }}>
                   <span className="vip-plan-ugx" style={{ fontSize: 11, fontWeight: 700, color: selectedPlan === p.id ? "#c07800" : "#888" }}>UGX</span>

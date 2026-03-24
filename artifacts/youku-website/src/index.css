@@ -645,12 +645,12 @@ input, button, select, textarea {
     margin-bottom: 8px !important;
   }
   .vip-plan-card {
-    width: 76px !important;
-    padding: 6px 4px 8px !important;
+    width: 92px !important;
+    padding: 8px 6px 10px !important;
     border-radius: 8px !important;
   }
   .vip-plan-label {
-    font-size: 9px !important;
+    font-size: 10px !important;
     margin-bottom: 5px !important;
     margin-top: 8px !important;
   }
@@ -658,7 +658,7 @@ input, button, select, textarea {
     font-size: 9px !important;
   }
   .vip-plan-price {
-    font-size: 15px !important;
+    font-size: 16px !important;
   }
   .vip-plan-full {
     display: none !important;
