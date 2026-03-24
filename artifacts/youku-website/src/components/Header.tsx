@@ -319,7 +319,7 @@ export default function Header() {
         )}
       </header>
 
-      {showVIP && <VIPModal onClose={() => setShowVIP(false)} />}
+      {showVIP && <VIPModal onClose={() => setShowVIP(false)} onOpenAuth={() => { setShowVIP(false); setShowAuth(true); }} />}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </>
   );

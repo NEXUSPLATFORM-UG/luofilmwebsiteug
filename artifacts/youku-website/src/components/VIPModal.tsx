@@ -26,9 +26,10 @@ function formatUGX(amount: number) {
 interface VIPModalProps {
   onClose: () => void;
   onSubscribed?: () => void;
+  onOpenAuth?: () => void;
 }
 
-export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
+export default function VIPModal({ onClose, onSubscribed, onOpenAuth }: VIPModalProps) {
   const { user, profile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState("day3");
   const [plans, setPlans] = useState(DEFAULT_PLANS);
@@ -63,7 +64,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
   const plan = plans.find(p => p.id === selectedPlan) || plans[1];
 
   const handlePayClick = () => {
-    if (!user) { setError("Please log in or sign up first to subscribe."); return; }
+    if (!user) { onClose(); onOpenAuth?.(); return; }
     setError("");
     setStep(2);
   };
@@ -147,7 +148,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
 
   const handleActivate = async () => {
     if (!phone.trim()) { setError("Please enter your Mobile Money phone number."); return; }
-    if (!user) { setError("Please log in first."); return; }
+    if (!user) { onClose(); onOpenAuth?.(); return; }
     setError("");
     setPayStatus("validating");
 

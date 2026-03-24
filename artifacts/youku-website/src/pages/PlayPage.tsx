@@ -15,6 +15,7 @@ import { fbApi } from "../lib/firebaseApi";
 import { auth } from "../lib/firebase";
 import VideoPlayer from "../components/VideoPlayer";
 import VIPModal from "../components/VIPModal";
+import AuthModal from "../components/AuthModal";
 import { useAuth } from "../contexts/AuthContext";
 
 function getEmbedInfo(url: string): { type: "video" | "iframe"; src: string } {
@@ -82,6 +83,7 @@ export default function PlayPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [showVIP, setShowVIP] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const anonId = fbApi.userActions.getAnonId();
 
   useEffect(() => {
@@ -1171,8 +1173,10 @@ export default function PlayPage() {
           setIsSubscribed(true);
           setShowVIP(false);
         }}
+        onOpenAuth={() => { setShowVIP(false); setShowAuth(true); }}
       />
     )}
+    {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </>
   );
 }
