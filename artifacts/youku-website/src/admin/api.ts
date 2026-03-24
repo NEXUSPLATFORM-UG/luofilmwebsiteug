@@ -61,4 +61,9 @@ export const api = {
     list: (params?: Record<string, string>) => fbApi.activities.list(params),
     log: (data: unknown) => fbApi.activities.log(data),
   },
+
+  settings: {
+    get: () => fbApi.settings.get(),
+    save: (data: unknown) => fbApi.settings.save(data),
+  },
 };

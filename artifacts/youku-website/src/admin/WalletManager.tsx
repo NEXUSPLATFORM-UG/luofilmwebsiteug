@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { Wallet, TrendingUp, TrendingDown, ArrowDownCircle, Plus } from "lucide-react";
 import { api } from "./api";
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  UGX: "UGX", USD: "$", EUR: "€", GBP: "£", KES: "KES",
+  NGN: "₦", GHS: "GH₵", ZAR: "R", TZS: "TZS", RWF: "RWF",
+};
+
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 12px",
@@ -28,12 +33,22 @@ export default function WalletManager() {
   const [form, setForm] = useState({ amount: "", description: "", method: "bank", accountDetails: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [platformCurrency, setPlatformCurrency] = useState("UGX");
 
   const load = () => {
-    api.wallet.get().then(d => setWallet(d.wallet)).finally(() => setLoading(false));
+    Promise.all([
+      api.wallet.get(),
+      api.settings.get(),
+    ]).then(([walletData, settingsData]: [any, any]) => {
+      setWallet(walletData);
+      if (settingsData?.currency) setPlatformCurrency(settingsData.currency);
+    }).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(); }, []);
+
+  const currSym = CURRENCY_SYMBOLS[platformCurrency] || platformCurrency;
+  const fmt = (v: number) => `${currSym} ${v.toLocaleString()}`;
 
   const withdraw = async () => {
     setSaving(true);
@@ -68,9 +83,9 @@ export default function WalletManager() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 32 }}>
         {[
-          { icon: Wallet, label: "Current Balance", value: `$${(wallet?.balance || 0).toFixed(2)}`, color: "#6366f1", sub: wallet?.currency || "USD" },
-          { icon: TrendingUp, label: "Total Earned", value: `$${(wallet?.totalEarned || 0).toFixed(2)}`, color: "#10b981", sub: "All time" },
-          { icon: TrendingDown, label: "Total Withdrawn", value: `$${(wallet?.totalWithdrawn || 0).toFixed(2)}`, color: "#ef4444", sub: "All time" },
+          { icon: Wallet, label: "Current Balance", value: fmt(wallet?.balance || 0), color: "#6366f1", sub: platformCurrency },
+          { icon: TrendingUp, label: "Total Earned", value: fmt(wallet?.totalEarned || 0), color: "#10b981", sub: "All time" },
+          { icon: TrendingDown, label: "Total Withdrawn", value: fmt(wallet?.totalWithdrawn || 0), color: "#ef4444", sub: "All time" },
         ].map(({ icon: Icon, label, value, color, sub }) => (
           <div key={label} style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "24px 28px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
@@ -99,7 +114,7 @@ export default function WalletManager() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>Available for Withdrawal</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>${(wallet?.balance || 0).toFixed(2)}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>{fmt(wallet?.balance || 0)}</div>
           </div>
           <div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>Last Updated</div>
@@ -111,8 +126,8 @@ export default function WalletManager() {
       {modal === "withdraw" && (
         <Modal title="Withdraw Funds" onClose={() => setModal(null)}>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Amount ($)</label>
-            <input style={inp} type="number" step="0.01" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" />
+            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Amount ({platformCurrency})</label>
+            <input style={inp} type="number" step="1" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0" />
           </div>
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Withdrawal Method</label>
@@ -133,7 +148,7 @@ export default function WalletManager() {
             <input style={inp} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Reason for withdrawal" />
           </div>
           <div style={{ padding: "10px 14px", background: "#ef444411", borderRadius: 8, border: "1px solid #ef444433", marginBottom: 20 }}>
-            <span style={{ fontSize: 12, color: "#f87171" }}>Available balance: ${(wallet?.balance || 0).toFixed(2)}</span>
+            <span style={{ fontSize: 12, color: "#f87171" }}>Available balance: {fmt(wallet?.balance || 0)}</span>
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={{ ...inp, width: "auto", cursor: "pointer" }}>Cancel</button>
@@ -147,8 +162,8 @@ export default function WalletManager() {
       {modal === "topup" && (
         <Modal title="Add Funds" onClose={() => setModal(null)}>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Amount ($)</label>
-            <input style={inp} type="number" step="0.01" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" />
+            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Amount ({platformCurrency})</label>
+            <input style={inp} type="number" step="1" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0" />
           </div>
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Description</label>

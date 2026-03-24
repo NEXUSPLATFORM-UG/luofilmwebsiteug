@@ -260,6 +260,17 @@ export const fbApi = {
     },
   },
 
+  settings: {
+    get: async () => {
+      const snap = await getDoc(doc(db, "settings", "main"));
+      return snap.exists() ? snap.data() : null;
+    },
+    save: async (data: any) => {
+      await setDoc(doc(db, "settings", "main"), { ...data, updatedAt: serverTimestamp() }, { merge: true });
+      return { success: true };
+    },
+  },
+
   userActions: {
     getAnonId: (): string => {
       let id = localStorage.getItem("luofilm_anon_id");
