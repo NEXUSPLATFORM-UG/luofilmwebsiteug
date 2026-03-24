@@ -3,7 +3,7 @@ import { Search, Download, ReceiptText, ChevronDown } from "lucide-react";
 import { api } from "./api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { filterByPeriod, periodLabel, drawYOUKUHeader, drawYOUKUFooter, drawSignatureBlock } from "./pdfUtils";
+import { filterByPeriod, periodLabel, drawBankHeader, drawBankFooter, drawBankSummaryBlock, Period } from "./pdfUtils";
 
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
@@ -16,8 +16,6 @@ const TYPE_COLORS: Record<string, string> = {
   refund: "#f59e0b", adjustment: "#8b5cf6",
 };
 
-type Period = "all" | "today" | "week" | "month";
-
 function Badge({ c, label }: { c: string; label: string }) {
   return <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${c}22`, color: c, textTransform: "capitalize" }}>{label}</span>;
 }
@@ -27,77 +25,81 @@ function fmtUGX(amount: number) {
 }
 
 async function buildTransactionPDF(records: any[], period: Period) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
-  const accentR = 99, accentG = 102, accentB = 241;
 
-  const totalIn = records.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-  const totalOut = records.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const totalIn = records.filter(t => Number(t.amount) > 0).reduce((s, t) => s + Number(t.amount), 0);
+  const totalOut = records.filter(t => Number(t.amount) < 0).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
   const net = totalIn - totalOut;
 
-  await drawYOUKUHeader(
+  const startY = await drawBankHeader(
     doc,
-    "TRANSACTIONS REPORT",
-    "Official Financial Transactions Record",
+    "TRANSACTION STATEMENT",
+    "Official Financial Record — LUOFILM.SITE",
     period,
     records.length,
-    `Total In: UGX ${totalIn.toLocaleString()}   |   Total Out: UGX ${totalOut.toLocaleString()}   |   Net Balance: UGX ${net.toLocaleString()}`
+    [
+      `Credits (In):   UGX ${totalIn.toLocaleString()}     Debits (Out): UGX ${totalOut.toLocaleString()}     Net Balance: UGX ${net.toLocaleString()}`,
+    ]
   );
 
   autoTable(doc, {
-    head: [["#", "Date & Time", "User Name", "Email", "Phone", "User ID", "Plan", "Type", "Amount (UGX)", "Status", "Description", "Reference"]],
+    head: [["#", "Date & Time", "Account Holder", "Phone", "Type", "Reference", "Amount (UGX)", "Status"]],
     body: records.map((t, i) => [
       i + 1,
       new Date(t.createdAt).toLocaleString(),
-      t.userName || "System",
-      t.userEmail || "-",
+      `${t.userName || "System"}\n${t.userEmail || ""}`,
       t.userPhone || "-",
-      t.userId || "-",
-      t.plan || "-",
-      t.type || "-",
-      `${t.amount > 0 ? "+" : ""}${Math.abs(t.amount).toLocaleString()}`,
-      t.status || "-",
-      t.description || "-",
-      t.reference || t.id || "-",
+      (t.type || "-").toUpperCase(),
+      t.reference || `#${(t.id || "").slice(0, 8)}`,
+      `${Number(t.amount) > 0 ? "+" : ""}${Number(Math.abs(t.amount)).toLocaleString()}`,
+      (t.status || "-").toUpperCase(),
     ]),
-    startY: 56,
-    styles: { fontSize: 7.5, cellPadding: 2.5, textColor: [30, 30, 50] },
-    headStyles: { fillColor: [accentR, accentG, accentB], textColor: 255, fontStyle: "bold", fontSize: 8 },
-    alternateRowStyles: { fillColor: [245, 245, 252] },
-    bodyStyles: { lineColor: [220, 220, 235], lineWidth: 0.1 },
+    startY,
+    styles: { fontSize: 7, cellPadding: [1.5, 2], textColor: [15, 23, 42], lineColor: [226, 232, 240], lineWidth: 0.2 },
+    headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold", fontSize: 7, cellPadding: [2.5, 2] },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    bodyStyles: { valign: "middle" },
     columnStyles: {
-      0: { cellWidth: 7 },
-      1: { cellWidth: 32 },
-      2: { cellWidth: 26 },
-      3: { cellWidth: 34 },
+      0: { cellWidth: 7, halign: "center" as const, fontStyle: "bold" },
+      1: { cellWidth: 30 },
+      2: { cellWidth: 45 },
+      3: { cellWidth: 22 },
       4: { cellWidth: 22 },
-      5: { cellWidth: 20 },
-      6: { cellWidth: 16 },
-      7: { cellWidth: 18 },
-      8: { cellWidth: 22, fontStyle: "bold" },
-      9: { cellWidth: 18 },
-      10: { cellWidth: 28 },
-      11: { cellWidth: 18 },
+      5: { cellWidth: 22 },
+      6: { cellWidth: 26, halign: "right" as const, fontStyle: "bold" },
+      7: { cellWidth: 22, halign: "center" as const },
     },
-    margin: { left: 10, right: 10 },
+    didParseCell: (data: any) => {
+      if (data.section === "body" && data.column.index === 6) {
+        const val = String(data.cell.raw || "");
+        data.cell.styles.textColor = val.startsWith("+") ? [5, 150, 105] : [220, 38, 38];
+      }
+      if (data.section === "body" && data.column.index === 7) {
+        const val = String(data.cell.raw || "").toLowerCase();
+        data.cell.styles.textColor = val === "COMPLETED" || val === "completed" ? [5, 150, 105] : val === "PENDING" || val === "pending" ? [245, 158, 11] : [100, 116, 139];
+      }
+    },
+    margin: { left: 6, right: 6 },
     didDrawPage: (data: any) => {
       const pageCount = (doc as any).internal.getNumberOfPages();
-      drawYOUKUFooter(doc, data.pageNumber, pageCount);
+      drawBankFooter(doc, data.pageNumber, pageCount);
     },
   });
 
-  const finalY = (doc as any).lastAutoTable.finalY + 14;
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
   const H = doc.internal.pageSize.getHeight();
-  const sigY = Math.min(finalY, H - 52);
+  const sigY = Math.min(finalY, H - 44);
 
-  drawSignatureBlock(
+  drawBankSummaryBlock(
     doc,
     sigY,
     "FINANCIAL SUMMARY",
     [
-      `Total Revenue In:  UGX ${totalIn.toLocaleString()}`,
-      `Total Withdrawn:   UGX ${totalOut.toLocaleString()}`,
-      `Net Balance:       UGX ${net.toLocaleString()}`,
+      `Total Credits:    UGX ${totalIn.toLocaleString()}`,
+      `Total Debits:     UGX ${totalOut.toLocaleString()}`,
+      `Closing Balance:  UGX ${net.toLocaleString()}`,
+      `Transactions:     ${records.length} record(s)`,
     ],
     `TXN-${Date.now()}`
   );

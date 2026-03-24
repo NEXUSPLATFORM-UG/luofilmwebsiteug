@@ -3,7 +3,7 @@ import { Search, Download, Activity, Clock, ChevronDown } from "lucide-react";
 import { api } from "./api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { filterByPeriod, periodLabel, drawYOUKUHeader, drawYOUKUFooter, drawSignatureBlock } from "./pdfUtils";
+import { filterByPeriod, periodLabel, drawBankHeader, drawBankFooter, drawBankSummaryBlock, Period } from "./pdfUtils";
 
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
@@ -20,79 +20,73 @@ const ACTION_COLORS: Record<string, string> = {
 };
 const ACTION_TYPES = Object.keys(ACTION_COLORS);
 
-type Period = "all" | "today" | "week" | "month";
-
 function Badge({ c, label }: { c: string; label: string }) {
   return <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600, background: `${c}22`, color: c, textTransform: "capitalize" }}>{label?.replace(/_/g, " ")}</span>;
 }
 
 async function buildActivityPDF(records: any[], period: Period) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  const W = doc.internal.pageSize.getWidth();
-  const accentR = 99, accentG = 102, accentB = 241;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   const uniqueUsers = new Set(records.map(a => a.userId || a.anonId).filter(Boolean)).size;
+  const uniqueIPs = new Set(records.map(a => a.ipAddress).filter(Boolean)).size;
+  const loginCount = records.filter(a => a.actionType === "login" || a.actionType === "register").length;
 
-  await drawYOUKUHeader(
+  const startY = await drawBankHeader(
     doc,
-    "USER ACTIVITY REPORT",
+    "ACTIVITY AUDIT LOG",
     "Platform Engagement & Behaviour Analytics",
     period,
     records.length,
-    `Unique Users: ${uniqueUsers}   |   Total Events: ${records.length}   |   Period: ${periodLabel(period)}`
+    [
+      `Unique Users: ${uniqueUsers}   |   Unique IPs: ${uniqueIPs}   |   Auth Events: ${loginCount}   |   Total Events: ${records.length}`,
+    ]
   );
 
   autoTable(doc, {
-    head: [["#", "Date & Time", "User Name", "Email", "Phone", "User ID", "Action", "Page / Screen", "Content", "IP Address", "Details"]],
+    head: [["#", "Date & Time", "User (Email / Phone)", "IP Address", "Action", "Page", "Content / Details"]],
     body: records.map((a, i) => [
       i + 1,
       new Date(a.createdAt).toLocaleString(),
-      a.userName || "Guest",
-      a.userEmail || "-",
-      a.userPhone || "-",
-      a.userId || a.anonId || "-",
-      a.actionType?.replace(/_/g, " ") || "-",
-      a.page || "-",
-      a.contentTitle || "-",
+      `${a.userName || "Guest"}\n${a.userEmail || ""}\n${a.userPhone || ""}`,
       a.ipAddress || "-",
-      a.details || "-",
+      (a.actionType || "-").replace(/_/g, " ").toUpperCase(),
+      a.page || "-",
+      a.contentTitle || a.details || "-",
     ]),
-    startY: 56,
-    styles: { fontSize: 7, cellPadding: 2, textColor: [30, 30, 50] },
-    headStyles: { fillColor: [accentR, accentG, accentB], textColor: 255, fontStyle: "bold", fontSize: 8 },
-    alternateRowStyles: { fillColor: [245, 245, 252] },
+    startY,
+    styles: { fontSize: 7, cellPadding: [1.5, 2], textColor: [15, 23, 42], lineColor: [226, 232, 240], lineWidth: 0.2 },
+    headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold", fontSize: 7, cellPadding: [2.5, 2] },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    bodyStyles: { valign: "middle" },
     columnStyles: {
-      0: { cellWidth: 7 },
-      1: { cellWidth: 32 },
-      2: { cellWidth: 28 },
-      3: { cellWidth: 36 },
-      4: { cellWidth: 24 },
+      0: { cellWidth: 7, halign: "center" as const, fontStyle: "bold" },
+      1: { cellWidth: 30 },
+      2: { cellWidth: 48 },
+      3: { cellWidth: 28 },
+      4: { cellWidth: 30 },
       5: { cellWidth: 22 },
-      6: { cellWidth: 24 },
-      7: { cellWidth: 24 },
-      8: { cellWidth: 30 },
-      9: { cellWidth: 22 },
-      10: { cellWidth: 28 },
+      6: { cellWidth: 32 },
     },
-    margin: { left: 10, right: 10 },
+    margin: { left: 6, right: 6 },
     didDrawPage: (data: any) => {
       const pageCount = (doc as any).internal.getNumberOfPages();
-      drawYOUKUFooter(doc, data.pageNumber, pageCount);
+      drawBankFooter(doc, data.pageNumber, pageCount);
     },
   });
 
-  const finalY = (doc as any).lastAutoTable.finalY + 14;
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
   const H = doc.internal.pageSize.getHeight();
-  const sigY = Math.min(finalY, H - 52);
+  const sigY = Math.min(finalY, H - 44);
 
-  drawSignatureBlock(
+  drawBankSummaryBlock(
     doc,
     sigY,
-    "ACTIVITY SUMMARY",
+    "AUDIT SUMMARY",
     [
-      `Total Events Logged: ${records.length}`,
-      `Unique Users:        ${uniqueUsers}`,
-      `Report Period:       ${periodLabel(period)}`,
+      `Total Events:    ${records.length}`,
+      `Unique Users:    ${uniqueUsers}`,
+      `Unique IPs:      ${uniqueIPs}`,
+      `Report Period:   ${periodLabel(period)}`,
     ],
     `ACT-${Date.now()}`
   );

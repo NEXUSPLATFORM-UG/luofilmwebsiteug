@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
+import { cacheUserPhone } from "../lib/firebaseApi";
 
 interface UserProfile {
   name: string;
@@ -87,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchProfile(cred.user);
     const snap2 = await getDoc(doc(db, "users", cred.user.uid));
     const profileData = snap2.exists() ? snap2.data() : {};
+    if (profileData.phone) cacheUserPhone(profileData.phone);
     await setDoc(doc(db, "activities", `login_${Date.now()}`), {
       userId: cred.user.uid,
       userName: cred.user.displayName || profileData.name || "",
@@ -107,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createdAt: serverTimestamp(),
       status: "active",
     });
+    cacheUserPhone(phone);
     setProfile(p);
     await setDoc(doc(db, "activities", `${Date.now()}`), {
       userId: cred.user.uid,
@@ -145,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createdAt: serverTimestamp(),
       status: "active",
     });
+    cacheUserPhone(phone);
     setProfile(p);
     await setDoc(doc(db, "activities", `${Date.now()}`), {
       userId: user.uid,

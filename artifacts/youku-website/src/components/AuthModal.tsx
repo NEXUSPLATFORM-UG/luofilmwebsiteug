@@ -32,6 +32,28 @@ function formatPhone(raw: string): string {
   return raw.replace(/\D/g, "").slice(0, 10);
 }
 
+const inp: React.CSSProperties = {
+  width: "100%",
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.11)",
+  borderRadius: 7,
+  padding: "8px 12px",
+  fontSize: 12,
+  color: "#fff",
+  outline: "none",
+  boxSizing: "border-box",
+  transition: "border-color 0.2s",
+};
+
+const lbl: React.CSSProperties = {
+  fontSize: 10,
+  color: "rgba(255,255,255,0.38)",
+  letterSpacing: "0.07em",
+  marginBottom: 4,
+  display: "block",
+  textTransform: "uppercase",
+};
+
 const GoogleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24">
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -40,6 +62,132 @@ const GoogleIcon = () => (
     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
   </svg>
 );
+
+function PhoneField({ value, onChange, valid, touched, autoFocus }: {
+  value: string; onChange: (v: string) => void; valid: boolean; touched: boolean; autoFocus?: boolean;
+}) {
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <label style={lbl}>Phone Number</label>
+        <span style={{ fontSize: 10, color: touched ? (valid ? "#4ade80" : "rgba(255,100,100,0.7)") : "rgba(255,255,255,0.25)" }}>
+          {value.length}/10
+        </span>
+      </div>
+      <div style={{ position: "relative" }}>
+        <input
+          className="auth-input"
+          style={{
+            ...inp,
+            paddingRight: 32,
+            borderColor: touched ? (valid ? "rgba(74,222,128,0.4)" : "rgba(255,100,100,0.4)") : "rgba(255,255,255,0.11)",
+          }}
+          type="tel"
+          inputMode="numeric"
+          placeholder="0798776867"
+          value={value}
+          onChange={(e) => onChange(formatPhone(e.target.value))}
+          maxLength={10}
+          autoFocus={autoFocus}
+        />
+        {touched && (
+          <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
+            {valid ? <Check size={13} color="#4ade80" /> : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
+          </div>
+        )}
+      </div>
+      {touched && !valid && (
+        <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>Must be exactly 10 digits</p>
+      )}
+    </div>
+  );
+}
+
+function EmailField({ value, onChange, valid, touched, label = "Email", placeholder = "you@example.com" }: {
+  value: string; onChange: (v: string) => void; valid: boolean; touched: boolean; label?: string; placeholder?: string;
+}) {
+  return (
+    <div>
+      <label style={lbl}>{label}</label>
+      <div style={{ position: "relative" }}>
+        <input
+          className="auth-input"
+          style={{
+            ...inp,
+            paddingRight: 32,
+            borderColor: touched ? (valid ? "rgba(74,222,128,0.4)" : "rgba(255,100,100,0.4)") : "rgba(255,255,255,0.11)",
+          }}
+          type="email"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {touched && (
+          <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
+            {valid ? <Check size={13} color="#4ade80" /> : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
+          </div>
+        )}
+      </div>
+      {touched && !valid && (
+        <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>Enter a valid email address</p>
+      )}
+    </div>
+  );
+}
+
+function GenderSelect({ value, onChange }: { value: Gender; onChange: (g: Gender) => void }) {
+  return (
+    <div>
+      <label style={lbl}>I am a</label>
+      <div style={{ display: "flex", gap: 6 }}>
+        {([
+          { value: "female" as Gender, label: "Girl / Woman", emoji: "👩" },
+          { value: "male" as Gender, label: "Boy / Man", emoji: "👨" },
+        ]).map((opt) => (
+          <button key={opt.value} type="button" onClick={() => onChange(opt.value)}
+            style={{
+              flex: 1, padding: "7px 6px", borderRadius: 7,
+              border: value === opt.value ? `1.5px solid ${opt.value === "female" ? "#f472b6" : "#60a5fa"}` : "1px solid rgba(255,255,255,0.09)",
+              background: value === opt.value ? (opt.value === "female" ? "rgba(244,114,182,0.09)" : "rgba(96,165,250,0.09)") : "rgba(255,255,255,0.03)",
+              color: value === opt.value ? (opt.value === "female" ? "#f9a8d4" : "#93c5fd") : "rgba(255,255,255,0.4)",
+              fontSize: 11, cursor: "pointer",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 2, transition: "all 0.15s",
+            }}>
+            <span style={{ fontSize: 16 }}>{opt.emoji}</span>
+            <span style={{ fontWeight: value === opt.value ? 600 : 400 }}>{opt.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AgeGroupSelect({ value, onChange }: { value: AgeGroup; onChange: (a: AgeGroup) => void }) {
+  return (
+    <div>
+      <label style={lbl}>Age Group</label>
+      <div style={{ display: "flex", gap: 6 }}>
+        {([
+          { value: "adult" as AgeGroup, label: "Adult", emoji: "🧑" },
+          { value: "child" as AgeGroup, label: "Child", emoji: "🧒" },
+        ]).map((opt) => (
+          <button key={opt.value} type="button" onClick={() => onChange(opt.value)}
+            style={{
+              flex: 1, padding: "7px 6px", borderRadius: 7,
+              border: value === opt.value ? "1.5px solid #00a9f5" : "1px solid rgba(255,255,255,0.09)",
+              background: value === opt.value ? "rgba(0,169,245,0.09)" : "rgba(255,255,255,0.03)",
+              color: value === opt.value ? "#7dd3fc" : "rgba(255,255,255,0.4)",
+              fontSize: 11, cursor: "pointer",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 2, transition: "all 0.15s",
+            }}>
+            <span style={{ fontSize: 16 }}>{opt.emoji}</span>
+            <span style={{ fontWeight: value === opt.value ? 600 : 400 }}>{opt.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function AuthModal({ onClose }: AuthModalProps) {
   const { loginWithEmail, registerWithEmail, loginWithGoogle, completeGoogleRegistration } = useAuth();
@@ -142,28 +290,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setLoading(false);
   }
 
-  const inp: React.CSSProperties = {
-    width: "100%",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.11)",
-    borderRadius: 7,
-    padding: "8px 12px",
-    fontSize: 12,
-    color: "#fff",
-    outline: "none",
-    boxSizing: "border-box",
-    transition: "border-color 0.2s",
-  };
-
-  const lbl: React.CSSProperties = {
-    fontSize: 10,
-    color: "rgba(255,255,255,0.38)",
-    letterSpacing: "0.07em",
-    marginBottom: 4,
-    display: "block",
-    textTransform: "uppercase",
-  };
-
   const btn: React.CSSProperties = {
     width: "100%",
     padding: "9px",
@@ -192,132 +318,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     justifyContent: "center",
     gap: 8,
   };
-
-  function PhoneField({ value, onChange, valid, touched, autoFocus }: {
-    value: string; onChange: (v: string) => void; valid: boolean; touched: boolean; autoFocus?: boolean;
-  }) {
-    return (
-      <div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <label style={lbl}>Phone Number</label>
-          <span style={{ fontSize: 10, color: touched ? (valid ? "#4ade80" : "rgba(255,100,100,0.7)") : "rgba(255,255,255,0.25)" }}>
-            {value.length}/10
-          </span>
-        </div>
-        <div style={{ position: "relative" }}>
-          <input
-            className="auth-input"
-            style={{
-              ...inp,
-              paddingRight: 32,
-              borderColor: touched ? (valid ? "rgba(74,222,128,0.4)" : "rgba(255,100,100,0.4)") : "rgba(255,255,255,0.11)",
-            }}
-            type="tel"
-            inputMode="numeric"
-            placeholder="0798776867"
-            value={value}
-            onChange={(e) => onChange(formatPhone(e.target.value))}
-            maxLength={10}
-            autoFocus={autoFocus}
-          />
-          {touched && (
-            <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
-              {valid ? <Check size={13} color="#4ade80" /> : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
-            </div>
-          )}
-        </div>
-        {touched && !valid && (
-          <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>Must be exactly 10 digits</p>
-        )}
-      </div>
-    );
-  }
-
-  function EmailField({ value, onChange, valid, touched, label = "Email", placeholder = "you@example.com" }: {
-    value: string; onChange: (v: string) => void; valid: boolean; touched: boolean; label?: string; placeholder?: string;
-  }) {
-    return (
-      <div>
-        <label style={lbl}>{label}</label>
-        <div style={{ position: "relative" }}>
-          <input
-            className="auth-input"
-            style={{
-              ...inp,
-              paddingRight: 32,
-              borderColor: touched ? (valid ? "rgba(74,222,128,0.4)" : "rgba(255,100,100,0.4)") : "rgba(255,255,255,0.11)",
-            }}
-            type="email"
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-          />
-          {touched && (
-            <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
-              {valid ? <Check size={13} color="#4ade80" /> : <AlertCircle size={13} color="rgba(255,100,100,0.7)" />}
-            </div>
-          )}
-        </div>
-        {touched && !valid && (
-          <p style={{ fontSize: 10, color: "rgba(255,100,100,0.7)", margin: "3px 0 0", letterSpacing: "0.03em" }}>Enter a valid email address</p>
-        )}
-      </div>
-    );
-  }
-
-  function GenderSelect({ value, onChange }: { value: Gender; onChange: (g: Gender) => void }) {
-    return (
-      <div>
-        <label style={lbl}>I am a</label>
-        <div style={{ display: "flex", gap: 6 }}>
-          {([
-            { value: "female" as Gender, label: "Girl / Woman", emoji: "👩" },
-            { value: "male" as Gender, label: "Boy / Man", emoji: "👨" },
-          ]).map((opt) => (
-            <button key={opt.value} type="button" onClick={() => onChange(opt.value)}
-              style={{
-                flex: 1, padding: "7px 6px", borderRadius: 7,
-                border: value === opt.value ? `1.5px solid ${opt.value === "female" ? "#f472b6" : "#60a5fa"}` : "1px solid rgba(255,255,255,0.09)",
-                background: value === opt.value ? (opt.value === "female" ? "rgba(244,114,182,0.09)" : "rgba(96,165,250,0.09)") : "rgba(255,255,255,0.03)",
-                color: value === opt.value ? (opt.value === "female" ? "#f9a8d4" : "#93c5fd") : "rgba(255,255,255,0.4)",
-                fontSize: 11, cursor: "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 2, transition: "all 0.15s",
-              }}>
-              <span style={{ fontSize: 16 }}>{opt.emoji}</span>
-              <span style={{ fontWeight: value === opt.value ? 600 : 400 }}>{opt.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  function AgeGroupSelect({ value, onChange }: { value: AgeGroup; onChange: (a: AgeGroup) => void }) {
-    return (
-      <div>
-        <label style={lbl}>Age Group</label>
-        <div style={{ display: "flex", gap: 6 }}>
-          {([
-            { value: "adult" as AgeGroup, label: "Adult", emoji: "🧑" },
-            { value: "child" as AgeGroup, label: "Child", emoji: "🧒" },
-          ]).map((opt) => (
-            <button key={opt.value} type="button" onClick={() => onChange(opt.value)}
-              style={{
-                flex: 1, padding: "7px 6px", borderRadius: 7,
-                border: value === opt.value ? "1.5px solid #00a9f5" : "1px solid rgba(255,255,255,0.09)",
-                background: value === opt.value ? "rgba(0,169,245,0.09)" : "rgba(255,255,255,0.03)",
-                color: value === opt.value ? "#7dd3fc" : "rgba(255,255,255,0.4)",
-                fontSize: 11, cursor: "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 2, transition: "all 0.15s",
-              }}>
-              <span style={{ fontSize: 16 }}>{opt.emoji}</span>
-              <span style={{ fontWeight: value === opt.value ? 600 : 400 }}>{opt.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   const avatarPreviewUrl =
     step === "google-phone"

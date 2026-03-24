@@ -18,6 +18,26 @@ function docToObj(d: any) {
   return out;
 }
 
+let _cachedIp: string | null = null;
+async function getClientIp(): Promise<string> {
+  if (_cachedIp) return _cachedIp;
+  try {
+    const res = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(3000) });
+    const data = await res.json();
+    _cachedIp = data.ip || "";
+    return _cachedIp || "";
+  } catch {
+    return "";
+  }
+}
+
+export function cacheUserPhone(phone: string) {
+  try { if (phone) localStorage.setItem("lf_user_phone", phone); } catch {}
+}
+export function getCachedUserPhone(): string {
+  try { return localStorage.getItem("lf_user_phone") || ""; } catch { return ""; }
+}
+
 
 export const fbApi = {
   stats: async () => {
@@ -316,7 +336,16 @@ export const fbApi = {
       return { activities: acts };
     },
     log: async (data: any) => {
-      const ref2 = await addDoc(collection(db, "activities"), { ...data, createdAt: serverTimestamp() });
+      const ip = await getClientIp();
+      const phone = data.userPhone || getCachedUserPhone() || null;
+      const enriched = {
+        ...data,
+        userPhone: phone,
+        ipAddress: ip || null,
+        userAgent: navigator.userAgent || null,
+        createdAt: serverTimestamp(),
+      };
+      const ref2 = await addDoc(collection(db, "activities"), enriched);
       return { id: ref2.id };
     },
   },
