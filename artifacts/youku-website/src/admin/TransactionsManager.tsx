@@ -3,6 +3,7 @@ import { Search, Download, ReceiptText, ChevronDown } from "lucide-react";
 import { api } from "./api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { filterByPeriod, periodLabel, drawYOUKUHeader, drawYOUKUFooter, drawSignatureBlock } from "./pdfUtils";
 
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
@@ -21,64 +22,27 @@ function Badge({ c, label }: { c: string; label: string }) {
   return <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${c}22`, color: c, textTransform: "capitalize" }}>{label}</span>;
 }
 
-function filterByPeriod(items: any[], period: Period): any[] {
-  if (period === "all") return items;
-  const now = new Date();
-  const start = new Date();
-  if (period === "today") { start.setHours(0, 0, 0, 0); }
-  else if (period === "week") { start.setDate(now.getDate() - 7); start.setHours(0, 0, 0, 0); }
-  else if (period === "month") { start.setDate(1); start.setHours(0, 0, 0, 0); }
-  return items.filter(i => new Date(i.createdAt) >= start);
-}
-
-function periodLabel(period: Period): string {
-  if (period === "today") return "Today — " + new Date().toLocaleDateString();
-  if (period === "week") return "This Week — " + new Date(Date.now() - 7 * 86400000).toLocaleDateString() + " to " + new Date().toLocaleDateString();
-  if (period === "month") return "This Month — " + new Date().toLocaleString("default", { month: "long", year: "numeric" });
-  return "All Time";
-}
-
 function fmtUGX(amount: number) {
   return `${amount > 0 ? "+" : ""}UGX ${Math.abs(amount).toLocaleString()}`;
 }
 
-function buildTransactionPDF(records: any[], period: Period) {
+async function buildTransactionPDF(records: any[], period: Period) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const accentR = 99, accentG = 102, accentB = 241;
-  const greenR = 16, greenG = 185, greenB = 129;
-
-  doc.setFillColor(10, 10, 24);
-  doc.rect(0, 0, W, 42, "F");
-
-  doc.setFillColor(accentR, accentG, accentB);
-  doc.roundedRect(10, 7, 48, 14, 3, 3, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("LUO FILM.SITE", 34, 15.5, { align: "center" });
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("VJ PAUL FREE DOWNLOAD", 34, 19.5, { align: "center" });
-
-  doc.setFontSize(17);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text("TRANSACTIONS REPORT", W / 2, 14, { align: "center" });
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 210);
-  doc.text(`Period: ${periodLabel(period)}`, W / 2, 21, { align: "center" });
-  doc.text(`Generated: ${new Date().toLocaleString()}   |   Records: ${records.length}`, W / 2, 27, { align: "center" });
 
   const totalIn = records.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const totalOut = records.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
   const net = totalIn - totalOut;
-  doc.text(`Total In: UGX ${totalIn.toLocaleString()}   |   Total Out: UGX ${totalOut.toLocaleString()}   |   Net: UGX ${net.toLocaleString()}`, W / 2, 33, { align: "center" });
 
-  doc.setTextColor(150, 160, 190);
-  doc.setFontSize(8);
-  doc.text("admin@luofilm.site  |  luofilm.site", W - 10, 16, { align: "right" });
+  await drawYOUKUHeader(
+    doc,
+    "TRANSACTIONS REPORT",
+    "Official Financial Transactions Record",
+    period,
+    records.length,
+    `Total In: UGX ${totalIn.toLocaleString()}   |   Total Out: UGX ${totalOut.toLocaleString()}   |   Net Balance: UGX ${net.toLocaleString()}`
+  );
 
   autoTable(doc, {
     head: [["#", "Date & Time", "User Name", "Email", "Phone", "User ID", "Plan", "Type", "Amount (UGX)", "Status", "Description", "Reference"]],
@@ -96,7 +60,7 @@ function buildTransactionPDF(records: any[], period: Period) {
       t.description || "-",
       t.reference || t.id || "-",
     ]),
-    startY: 46,
+    startY: 56,
     styles: { fontSize: 7.5, cellPadding: 2.5, textColor: [30, 30, 50] },
     headStyles: { fillColor: [accentR, accentG, accentB], textColor: 255, fontStyle: "bold", fontSize: 8 },
     alternateRowStyles: { fillColor: [245, 245, 252] },
@@ -118,55 +82,27 @@ function buildTransactionPDF(records: any[], period: Period) {
     margin: { left: 10, right: 10 },
     didDrawPage: (data: any) => {
       const pageCount = (doc as any).internal.getNumberOfPages();
-      doc.setFontSize(7);
-      doc.setTextColor(150, 150, 170);
-      doc.text(
-        `LUO FILM.SITE — Confidential  |  Page ${data.pageNumber} of ${pageCount}`,
-        W / 2, doc.internal.pageSize.getHeight() - 5, { align: "center" }
-      );
+      drawYOUKUFooter(doc, data.pageNumber, pageCount);
     },
   });
 
   const finalY = (doc as any).lastAutoTable.finalY + 14;
   const H = doc.internal.pageSize.getHeight();
-  const sigY = Math.min(finalY, H - 50);
+  const sigY = Math.min(finalY, H - 52);
 
-  doc.setDrawColor(accentR, accentG, accentB);
-  doc.setFillColor(248, 248, 255);
-  doc.roundedRect(10, sigY, W - 20, 40, 3, 3, "FD");
+  drawSignatureBlock(
+    doc,
+    sigY,
+    "FINANCIAL SUMMARY",
+    [
+      `Total Revenue In:  UGX ${totalIn.toLocaleString()}`,
+      `Total Withdrawn:   UGX ${totalOut.toLocaleString()}`,
+      `Net Balance:       UGX ${net.toLocaleString()}`,
+    ],
+    `TXN-${Date.now()}`
+  );
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(accentR, accentG, accentB);
-  doc.text("FINANCIAL SUMMARY", 20, sigY + 7);
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(30, 30, 60);
-  doc.setFontSize(8.5);
-  doc.text(`Total Revenue In:  UGX ${totalIn.toLocaleString()}`, 20, sigY + 14);
-  doc.text(`Total Withdrawn:   UGX ${totalOut.toLocaleString()}`, 20, sigY + 20);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Net Balance:       UGX ${net.toLocaleString()}`, 20, sigY + 26);
-
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(accentR, accentG, accentB);
-  doc.text("AUTHORIZED BY — CEO SIGNATURE", W / 2 + 10, sigY + 7);
-
-  doc.setLineWidth(0.5);
-  doc.setDrawColor(60, 60, 100);
-  doc.line(W / 2 + 10, sigY + 20, W - 15, sigY + 20);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 120);
-  doc.setFontSize(8);
-  doc.text("Chief Executive Officer — LUO FILM.SITE", W / 2 + 10, sigY + 25);
-  doc.text("Name: ______________________________", W / 2 + 10, sigY + 30);
-  doc.text("Date:  ______________________________", W / 2 + 10, sigY + 35);
-
-  doc.setFontSize(7);
-  doc.setTextColor(160, 160, 180);
-  doc.text(`Document ID: TXN-${Date.now()}  |  This is an official financial document of LUO FILM.SITE`, W / 2, sigY + 38, { align: "center" });
-
-  doc.save(`luofilm-transactions-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`youku-transactions-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 export default function TransactionsManager() {
@@ -186,10 +122,10 @@ export default function TransactionsManager() {
 
   useEffect(() => { load(); }, [search, type, status]);
 
-  const doExport = (period: Period) => {
+  const doExport = async (period: Period) => {
     setExportDropdown(false);
     const filtered = filterByPeriod(txs, period);
-    buildTransactionPDF(filtered, period);
+    await buildTransactionPDF(filtered, period);
   };
 
   const totalIn = txs.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);

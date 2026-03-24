@@ -1,6 +1,83 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Search, User, Phone, Mail, Shield } from "lucide-react";
+import { Plus, Edit, Trash2, Search, User, Phone, Mail, Shield, Download, ChevronDown } from "lucide-react";
 import { api } from "./api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { filterByPeriod, periodLabel, drawYOUKUHeader, drawYOUKUFooter, drawSignatureBlock } from "./pdfUtils";
+
+type Period = "all" | "today" | "week" | "month";
+
+async function buildUsersPDF(records: any[], period: Period) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const W = doc.internal.pageSize.getWidth();
+  const accentR = 99, accentG = 102, accentB = 241;
+
+  const activeCount = records.filter(u => u.status === "active").length;
+  const adminCount = records.filter(u => u.role === "admin").length;
+
+  await drawYOUKUHeader(
+    doc,
+    "USER MANAGEMENT REPORT",
+    "Registered Platform Users & Account Details",
+    period,
+    records.length,
+    `Active: ${activeCount}   |   Admins: ${adminCount}   |   Total Users: ${records.length}`
+  );
+
+  autoTable(doc, {
+    head: [["#", "Full Name", "Email", "Phone", "Country", "Role", "Status", "Joined Date", "User ID"]],
+    body: records.map((u, i) => [
+      i + 1,
+      u.name || "-",
+      u.email || "-",
+      u.phone || "-",
+      u.country || "-",
+      u.role || "user",
+      u.status || "active",
+      new Date(u.createdAt).toLocaleDateString(),
+      u.id || "-",
+    ]),
+    startY: 56,
+    styles: { fontSize: 8, cellPadding: 2.5, textColor: [30, 30, 50] },
+    headStyles: { fillColor: [accentR, accentG, accentB], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [245, 245, 252] },
+    bodyStyles: { lineColor: [220, 220, 235], lineWidth: 0.1 },
+    columnStyles: {
+      0: { cellWidth: 8 },
+      1: { cellWidth: 38 },
+      2: { cellWidth: 52 },
+      3: { cellWidth: 30 },
+      4: { cellWidth: 28 },
+      5: { cellWidth: 20 },
+      6: { cellWidth: 22 },
+      7: { cellWidth: 28 },
+      8: { cellWidth: 20 },
+    },
+    margin: { left: 10, right: 10 },
+    didDrawPage: (data: any) => {
+      const pageCount = (doc as any).internal.getNumberOfPages();
+      drawYOUKUFooter(doc, data.pageNumber, pageCount);
+    },
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 14;
+  const H = doc.internal.pageSize.getHeight();
+  const sigY = Math.min(finalY, H - 52);
+
+  drawSignatureBlock(
+    doc,
+    sigY,
+    "USER SUMMARY",
+    [
+      `Total Registered Users: ${records.length}`,
+      `Active Accounts:        ${activeCount}`,
+      `Admin Accounts:         ${adminCount}`,
+    ],
+    `USR-${Date.now()}`
+  );
+
+  doc.save(`youku-users-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
 
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
@@ -88,6 +165,7 @@ export default function UsersManager() {
   const [status, setStatus] = useState("");
   const [modal, setModal] = useState<null | "create" | any>(null);
   const [detail, setDetail] = useState<any>(null);
+  const [exportDropdown, setExportDropdown] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -102,6 +180,12 @@ export default function UsersManager() {
     load();
   };
 
+  const doExport = async (period: Period) => {
+    setExportDropdown(false);
+    const filtered = filterByPeriod(users, period);
+    await buildUsersPDF(filtered, period);
+  };
+
   const viewDetail = async (id: number) => {
     const d = await api.users.get(id);
     setDetail(d);
@@ -114,9 +198,28 @@ export default function UsersManager() {
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: 0 }}>User Management</h1>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{users.length} total users</p>
         </div>
-        <button onClick={() => setModal("create")} style={{ padding: "8px 16px", background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={15} /> Add User
-        </button>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ position: "relative" }}>
+            <button onClick={() => setExportDropdown(!exportDropdown)} style={{ padding: "8px 18px", background: "#10b981", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+              <Download size={15} /> Export PDF <ChevronDown size={13} />
+            </button>
+            {exportDropdown && (
+              <>
+                <div style={{ position: "fixed", inset: 0, zIndex: 49 }} onClick={() => setExportDropdown(false)} />
+                <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 50, background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, overflow: "hidden", minWidth: 180, boxShadow: "0 8px 28px rgba(0,0,0,0.5)" }}>
+                  {(["today", "week", "month", "all"] as Period[]).map(p => (
+                    <button key={p} onClick={() => doExport(p)} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 16px", background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 13, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      {p === "today" ? "Today" : p === "week" ? "This Week" : p === "month" ? "This Month" : "All Time"}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+          <button onClick={() => setModal("create")} style={{ padding: "8px 16px", background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Plus size={15} /> Add User
+          </button>
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>

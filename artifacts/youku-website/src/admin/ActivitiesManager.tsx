@@ -3,6 +3,7 @@ import { Search, Download, Activity, Clock, ChevronDown } from "lucide-react";
 import { api } from "./api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { filterByPeriod, periodLabel, drawYOUKUHeader, drawYOUKUFooter, drawSignatureBlock } from "./pdfUtils";
 
 const inp = {
   width: "100%", boxSizing: "border-box" as const, background: "rgba(255,255,255,0.05)",
@@ -25,53 +26,21 @@ function Badge({ c, label }: { c: string; label: string }) {
   return <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600, background: `${c}22`, color: c, textTransform: "capitalize" }}>{label?.replace(/_/g, " ")}</span>;
 }
 
-function filterByPeriod(items: any[], period: Period): any[] {
-  if (period === "all") return items;
-  const now = new Date();
-  const start = new Date();
-  if (period === "today") { start.setHours(0, 0, 0, 0); }
-  else if (period === "week") { start.setDate(now.getDate() - 7); start.setHours(0, 0, 0, 0); }
-  else if (period === "month") { start.setDate(1); start.setHours(0, 0, 0, 0); }
-  return items.filter(i => new Date(i.createdAt) >= start);
-}
-
-function periodLabel(period: Period): string {
-  if (period === "today") return "Today — " + new Date().toLocaleDateString();
-  if (period === "week") return "This Week — " + new Date(Date.now() - 7 * 86400000).toLocaleDateString() + " to " + new Date().toLocaleDateString();
-  if (period === "month") return "This Month — " + new Date().toLocaleString("default", { month: "long", year: "numeric" });
-  return "All Time";
-}
-
-function buildActivityPDF(records: any[], period: Period) {
+async function buildActivityPDF(records: any[], period: Period) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const accentR = 99, accentG = 102, accentB = 241;
 
-  doc.setFillColor(10, 10, 24);
-  doc.rect(0, 0, W, 38, "F");
+  const uniqueUsers = new Set(records.map(a => a.userId || a.anonId).filter(Boolean)).size;
 
-  doc.setFillColor(accentR, accentG, accentB);
-  doc.roundedRect(10, 7, 46, 12, 3, 3, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.text("LUO FILM.SITE", 33, 15.5, { align: "center" });
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("VJ PAUL FREE DOWNLOAD", 33, 19.5, { align: "center" });
-
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.text("USER ACTIVITY REPORT", W / 2, 14, { align: "center" });
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 200);
-  doc.text(`Period: ${periodLabel(period)}`, W / 2, 21, { align: "center" });
-  doc.text(`Generated: ${new Date().toLocaleString()}   |   Total Records: ${records.length}`, W / 2, 27, { align: "center" });
-
-  doc.setTextColor(150, 150, 180);
-  doc.setFontSize(8);
-  doc.text("admin@luofilm.site  |  luofilm.site  |  +256 700 000000", W - 10, 16, { align: "right" });
+  await drawYOUKUHeader(
+    doc,
+    "USER ACTIVITY REPORT",
+    "Platform Engagement & Behaviour Analytics",
+    period,
+    records.length,
+    `Unique Users: ${uniqueUsers}   |   Total Events: ${records.length}   |   Period: ${periodLabel(period)}`
+  );
 
   autoTable(doc, {
     head: [["#", "Date & Time", "User Name", "Email", "Phone", "User ID", "Action", "Page / Screen", "Content", "IP Address", "Details"]],
@@ -88,7 +57,7 @@ function buildActivityPDF(records: any[], period: Period) {
       a.ipAddress || "-",
       a.details || "-",
     ]),
-    startY: 42,
+    startY: 56,
     styles: { fontSize: 7, cellPadding: 2, textColor: [30, 30, 50] },
     headStyles: { fillColor: [accentR, accentG, accentB], textColor: 255, fontStyle: "bold", fontSize: 8 },
     alternateRowStyles: { fillColor: [245, 245, 252] },
@@ -108,46 +77,27 @@ function buildActivityPDF(records: any[], period: Period) {
     margin: { left: 10, right: 10 },
     didDrawPage: (data: any) => {
       const pageCount = (doc as any).internal.getNumberOfPages();
-      doc.setFontSize(7);
-      doc.setTextColor(150, 150, 170);
-      doc.text(
-        `LUO FILM.SITE — Confidential  |  Page ${data.pageNumber} of ${pageCount}`,
-        W / 2, doc.internal.pageSize.getHeight() - 5, { align: "center" }
-      );
+      drawYOUKUFooter(doc, data.pageNumber, pageCount);
     },
   });
 
-  const finalY = (doc as any).lastAutoTable.finalY + 18;
+  const finalY = (doc as any).lastAutoTable.finalY + 14;
   const H = doc.internal.pageSize.getHeight();
-  const sigY = Math.min(finalY, H - 45);
+  const sigY = Math.min(finalY, H - 52);
 
-  doc.setDrawColor(accentR, accentG, accentB);
-  doc.setFillColor(248, 248, 255);
-  doc.roundedRect(10, sigY, W - 20, 34, 3, 3, "FD");
+  drawSignatureBlock(
+    doc,
+    sigY,
+    "ACTIVITY SUMMARY",
+    [
+      `Total Events Logged: ${records.length}`,
+      `Unique Users:        ${uniqueUsers}`,
+      `Report Period:       ${periodLabel(period)}`,
+    ],
+    `ACT-${Date.now()}`
+  );
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(accentR, accentG, accentB);
-  doc.text("AUTHORIZED SIGNATURE", 20, sigY + 7);
-
-  doc.setDrawColor(80, 80, 120);
-  doc.setLineWidth(0.4);
-  doc.line(20, sigY + 22, 100, sigY + 22);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 120);
-  doc.text("Chief Executive Officer — LUO FILM.SITE", 20, sigY + 27);
-  doc.text("Name: ______________________________", 20, sigY + 32);
-
-  doc.line(110, sigY + 22, 190, sigY + 22);
-  doc.text("Date: ______________________________", 110, sigY + 27);
-  doc.text("Official Stamp:", 110, sigY + 32);
-
-  doc.setFontSize(7);
-  doc.setTextColor(160, 160, 180);
-  doc.text(`Document ID: ACT-${Date.now()}  |  This report is auto-generated and confidential.`, W / 2, sigY + 32, { align: "center" });
-
-  doc.save(`luofilm-activity-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`youku-activity-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 export default function ActivitiesManager() {
@@ -169,10 +119,10 @@ export default function ActivitiesManager() {
     return () => clearInterval(id);
   }, [autoRefresh, search, actionType]);
 
-  const doExport = (period: Period) => {
+  const doExport = async (period: Period) => {
     setExportDropdown(false);
     const filtered = filterByPeriod(activities, period);
-    buildActivityPDF(filtered, period);
+    await buildActivityPDF(filtered, period);
   };
 
   const actionCounts = activities.reduce((acc, a) => {
