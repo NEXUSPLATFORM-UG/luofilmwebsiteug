@@ -84,7 +84,21 @@ export default function PlayPage() {
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [showVIP, setShowVIP] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [minPlanPrice, setMinPlanPrice] = useState<number>(2500);
   const anonId = fbApi.userActions.getAnonId();
+
+  useEffect(() => {
+    fbApi.settings.get().then((s: any) => {
+      if (!s) return;
+      const prices = [
+        Number(s.plan1DayPrice ?? 2500),
+        Number(s.plan3DaysPrice ?? 5000),
+        Number(s.plan1WeekPrice ?? 10000),
+        Number(s.plan1MonthPrice ?? 20000),
+      ].filter(Boolean);
+      setMinPlanPrice(Math.min(...prices));
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!params.id) return;
@@ -392,7 +406,7 @@ export default function PlayPage() {
                 </div>
                 <div className="vip-gate-title" style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>VIP Subscription Required</div>
                 <div className="vip-gate-desc" style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24, lineHeight: 1.6 }}>
-                  Subscribe to unlock unlimited watching and downloading.<br />Plans from <strong style={{ color: "#ffc552" }}>UGX 2,500</strong> — activate instantly!
+                  Subscribe to unlock unlimited watching and downloading.<br />Plans from <strong style={{ color: "#ffc552" }}>UGX {minPlanPrice.toLocaleString()}</strong> — activate instantly!
                 </div>
                 <button
                   onClick={() => setShowVIP(true)}
@@ -1012,6 +1026,7 @@ export default function PlayPage() {
               {isVip && (
                 <div style={{ padding: "10px 12px" }}>
                   <button
+                    onClick={() => { if (!user) { setShowAuth(true); } else { setShowVIP(true); } }}
                     style={{
                       width: "100%",
                       padding: "8px",

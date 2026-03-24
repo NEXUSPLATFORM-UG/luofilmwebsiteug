@@ -33,6 +33,7 @@ export default function VIPModal({ onClose, onSubscribed, onOpenAuth }: VIPModal
   const { user, profile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState("day3");
   const [plans, setPlans] = useState(DEFAULT_PLANS);
+  const [plansLoaded, setPlansLoaded] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [phone, setPhone] = useState("");
   const [payStatus, setPayStatus] = useState<PaymentStatus>("idle");
@@ -44,14 +45,15 @@ export default function VIPModal({ onClose, onSubscribed, onOpenAuth }: VIPModal
 
   useEffect(() => {
     fbApi.settings.get().then((s: any) => {
-      if (!s) return;
-      setPlans([
-        { id: "day1", label: "1 Day Pass", tag: "TRY IT", tagColor: "#888", price: Number(s.plan1DayPrice ?? 2500), days: 1 },
-        { id: "day3", label: "3 Days Pass", tag: "POPULAR", tagColor: "#f5a623", price: Number(s.plan3DaysPrice ?? 5000), days: 3 },
-        { id: "week1", label: "1 Week Pass", tag: "GREAT VALUE", tagColor: "#e05a7a", price: Number(s.plan1WeekPrice ?? 10000), days: 7 },
-        { id: "month1", label: "1 Month Pass", tag: "BEST DEAL", tagColor: "#059669", price: Number(s.plan1MonthPrice ?? 20000), days: 30 },
-      ]);
-    }).catch(() => {});
+      if (s) {
+        setPlans([
+          { id: "day1", label: "1 Day Pass", tag: "TRY IT", tagColor: "#888", price: Number(s.plan1DayPrice ?? 2500), days: 1 },
+          { id: "day3", label: "3 Days Pass", tag: "POPULAR", tagColor: "#f5a623", price: Number(s.plan3DaysPrice ?? 5000), days: 3 },
+          { id: "week1", label: "1 Week Pass", tag: "GREAT VALUE", tagColor: "#e05a7a", price: Number(s.plan1WeekPrice ?? 10000), days: 7 },
+          { id: "month1", label: "1 Month Pass", tag: "BEST DEAL", tagColor: "#059669", price: Number(s.plan1MonthPrice ?? 20000), days: 30 },
+        ]);
+      }
+    }).catch(() => {}).finally(() => setPlansLoaded(true));
     if (profile?.phone) setPhone(profile.phone);
   }, [profile]);
 
@@ -228,7 +230,11 @@ export default function VIPModal({ onClose, onSubscribed, onOpenAuth }: VIPModal
 
           {/* Plan cards */}
           <div className="vip-plan-cards-row" style={{ display: "flex", gap: 10, marginBottom: 14, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
-            {plans.map(p => (
+            {!plansLoaded ? (
+              [1,2,3,4].map(i => (
+                <div key={i} style={{ flexShrink: 0, width: 130, height: 88, borderRadius: 12, background: "#f0f0f0", animation: "pulse 1.2s ease-in-out infinite" }} />
+              ))
+            ) : plans.map(p => (
               <button
                 key={p.id}
                 className="vip-plan-card"

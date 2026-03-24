@@ -17,7 +17,7 @@ const navLinks = [
 ];
 
 export default function Header() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showVIP, setShowVIP] = useState(false);
@@ -30,6 +30,14 @@ export default function Header() {
   async function handleLogout() {
     await logout();
     setShowUserMenu(false);
+  }
+
+  function doSearch(val: string) {
+    const q = val.trim();
+    if (!q) return;
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+    setSearchValue("");
+    setMobileSearchOpen(false);
   }
 
   return (
@@ -79,6 +87,7 @@ export default function Header() {
                 autoFocus
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") doSearch(searchValue); }}
                 placeholder="Search shows, movies..."
                 style={{ background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 13, width: "100%" }}
               />
@@ -147,6 +156,7 @@ export default function Header() {
               </svg>
               <input value={searchValue} onChange={(e) => setSearchValue(e.target.value)}
                 onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)}
+                onKeyDown={(e) => { if (e.key === "Enter") doSearch(searchValue); }}
                 placeholder="SEARCH SHOWS, MOVIES..."
                 style={{ background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 12, width: "100%" }} />
               {searchValue && (

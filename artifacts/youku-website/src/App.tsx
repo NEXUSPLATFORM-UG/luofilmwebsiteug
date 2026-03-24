@@ -5,6 +5,7 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import HomePage from "./pages/HomePage";
 import PlayPage from "./pages/PlayPage";
 import CategoryPage from "./pages/CategoryPage";
+import SearchPage from "./pages/SearchPage";
 import AdminApp from "./admin/AdminApp";
 
 function MainSite() {
@@ -14,6 +15,7 @@ function MainSite() {
       <MobileBottomNav />
       <Switch>
         <Route path="/" component={HomePage} />
+        <Route path="/search" component={SearchPage} />
         <Route path="/play/:id" component={PlayPage} />
         <Route path="/drama">
           <CategoryPage
