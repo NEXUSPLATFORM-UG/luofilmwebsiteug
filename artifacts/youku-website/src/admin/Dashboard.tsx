@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Users, Film, CreditCard, Activity, TrendingUp, DollarSign, Eye, Clock } from "lucide-react";
+import { Users, Film, CreditCard, Activity, TrendingUp, DollarSign, Clock, Wifi } from "lucide-react";
 import { api } from "./api";
+import { paymentApi } from "../lib/paymentApi";
 
 function StatCard({ icon: Icon, label, value, color, sub }: { icon: typeof Users; label: string; value: string | number; color: string; sub?: string }) {
   return (
@@ -35,14 +36,26 @@ function Badge({ children, color }: { children: React.ReactNode; color: string }
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [apiBalance, setApiBalance] = useState<any>(null);
+  const [apiBalanceLoading, setApiBalanceLoading] = useState(true);
 
   useEffect(() => {
     api.stats().then(setData).catch(console.error).finally(() => setLoading(false));
+    paymentApi.walletBalance()
+      .then(setApiBalance)
+      .catch(() => setApiBalance(null))
+      .finally(() => setApiBalanceLoading(false));
   }, []);
 
   if (loading) return <div style={{ color: "rgba(255,255,255,0.4)", padding: 40 }}>Loading dashboard...</div>;
 
   const stats = data?.stats || {};
+
+  const liveApiBalance = apiBalanceLoading
+    ? "Loading…"
+    : apiBalance
+      ? `UGX ${Number(apiBalance.balance ?? apiBalance.available_balance ?? 0).toLocaleString()}`
+      : "N/A";
 
   return (
     <div>
@@ -51,12 +64,27 @@ export default function Dashboard() {
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>Welcome back, Admin. Here's what's happening.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16, marginBottom: 32 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16, marginBottom: 20 }}>
         <StatCard icon={Users} label="Total Users" value={stats.totalUsers ?? 0} color="#6366f1" sub="Registered accounts" />
         <StatCard icon={Film} label="Total Content" value={stats.totalContent ?? 0} color="#10b981" sub="Movies & Series" />
         <StatCard icon={CreditCard} label="Active Subscriptions" value={stats.activeSubscriptions ?? 0} color="#f59e0b" sub="Currently active" />
-        <StatCard icon={DollarSign} label="Total Revenue" value={`$${(stats.totalRevenue ?? 0).toFixed(2)}`} color="#ef4444" sub="From subscriptions" />
+        <StatCard icon={DollarSign} label="Firebase Revenue" value={`UGX ${(stats.totalRevenue ?? 0).toLocaleString()}`} color="#ef4444" sub="From subscriptions" />
         <StatCard icon={Activity} label="Total Activities" value={stats.totalActivities ?? 0} color="#8b5cf6" sub="User interactions" />
+      </div>
+
+      {/* Live API balance banner */}
+      <div style={{ background: "linear-gradient(90deg,#0f1929,#0a1520)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 12, padding: "16px 24px", marginBottom: 28, display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 10, background: "#10b98122", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Wifi size={20} color="#10b981" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Live Payment Gateway Balance</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#10b981" }}>{liveApiBalance}</div>
+        </div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", textAlign: "right" }}>
+          <div>Firebase: <span style={{ color: "#6366f1" }}>UGX {(stats.totalRevenue ?? 0).toLocaleString()}</span></div>
+          <div style={{ marginTop: 3 }}>Source: Relworx API</div>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
@@ -71,7 +99,7 @@ export default function Dashboard() {
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{tx.userName || "System"} · {new Date(tx.createdAt).toLocaleDateString()}</div>
                 </div>
                 <span style={{ fontWeight: 700, color: tx.amount > 0 ? "#10b981" : "#ef4444" }}>
-                  {tx.amount > 0 ? "+" : ""}${Math.abs(tx.amount).toFixed(2)}
+                  {tx.amount > 0 ? "+" : ""}UGX {Math.abs(tx.amount).toLocaleString()}
                 </span>
               </div>
             ))}

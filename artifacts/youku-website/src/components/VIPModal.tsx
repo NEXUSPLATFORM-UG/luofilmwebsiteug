@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fbApi } from "../lib/firebaseApi";
+import { paymentApi, PaymentStatus } from "../lib/paymentApi";
 import { useAuth } from "../contexts/AuthContext";
 
 const DEFAULT_PLANS = [
@@ -33,8 +34,12 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
   const [plans, setPlans] = useState(DEFAULT_PLANS);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [phone, setPhone] = useState("");
-  const [activating, setActivating] = useState(false);
+  const [payStatus, setPayStatus] = useState<PaymentStatus>("idle");
   const [error, setError] = useState("");
+  const [pollCount, setPollCount] = useState(0);
+  const internalRef = useRef<string>("");
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const subscriptionRef = useRef<string>("");
 
   useEffect(() => {
     fbApi.settings.get().then((s: any) => {
@@ -46,64 +51,158 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
         { id: "month1", label: "1 Month Pass", tag: "BEST DEAL", tagColor: "#059669", price: Number(s.plan1MonthPrice ?? 20000), days: 30 },
       ]);
     }).catch(() => {});
-
     if (profile?.phone) setPhone(profile.phone);
   }, [profile]);
+
+  useEffect(() => {
+    return () => {
+      if (pollTimer.current) clearInterval(pollTimer.current);
+    };
+  }, []);
 
   const plan = plans.find(p => p.id === selectedPlan) || plans[1];
 
   const handlePayClick = () => {
-    if (!user) {
-      setError("Please log in or sign up first to subscribe.");
-      return;
-    }
+    if (!user) { setError("Please log in or sign up first to subscribe."); return; }
     setError("");
     setStep(2);
+  };
+
+  const stopPolling = () => {
+    if (pollTimer.current) { clearInterval(pollTimer.current); pollTimer.current = null; }
+  };
+
+  const activateInFirebase = async (txData: any) => {
+    if (!user) return;
+    const expiresAt = Date.now() + plan.days * 24 * 60 * 60 * 1000;
+    await fbApi.subscriptions.create({
+      userId: user.uid,
+      userEmail: user.email || profile?.email || "",
+      userName: profile?.name || user.displayName || "",
+      userPhone: phone.trim(),
+      plan: plan.id,
+      planLabel: plan.label,
+      amount: plan.price,
+      phone: phone.trim(),
+      status: "active",
+      paymentMethod: "mobile_money",
+      expiresAt,
+      reference: subscriptionRef.current,
+      providerTxId: txData?.provider_transaction_id || null,
+      provider: txData?.provider || null,
+      paidAt: txData?.completed_at || null,
+    });
+    await fbApi.activities.log({
+      userId: user.uid,
+      userName: profile?.name || user.displayName || "",
+      userEmail: user.email || profile?.email || "",
+      userPhone: phone.trim(),
+      actionType: "subscription",
+      page: window.location.pathname,
+      metadata: JSON.stringify({ plan: plan.id, planLabel: plan.label, amount: plan.price, provider: txData?.provider }),
+    });
+  };
+
+  const startPolling = () => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 24;
+
+    pollTimer.current = setInterval(async () => {
+      attempts++;
+      setPollCount(attempts);
+      try {
+        const result = await paymentApi.checkStatus(internalRef.current);
+        const status = result?.request_status || result?.status;
+
+        if (status === "success" || (result?.success === true && status === "success")) {
+          stopPolling();
+          await activateInFirebase(result);
+          setPayStatus("success");
+          setStep(3);
+          onSubscribed?.();
+          return;
+        }
+
+        if (status === "failed" || status === "cancelled" || status === "rejected") {
+          stopPolling();
+          setPayStatus("failed");
+          setError("Payment was declined or cancelled. Please try again.");
+          return;
+        }
+
+        if (attempts >= MAX_ATTEMPTS) {
+          stopPolling();
+          setPayStatus("failed");
+          setError("Payment timed out. If you approved the prompt, please contact support.");
+        }
+      } catch {
+        if (attempts >= MAX_ATTEMPTS) {
+          stopPolling();
+          setPayStatus("failed");
+          setError("Could not verify payment status. Please contact support if funds were deducted.");
+        }
+      }
+    }, 5000);
   };
 
   const handleActivate = async () => {
     if (!phone.trim()) { setError("Please enter your Mobile Money phone number."); return; }
     if (!user) { setError("Please log in first."); return; }
     setError("");
-    setActivating(true);
+    setPayStatus("validating");
+
     try {
-      const expiresAt = Date.now() + plan.days * 24 * 60 * 60 * 1000;
-      await fbApi.subscriptions.create({
-        userId: user.uid,
-        userEmail: user.email || profile?.email || "",
-        userName: profile?.name || user.displayName || "",
-        userPhone: phone.trim(),
-        plan: plan.id,
-        planLabel: plan.label,
-        amount: plan.price,
-        phone: phone.trim(),
-        status: "active",
-        paymentMethod: "mobile_money",
-        expiresAt,
-        reference: `SUB-${Date.now()}`,
-      });
-      await fbApi.activities.log({
-        userId: user.uid,
-        userName: profile?.name || user.displayName || "",
-        userEmail: user.email || profile?.email || "",
-        userPhone: phone.trim(),
-        actionType: "subscription",
-        page: window.location.pathname,
-        metadata: JSON.stringify({ plan: plan.id, planLabel: plan.label, amount: plan.price }),
-      });
-      setStep(3);
-      onSubscribed?.();
-    } catch (e) {
-      setError("Activation failed. Please try again.");
-    } finally {
-      setActivating(false);
+      await paymentApi.validatePhone(phone.trim());
+    } catch (e: any) {
+      setPayStatus("idle");
+      setError(e.message || "Invalid phone number. Please check and try again.");
+      return;
     }
+
+    setPayStatus("pending");
+    const reference = `SUB-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    subscriptionRef.current = reference;
+
+    let depositResult: any;
+    try {
+      depositResult = await paymentApi.deposit(
+        phone.trim(),
+        plan.price,
+        `VIP Subscription — ${plan.label}`,
+        reference
+      );
+    } catch (e: any) {
+      setPayStatus("idle");
+      setError(e.message || "Could not initiate payment. Please try again.");
+      return;
+    }
+
+    const intRef = depositResult?.internal_reference || depositResult?.data?.internal_reference;
+    if (!intRef) {
+      setPayStatus("idle");
+      setError("Payment could not be initiated. Please try again.");
+      return;
+    }
+
+    internalRef.current = intRef;
+    setPayStatus("polling");
+    setPollCount(0);
+    startPolling();
+  };
+
+  const isProcessing = payStatus === "validating" || payStatus === "pending" || payStatus === "polling";
+
+  const statusLabel = () => {
+    if (payStatus === "validating") return "Validating phone number…";
+    if (payStatus === "pending") return "Sending payment request…";
+    if (payStatus === "polling") return "Waiting for your approval on your phone…";
+    return "Confirm & Pay";
   };
 
   return (
     <div
       style={{ position: "fixed", inset: 0, zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center" }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={e => { if (e.target === e.currentTarget && !isProcessing) onClose(); }}
     >
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(3px)" }} />
 
@@ -111,7 +210,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
 
         {/* Left panel */}
         <div style={{ flex: 1, padding: "24px 24px 28px", minWidth: 0, borderRight: "1px solid #f0f0f0" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: 14, left: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#666", lineHeight: 1 }}>×</button>
+          <button onClick={() => { if (!isProcessing) onClose(); }} style={{ position: "absolute", top: 14, left: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", cursor: isProcessing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#666", lineHeight: 1 }}>×</button>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingLeft: 4 }}>
             <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #ffe0a3, #ffc552)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🐱</div>
@@ -132,12 +231,12 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
             {plans.map(p => (
               <button
                 key={p.id}
-                onClick={() => { setSelectedPlan(p.id); if (step === 2) setStep(1); }}
+                onClick={() => { if (!isProcessing) { setSelectedPlan(p.id); if (step === 2) setStep(1); } }}
                 style={{
                   flexShrink: 0, width: 130, padding: "14px 10px 16px", borderRadius: 12,
                   border: selectedPlan === p.id ? "2px solid #f5a623" : "2px solid #eee",
                   background: selectedPlan === p.id ? "linear-gradient(160deg,#fff9ee 0%,#fff3d0 100%)" : "#fafafa",
-                  cursor: "pointer", textAlign: "center", position: "relative", transition: "all 0.15s",
+                  cursor: isProcessing ? "not-allowed" : "pointer", textAlign: "center", position: "relative", transition: "all 0.15s",
                 }}
               >
                 <div style={{ position: "absolute", top: -1, left: -1, background: p.tagColor, color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: "10px 0 10px 0", letterSpacing: "0.03em" }}>{p.tag}</div>
@@ -176,7 +275,6 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
         <div style={{ width: 240, flexShrink: 0, padding: "20px 20px 24px", display: "flex", flexDirection: "column", background: "#fff", borderRadius: "0 16px 16px 0" }}>
 
           {step === 3 ? (
-            /* Success state */
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 16 }}>
               <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#059669", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>✓</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#059669" }}>Subscription Activated!</div>
@@ -195,9 +293,8 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
               </button>
             </div>
           ) : step === 2 ? (
-            /* Step 2 — Phone number confirmation */
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
-              <button onClick={() => { setStep(1); setError(""); }} style={{ background: "none", border: "none", color: "#888", fontSize: 12, cursor: "pointer", textAlign: "left", marginBottom: 14, padding: 0 }}>← Back</button>
+              <button onClick={() => { if (!isProcessing) { setStep(1); setError(""); setPayStatus("idle"); stopPolling(); } }} style={{ background: "none", border: "none", color: "#888", fontSize: 12, cursor: isProcessing ? "not-allowed" : "pointer", textAlign: "left", marginBottom: 14, padding: 0 }}>← Back</button>
 
               <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", marginBottom: 4 }}>Complete Payment</div>
 
@@ -220,29 +317,71 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
                 type="tel"
                 placeholder="e.g. 0770 123 456"
                 value={phone}
-                onChange={e => { setPhone(e.target.value); setError(""); }}
-                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 8, border: error ? "1.5px solid #ef4444" : "1.5px solid #e0c87a", fontSize: 14, outline: "none", color: "#1a1a1a", background: "#fffef8", marginBottom: 6 }}
+                onChange={e => { if (!isProcessing) { setPhone(e.target.value); setError(""); } }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 8, border: (error && !isProcessing) ? "1.5px solid #ef4444" : "1.5px solid #e0c87a", fontSize: 14, outline: "none", color: "#1a1a1a", background: "#fffef8", marginBottom: 6 }}
                 autoFocus
+                disabled={isProcessing}
               />
 
-              {error && <div style={{ fontSize: 11, color: "#ef4444", marginBottom: 8 }}>{error}</div>}
+              {payStatus === "polling" && (
+                <div style={{ background: "#fff9e6", border: "1px solid #f5c842", borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Spinner />
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#c07800" }}>Awaiting your approval</div>
+                      <div style={{ fontSize: 11, color: "#a06000", marginTop: 2 }}>Check your phone for a payment prompt and approve it.</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 10, color: "#bbb", marginTop: 6 }}>Checking status… ({Math.min(pollCount * 5, 120)}s)</div>
+                </div>
+              )}
+
+              {payStatus === "validating" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                  <Spinner small />
+                  <span style={{ fontSize: 11, color: "#888" }}>Validating phone number…</span>
+                </div>
+              )}
+
+              {payStatus === "pending" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                  <Spinner small />
+                  <span style={{ fontSize: 11, color: "#888" }}>Sending payment request…</span>
+                </div>
+              )}
+
+              {error && payStatus !== "polling" && (
+                <div style={{ fontSize: 11, color: "#ef4444", marginBottom: 8 }}>{error}</div>
+              )}
+              {error && payStatus === "failed" && (
+                <div style={{ fontSize: 11, color: "#ef4444", marginBottom: 8 }}>{error}</div>
+              )}
 
               <div style={{ fontSize: 10, color: "#aaa", marginBottom: 14, lineHeight: 1.5 }}>
-                Send <strong>{formatUGX(plan.price)}</strong> to complete. Your subscription activates immediately after confirmation.
+                You'll receive a payment prompt on your phone. Approve it to activate your subscription.
               </div>
 
               <div style={{ flex: 1 }} />
 
-              <button
-                onClick={handleActivate}
-                disabled={activating}
-                style={{ width: "100%", padding: "13px", borderRadius: 30, background: activating ? "#ccc" : "linear-gradient(90deg,#f5c842 0%,#ffdd9a 50%,#e8a800 100%)", border: "none", color: "#3d2200", fontSize: 14, fontWeight: 800, cursor: activating ? "not-allowed" : "pointer", boxShadow: "0 4px 16px rgba(245,200,66,0.4)" }}
-              >
-                {activating ? "Activating…" : "Confirm & Activate Subscription"}
-              </button>
+              {payStatus === "failed" ? (
+                <button
+                  onClick={() => { setPayStatus("idle"); setError(""); }}
+                  style={{ width: "100%", padding: "13px", borderRadius: 30, background: "#ef4444", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer" }}
+                >
+                  Try Again
+                </button>
+              ) : (
+                <button
+                  onClick={handleActivate}
+                  disabled={isProcessing}
+                  style={{ width: "100%", padding: "13px", borderRadius: 30, background: isProcessing ? "#e5c87a" : "linear-gradient(90deg,#f5c842 0%,#ffdd9a 50%,#e8a800 100%)", border: "none", color: "#3d2200", fontSize: 14, fontWeight: 800, cursor: isProcessing ? "not-allowed" : "pointer", boxShadow: "0 4px 16px rgba(245,200,66,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                >
+                  {isProcessing && <Spinner small />}
+                  {statusLabel()}
+                </button>
+              )}
             </div>
           ) : (
-            /* Step 1 — Plan summary + Pay button */
             <>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 22, paddingBottom: 18, borderBottom: "1px dashed #e8e8e8" }}>
                 <button style={{ flex: 1, padding: "8px 10px", borderRadius: 8, border: "1.5px solid #ff6b35", background: "#fff", color: "#ff6b35", fontSize: 12, fontWeight: 600, cursor: "pointer", lineHeight: 1.3, textAlign: "center" }}>
@@ -297,6 +436,16 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function Spinner({ small }: { small?: boolean }) {
+  const size = small ? 12 : 18;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <circle cx="12" cy="12" r="10" stroke="#c07800" strokeWidth="3" fill="none" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+    </svg>
   );
 }
 
