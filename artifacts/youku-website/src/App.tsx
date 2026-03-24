@@ -6,6 +6,10 @@ import HomePage from "./pages/HomePage";
 import PlayPage from "./pages/PlayPage";
 import CategoryPage from "./pages/CategoryPage";
 import SearchPage from "./pages/SearchPage";
+import ProfilePage from "./pages/ProfilePage";
+import HistoryPage from "./pages/HistoryPage";
+import WatchlistPage from "./pages/WatchlistPage";
+import DownloadsPage from "./pages/DownloadsPage";
 import AdminApp from "./admin/AdminApp";
 
 function MainSite() {
@@ -16,6 +20,10 @@ function MainSite() {
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/search" component={SearchPage} />
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/history" component={HistoryPage} />
+        <Route path="/watchlist" component={WatchlistPage} />
+        <Route path="/downloads" component={DownloadsPage} />
         <Route path="/play/:id" component={PlayPage} />
         <Route path="/drama">
           <CategoryPage

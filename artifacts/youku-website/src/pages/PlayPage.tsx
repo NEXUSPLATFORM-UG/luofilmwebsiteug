@@ -125,6 +125,12 @@ export default function PlayPage() {
           contentTitle: d.title || "",
           page: `/play/${params.id}`,
         }).catch(() => {});
+        if (cu?.uid) {
+          fbApi.userActions.logWatch(cu.uid, {
+            id: params.id, title: d.title, type: d.type,
+            thumbnailUrl: d.thumbnailUrl || d.coverUrl,
+          }).catch(() => {});
+        }
         fbApi.publicContent.listAll().then((all: any[]) => {
           setRelated(all.filter((x: any) => x.id !== params.id).slice(0, 12));
         }).catch(() => {});

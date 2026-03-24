@@ -417,6 +417,38 @@ export const fbApi = {
         return true;
       }
     },
+
+    getWatchlist: async (userId: string) => {
+      const snap = await getDocs(
+        query(collection(db, "watchlist"), where("userId", "==", userId), orderBy("createdAt", "desc"))
+      );
+      return snap.docs.map(docToObj);
+    },
+
+    getHistory: async (userId: string) => {
+      const snap = await getDocs(
+        query(
+          collection(db, "activities"),
+          where("userId", "==", userId),
+          where("actionType", "==", "watch"),
+          orderBy("createdAt", "desc"),
+          limit(100)
+        )
+      );
+      return snap.docs.map(docToObj);
+    },
+
+    logWatch: async (userId: string, contentMeta: any) => {
+      await addDoc(collection(db, "activities"), {
+        userId,
+        actionType: "watch",
+        contentId: contentMeta.id || null,
+        contentTitle: contentMeta.title || null,
+        contentType: contentMeta.type || null,
+        thumbnailUrl: contentMeta.thumbnailUrl || contentMeta.coverUrl || null,
+        createdAt: serverTimestamp(),
+      });
+    },
   },
 
   publicContent: {

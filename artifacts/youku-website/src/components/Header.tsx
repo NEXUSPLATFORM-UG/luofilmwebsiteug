@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { User, Clock, Bookmark, Download, LogOut } from "lucide-react";
 import VIPModal from "./VIPModal";
 import AuthModal from "./AuthModal";
 import { useAuth } from "../contexts/AuthContext";
@@ -273,22 +274,25 @@ export default function Header() {
                       </div>
                       <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
                       {[
-                        { label: "My Profile", icon: "👤" },
-                        { label: "Watch History", icon: "🕐" },
-                        { label: "My Watchlist", icon: "❤️" },
-                        { label: "Downloads", icon: "⬇️" },
-                      ].map(({ label, icon }) => (
-                        <button key={label}
-                          style={{
-                            width: "100%", padding: "9px 14px", display: "flex", alignItems: "center", gap: 9,
-                            background: "transparent", border: "none", color: "rgba(255,255,255,0.65)", fontSize: 12,
-                            cursor: "pointer", textAlign: "left",
-                          }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-                        >
-                          <span>{icon}</span>{label}
-                        </button>
+                        { label: "My Profile", icon: <User size={13} />, href: "/profile" },
+                        { label: "Watch History", icon: <Clock size={13} />, href: "/history" },
+                        { label: "My Watchlist", icon: <Bookmark size={13} />, href: "/watchlist" },
+                        { label: "Downloads", icon: <Download size={13} />, href: "/downloads" },
+                      ].map(({ label, icon, href }) => (
+                        <Link key={label} href={href}>
+                          <div
+                            onClick={() => setShowUserMenu(false)}
+                            style={{
+                              padding: "9px 14px", display: "flex", alignItems: "center", gap: 9,
+                              color: "rgba(255,255,255,0.65)", fontSize: 12,
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                          >
+                            {icon}{label}
+                          </div>
+                        </Link>
                       ))}
                       <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
                       <button onClick={handleLogout}
@@ -300,7 +304,7 @@ export default function Header() {
                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,107,107,0.08)"; }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                       >
-                        <span>🚪</span>Log Out
+                        <LogOut size={13} />Log Out
                       </button>
                     </div>
                   </>
