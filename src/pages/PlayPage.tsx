@@ -373,8 +373,6 @@ export default function PlayPage() {
           gap: 6,
           fontSize: 12,
           color: "rgba(255,255,255,0.35)",
-          maxWidth: 1440,
-          margin: "0 auto",
         }}
       >
         <Link href="/">
@@ -389,8 +387,6 @@ export default function PlayPage() {
       <div
         className="play-main-layout"
         style={{
-          maxWidth: 1440,
-          margin: "0 auto",
           padding: "0 16px 40px",
           display: "flex",
           gap: 16,

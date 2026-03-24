@@ -96,7 +96,7 @@ export default function SearchPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
       <div style={{ height: 54 }} />
-      <div className="category-page-pad" style={{ maxWidth: 1440, margin: "0 auto", padding: "32px 20px 60px" }}>
+      <div className="category-page-pad" style={{ padding: "32px 20px 60px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
           <div style={{ width: 3, height: 18, borderRadius: 2, background: "#00a9f5" }} />
           <span style={{ fontSize: 18, fontWeight: 700 }}>

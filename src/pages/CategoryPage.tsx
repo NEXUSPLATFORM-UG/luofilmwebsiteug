@@ -146,7 +146,7 @@ export default function CategoryPage({ genre, title, description: _description }
     return (
       <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
         <div style={{ height: 54 }} />
-        <div style={{ maxWidth: 1440, margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
+        <div style={{ padding: "60px 20px", textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 32 }}>
             <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
             <span style={{ fontSize: 22, fontWeight: 700 }}>{title}</span>
@@ -164,7 +164,7 @@ export default function CategoryPage({ genre, title, description: _description }
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
       <div style={{ height: 54 }} />
-      <div className="category-page-pad" style={{ maxWidth: 1440, margin: "0 auto", padding: "32px 20px 60px" }}>
+      <div className="category-page-pad" style={{ padding: "32px 20px 60px" }}>
         {featured && (
           <div style={{ marginBottom: 40 }}>
             <Link href={`/play/${featured.id}`}>

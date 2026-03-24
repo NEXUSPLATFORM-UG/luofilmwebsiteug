@@ -181,7 +181,7 @@ export default function HomePage() {
           No content published yet. Add content from the admin panel.
         </div>
       ) : (
-        <div className="carousel-wrapper" style={{ display: "flex", gap: 8, padding: "10px 12px", maxWidth: 1440, margin: "0 auto", boxSizing: "border-box" }}>
+        <div className="carousel-wrapper" style={{ display: "flex", gap: 8, padding: "10px 12px", boxSizing: "border-box" }}>
           <div style={{ flex: "0 0 auto", position: "relative", width: "100%" }}>
             <div className="carousel-mobile-full" style={{ width: "calc(56vw - 20px)", minWidth: 480, maxWidth: 760, position: "relative", overflow: "hidden", borderRadius: 6, background: "#1a1a1a" }}>
               <div style={{ paddingTop: "56.25%" }} />
@@ -251,7 +251,7 @@ export default function HomePage() {
         </div>
       )}
 
-      <div style={{ padding: "8px 12px 40px", maxWidth: 1440, margin: "0 auto" }}>
+      <div style={{ padding: "8px 12px 40px" }}>
         {shows.length > 0 && (
           <ContentRow title="ALL CONTENT" subtitle="RECENTLY ADDED" shows={shows.slice(0, 10)} categoryHref="/drama" />
         )}

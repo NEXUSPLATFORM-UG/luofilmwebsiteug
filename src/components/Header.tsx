@@ -55,7 +55,7 @@ export default function Header() {
           borderBottom: "1px solid rgba(255,255,255,0.07)",
           display: "flex",
           alignItems: "center",
-          padding: "0 12px",
+          padding: "0 clamp(12px, 2vw, 40px)",
           gap: 0,
           boxSizing: "border-box",
         }}
