@@ -212,7 +212,7 @@ export default function VIPModal({ onClose, onSubscribed, onOpenAuth }: VIPModal
 
         {/* Left panel */}
         <div className="vip-modal-left" style={{ flex: 1, padding: "24px 24px 28px", minWidth: 0, borderRight: "1px solid #f0f0f0" }}>
-          <button onClick={() => { if (!isProcessing) onClose(); }} style={{ position: "absolute", top: 14, left: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", cursor: isProcessing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#666", lineHeight: 1 }}>×</button>
+          <button onClick={() => { if (!isProcessing) onClose(); }} style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(220,38,38,0.12)", border: "1.5px solid rgba(220,38,38,0.3)", cursor: isProcessing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#ef4444", lineHeight: 1 }}>×</button>
 
           <div className="vip-user-info" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingLeft: 4 }}>
             <img
