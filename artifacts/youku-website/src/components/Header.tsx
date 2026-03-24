@@ -58,57 +58,19 @@ export default function Header() {
               marginRight: 20,
               display: "flex",
               alignItems: "center",
-              gap: 0,
+              gap: 8,
             }}
           >
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: "linear-gradient(135deg, #00a9f5 0%, #0076d6 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 8,
-                flexShrink: 0,
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <polygon points="5,3 19,12 5,21" fill="white" />
-              </svg>
-            </div>
+            <img
+              src="/logo.png"
+              alt="LUOFILM.SITE"
+              style={{ width: 38, height: 38, objectFit: "contain", flexShrink: 0 }}
+            />
             <div>
-              <div
-                style={{
-                  fontSize: 15,
-                  fontWeight: 900,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  background: "linear-gradient(135deg,#e8d5a3 0%,#f5e6c0 40%,#c9a84c 70%,#e8d5a3 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  lineHeight: 1.1,
-                }}
-              >
-                LUO FILM
+              <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.08em", color: "#cc00cc", lineHeight: 1.1, fontFamily: "Georgia, serif" }}>
+                LUOFILM
               </div>
-              <div
-                style={{
-                  fontSize: 8,
-                  fontWeight: 600,
-                  letterSpacing: "0.45em",
-                  textTransform: "uppercase",
-                  background: "linear-gradient(135deg,#c9a84c 0%,#e8d5a3 50%,#c9a84c 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  fontFamily: "Georgia, serif",
-                  marginTop: -1,
-                }}
-              >
+              <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: "0.4em", color: "rgba(255,255,255,0.5)", marginTop: 1 }}>
                 .SITE
               </div>
             </div>

@@ -3,6 +3,7 @@
   "outputDirectory": "dist/public",
   "installCommand": "cd ../.. && pnpm install",
   "rewrites": [
+    { "source": "/play/:id", "destination": "/api/og?id=:id" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

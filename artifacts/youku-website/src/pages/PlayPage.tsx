@@ -94,6 +94,50 @@ export default function PlayPage() {
     }).catch(() => {}).finally(() => setLoadingShow(false));
   }, [params.id]);
 
+  useEffect(() => {
+    const defaultTitle = "LUOFILM.SITE — VJ PAUL FREE DOWNLOAD";
+    const defaultFavicon = "/logo.png";
+
+    function setMeta(attr: string, key: string, val: string) {
+      let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, key); document.head.appendChild(el); }
+      el.content = val;
+    }
+    function setFavicon(href: string) {
+      let link = document.querySelector("link#site-favicon") as HTMLLinkElement | null;
+      if (!link) { link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null; }
+      if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+      link.href = href;
+    }
+
+    if (show) {
+      const poster = show.coverUrl || show.thumbnailUrl || "";
+      const movieTitle = `${show.title} | VJ PAUL FREE DOWNLOAD LUOFILM.SITE`;
+      const desc = show.description || "Watch free on LUOFILM.SITE — VJ PAUL FREE DOWNLOAD";
+      const pageUrl = window.location.href;
+
+      document.title = movieTitle;
+      if (poster) setFavicon(poster);
+      setMeta("property", "og:title", movieTitle);
+      setMeta("property", "og:description", desc);
+      setMeta("property", "og:image", poster || defaultFavicon);
+      setMeta("property", "og:url", pageUrl);
+      setMeta("property", "og:type", "video.movie");
+      setMeta("name", "twitter:title", movieTitle);
+      setMeta("name", "twitter:description", desc);
+      setMeta("name", "twitter:image", poster || defaultFavicon);
+      setMeta("name", "twitter:card", "summary_large_image");
+    }
+
+    return () => {
+      document.title = defaultTitle;
+      setFavicon(defaultFavicon);
+      setMeta("property", "og:title", defaultTitle);
+      setMeta("property", "og:image", defaultFavicon);
+      setMeta("property", "og:type", "website");
+    };
+  }, [show]);
+
   if (loadingShow) {
     return (
       <div style={{ minHeight: "100vh", background: "#0e0e0e", display: "flex", alignItems: "center", justifyContent: "center" }}>
