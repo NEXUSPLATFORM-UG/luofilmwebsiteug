@@ -102,7 +102,7 @@ async function buildTransactionPDF(records: any[], period: Period) {
     `TXN-${Date.now()}`
   );
 
-  doc.save(`youku-transactions-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`luofilm-transactions-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 export default function TransactionsManager() {

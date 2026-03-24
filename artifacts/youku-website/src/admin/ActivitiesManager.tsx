@@ -97,7 +97,7 @@ async function buildActivityPDF(records: any[], period: Period) {
     `ACT-${Date.now()}`
   );
 
-  doc.save(`youku-activity-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`luofilm-activity-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 export default function ActivitiesManager() {

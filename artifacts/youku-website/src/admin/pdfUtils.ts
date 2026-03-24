@@ -83,15 +83,15 @@ export async function drawYOUKUHeader(
 
   const nameX = logo ? logoX + logoSize + 5 : logoX;
 
-  doc.setFontSize(20);
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255, 60, 60);
-  doc.text("YOUKU", nameX, logoY + 11);
+  doc.text("LUOFILM.SITE", nameX, logoY + 10);
 
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(160, 160, 200);
-  doc.text("youku.com  |  Stream Anytime, Anywhere", nameX, logoY + 18);
+  doc.text("luofilm.site  |  VJ PAUL FREE DOWNLOAD", nameX, logoY + 18);
 
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
@@ -122,7 +122,7 @@ export async function drawYOUKUHeader(
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(120, 130, 170);
-  doc.text("admin@youku.com  |  youku.com", W - 10, 14, { align: "right" });
+  doc.text("admin@luofilm.site  |  luofilm.site", W - 10, 14, { align: "right" });
 
   doc.setDrawColor(99, 102, 241);
   doc.setLineWidth(0.8);
@@ -138,7 +138,7 @@ export function drawYOUKUFooter(doc: jsPDF, pageNum: number, totalPages: number)
   doc.setFont("helvetica", "normal");
   doc.setTextColor(120, 130, 170);
   doc.text(
-    `YOUKU — Confidential & Official Document  |  Page ${pageNum} of ${totalPages}  |  youku.com`,
+    `LUOFILM.SITE — Confidential & Official Document  |  Page ${pageNum} of ${totalPages}  |  luofilm.site`,
     W / 2,
     H - 4,
     { align: "center" }
@@ -183,14 +183,14 @@ export function drawSignatureBlock(
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 120);
   doc.setFontSize(8);
-  doc.text("Chief Executive Officer — YOUKU", midX, sigY + 27);
+  doc.text("Chief Executive Officer — LUOFILM.SITE", midX, sigY + 27);
   doc.text("Name: _______________________________", midX, sigY + 33);
   doc.text("Date:  _______________________________", midX, sigY + 39);
 
   doc.setFontSize(7);
   doc.setTextColor(150, 155, 180);
   doc.text(
-    `Doc ID: ${docId}  |  Official YOUKU Document — youku.com`,
+    `Doc ID: ${docId}  |  Official LUOFILM.SITE Document — luofilm.site`,
     W / 2,
     sigY + 40,
     { align: "center" }

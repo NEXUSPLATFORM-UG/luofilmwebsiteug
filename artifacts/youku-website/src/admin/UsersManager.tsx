@@ -76,7 +76,7 @@ async function buildUsersPDF(records: any[], period: Period) {
     `USR-${Date.now()}`
   );
 
-  doc.save(`youku-users-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`luofilm-users-${period}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 const inp = {
