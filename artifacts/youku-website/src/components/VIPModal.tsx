@@ -152,11 +152,10 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
     setPayStatus("validating");
 
     try {
-      await paymentApi.validatePhone(phone.trim());
+      const validResult = await paymentApi.validatePhone(phone.trim());
+      console.log("[VIPModal] Phone validation result:", validResult);
     } catch (e: any) {
-      setPayStatus("idle");
-      setError(e.message || "Invalid phone number. Please check and try again.");
-      return;
+      console.warn("[VIPModal] Phone validation failed (proceeding anyway):", e.message);
     }
 
     setPayStatus("pending");

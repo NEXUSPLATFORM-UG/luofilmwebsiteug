@@ -5,35 +5,52 @@ function normalizePhone(phone: string): string {
   if (digits.startsWith("256") && digits.length >= 12) return `+${digits}`;
   if (digits.startsWith("0") && digits.length === 10) return `+256${digits.slice(1)}`;
   if (digits.length === 9) return `+256${digits}`;
+  if (digits.startsWith("256") && digits.length === 12) return `+${digits}`;
   return `+${digits}`;
 }
 
 async function post(path: string, body: object) {
+  console.log("[PaymentAPI] POST", path, body);
   const res = await fetch(`${PAYMENT_BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || data?.error || "Payment request failed");
+  console.log("[PaymentAPI] Response", path, res.status, data);
+  if (!res.ok) {
+    const msg = data?.message || data?.error || data?.details?.message || "Payment request failed";
+    throw new Error(msg);
+  }
+  if (data?.success === false) {
+    const msg = data?.message || data?.error || "Request was not successful";
+    throw new Error(msg);
+  }
   return data;
 }
 
 async function get(path: string) {
+  console.log("[PaymentAPI] GET", path);
   const res = await fetch(`${PAYMENT_BASE}${path}`);
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || data?.error || "Request failed");
+  console.log("[PaymentAPI] Response", path, res.status, data);
+  if (!res.ok) {
+    const msg = data?.message || data?.error || "Request failed";
+    throw new Error(msg);
+  }
   return data;
 }
 
 export const paymentApi = {
   validatePhone: async (phone: string) => {
     const msisdn = normalizePhone(phone);
+    console.log("[PaymentAPI] Validating phone:", msisdn);
     return post("/api/validate-phone", { msisdn });
   },
 
   deposit: async (phone: string, amount: number, description: string, reference: string) => {
     const msisdn = normalizePhone(phone);
+    console.log("[PaymentAPI] Deposit:", { msisdn, amount, description, reference });
     return post("/api/deposit", { msisdn, amount, description, reference });
   },
 
