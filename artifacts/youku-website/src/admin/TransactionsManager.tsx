@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Download, ReceiptText, ChevronDown } from "lucide-react";
+import { Search, Download, ReceiptText, ChevronDown, Trash2 } from "lucide-react";
 import { api } from "./api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -124,6 +124,12 @@ export default function TransactionsManager() {
 
   useEffect(() => { load(); }, [search, type, status]);
 
+  const del = async (id: string) => {
+    if (!confirm("Delete this transaction? This cannot be undone.")) return;
+    await api.transactions.delete(id);
+    load();
+  };
+
   const doExport = async (period: Period) => {
     setExportDropdown(false);
     const filtered = filterByPeriod(txs, period);
@@ -208,16 +214,16 @@ export default function TransactionsManager() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-              {["Date & Time", "User Name", "Email", "Phone", "User ID", "Plan", "Type", "Amount (UGX)", "Status", "Description", "Reference"].map(h => (
+              {["Date & Time", "User Name", "Email", "Phone", "User ID", "Plan", "Type", "Amount (UGX)", "Status", "Description", "Reference", ""].map(h => (
                 <th key={h} style={{ padding: "12px 12px", textAlign: "left", color: "rgba(255,255,255,0.45)", fontWeight: 600, fontSize: 11, whiteSpace: "nowrap" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={11} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Loading...</td></tr>
+              <tr><td colSpan={12} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Loading...</td></tr>
             ) : txs.length === 0 ? (
-              <tr><td colSpan={11} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
+              <tr><td colSpan={12} style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
                 <ReceiptText size={32} style={{ margin: "0 auto 10px", display: "block", opacity: 0.3 }} />
                 No transactions found
               </td></tr>
@@ -242,6 +248,11 @@ export default function TransactionsManager() {
                 </td>
                 <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.5)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.description || "-"}</td>
                 <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.3)", fontSize: 11 }}>{t.reference || `#${t.id?.slice(0, 8)}`}</td>
+                <td style={{ padding: "10px 12px" }}>
+                  <button onClick={() => del(t.id)} title="Delete" style={{ padding: "3px 7px", background: "#ef444422", border: "none", borderRadius: 5, color: "#f87171", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                    <Trash2 size={12} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

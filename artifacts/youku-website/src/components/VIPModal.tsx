@@ -105,7 +105,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
 
   const startPolling = () => {
     let attempts = 0;
-    const MAX_ATTEMPTS = 24;
+    const MAX_ATTEMPTS = 120;
 
     pollTimer.current = setInterval(async () => {
       attempts++;
@@ -142,7 +142,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
           setError("Could not verify payment status. Please contact support if funds were deducted.");
         }
       }
-    }, 5000);
+    }, 1000);
   };
 
   const handleActivate = async () => {

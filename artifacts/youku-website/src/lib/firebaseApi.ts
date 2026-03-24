@@ -307,6 +307,10 @@ export const fbApi = {
       if (params?.type) txs = txs.filter((t: any) => t.type === params.type);
       return { transactions: txs };
     },
+    delete: async (id: string) => {
+      await deleteDoc(doc(db, "transactions", id));
+      return { id };
+    },
     create: async (data: any) => {
       const ref2 = await addDoc(collection(db, "transactions"), {
         ...data,
@@ -334,6 +338,10 @@ export const fbApi = {
       let acts = snap.docs.map(docToObj);
       if (params?.actionType) acts = acts.filter((a: any) => a.actionType === params.actionType);
       return { activities: acts };
+    },
+    delete: async (id: string) => {
+      await deleteDoc(doc(db, "activities", id));
+      return { id };
     },
     log: async (data: any) => {
       const ip = await getClientIp();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Download, Activity, Clock, ChevronDown } from "lucide-react";
+import { Search, Download, Activity, Clock, ChevronDown, Trash2 } from "lucide-react";
 import { api } from "./api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
