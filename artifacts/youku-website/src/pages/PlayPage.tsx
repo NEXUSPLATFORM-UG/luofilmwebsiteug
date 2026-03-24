@@ -379,27 +379,28 @@ export default function PlayPage() {
           {/* Video player */}
           {isSubscribed === false ? (
             /* Subscription gate */
-            <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#0a0a18", borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <div className="vip-gate" style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#0a0a18", borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
               {show.coverUrl && (
                 <img src={show.coverUrl} alt={show.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.18, filter: "blur(4px)" }} />
               )}
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))" }} />
-              <div style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "0 24px" }}>
-                <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                  <Lock size={26} color="#ffc552" />
+              <div className="vip-gate-inner" style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "0 24px" }}>
+                <div className="vip-gate-icon" style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                  <Lock className="vip-gate-lock" size={26} color="#ffc552" />
                 </div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>VIP Subscription Required</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24, lineHeight: 1.6 }}>
+                <div className="vip-gate-title" style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>VIP Subscription Required</div>
+                <div className="vip-gate-desc" style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24, lineHeight: 1.6 }}>
                   Subscribe to unlock unlimited watching and downloading.<br />Plans from <strong style={{ color: "#ffc552" }}>UGX 2,500</strong> — activate instantly!
                 </div>
                 <button
                   onClick={() => setShowVIP(true)}
+                  className="vip-gate-btn"
                   style={{ padding: "12px 36px", borderRadius: 30, background: "linear-gradient(90deg,#f5c842,#e8a800)", border: "none", color: "#3d2200", fontSize: 15, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px rgba(245,200,66,0.5)" }}
                 >
                   Subscribe to Watch
                 </button>
                 {!user && (
-                  <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                  <div className="vip-gate-login" style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
                     Already subscribed? <span style={{ color: "#ffc552", cursor: "pointer" }} onClick={() => setShowVIP(true)}>Log in</span>
                   </div>
                 )}
@@ -833,10 +834,11 @@ export default function PlayPage() {
 
               {activeTab === "RECOMMENDED" && (
                 <div
+                  className="play-recommended-grid"
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-                    gap: 12,
+                    gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+                    gap: 10,
                   }}
                 >
                   {related.map((s) => (

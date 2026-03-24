@@ -576,6 +576,67 @@ input, button, select, textarea {
     margin-bottom: 7px !important;
     padding: 0 2px !important;
   }
+
+  /* Play page recommended grid */
+  .play-recommended-grid {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  /* VIP Subscription gate (PlayPage) */
+  .vip-gate-icon {
+    width: 40px !important;
+    height: 40px !important;
+    margin-bottom: 8px !important;
+  }
+  .vip-gate-title {
+    font-size: 14px !important;
+    margin-bottom: 5px !important;
+  }
+  .vip-gate-desc {
+    font-size: 11px !important;
+    margin-bottom: 12px !important;
+    line-height: 1.5 !important;
+  }
+  .vip-gate-btn {
+    padding: 9px 22px !important;
+    font-size: 12px !important;
+  }
+  .vip-gate-login {
+    font-size: 10px !important;
+    margin-top: 8px !important;
+  }
+
+  /* VIP Modal — stack panels vertically */
+  .vip-modal-container {
+    flex-direction: column !important;
+    width: 96vw !important;
+    max-height: 92vh !important;
+    border-radius: 14px !important;
+  }
+  .vip-modal-left {
+    padding: 16px 14px 14px !important;
+    border-right: none !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+  .vip-modal-right {
+    width: 100% !important;
+    border-radius: 0 0 14px 14px !important;
+    padding: 14px 14px 18px !important;
+  }
+
+  /* Auth Modal — center on mobile */
+  .auth-modal-overlay {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    background: rgba(0,0,0,0.6) !important;
+  }
+  .auth-modal-box {
+    width: 92vw !important;
+    max-width: 360px !important;
+    max-height: 90vh !important;
+  }
 }
 
 @media (min-width: 768px) {

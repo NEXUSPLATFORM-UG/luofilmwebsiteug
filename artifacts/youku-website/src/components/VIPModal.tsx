@@ -205,10 +205,10 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
     >
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(3px)" }} />
 
-      <div style={{ position: "relative", width: 820, maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", borderRadius: 16, background: "#fff", display: "flex", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", color: "#1a1a1a" }}>
+      <div className="vip-modal-container" style={{ position: "relative", width: 820, maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", borderRadius: 16, background: "#fff", display: "flex", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", color: "#1a1a1a" }}>
 
         {/* Left panel */}
-        <div style={{ flex: 1, padding: "24px 24px 28px", minWidth: 0, borderRight: "1px solid #f0f0f0" }}>
+        <div className="vip-modal-left" style={{ flex: 1, padding: "24px 24px 28px", minWidth: 0, borderRight: "1px solid #f0f0f0" }}>
           <button onClick={() => { if (!isProcessing) onClose(); }} style={{ position: "absolute", top: 14, left: 14, width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", cursor: isProcessing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#666", lineHeight: 1 }}>×</button>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingLeft: 4 }}>
@@ -271,7 +271,7 @@ export default function VIPModal({ onClose, onSubscribed }: VIPModalProps) {
         </div>
 
         {/* Right panel */}
-        <div style={{ width: 240, flexShrink: 0, padding: "20px 20px 24px", display: "flex", flexDirection: "column", background: "#fff", borderRadius: "0 16px 16px 0" }}>
+        <div className="vip-modal-right" style={{ width: 240, flexShrink: 0, padding: "20px 20px 24px", display: "flex", flexDirection: "column", background: "#fff", borderRadius: "0 16px 16px 0" }}>
 
           {step === 3 ? (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 16 }}>

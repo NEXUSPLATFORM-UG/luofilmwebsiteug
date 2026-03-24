@@ -336,10 +336,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
   return (
     <div
+      className="auth-modal-overlay"
       style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-start", justifyContent: "flex-end", paddingTop: 66, paddingRight: 14 }}
       onClick={onClose}
     >
       <div
+        className="auth-modal-box"
         style={{
           background: "#141414",
           border: "1px solid rgba(255,255,255,0.09)",
