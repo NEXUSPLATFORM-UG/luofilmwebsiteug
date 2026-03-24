@@ -430,7 +430,7 @@ input, button, select, textarea {
 }
 
 @media (max-width: 767px) {
-  .desktop-header {
+  .desktop-only {
     display: none !important;
   }
   .mobile-bottom-nav {
@@ -438,9 +438,6 @@ input, button, select, textarea {
   }
   .mobile-pb {
     padding-bottom: 64px !important;
-  }
-  .mobile-header-spacer {
-    height: 0 !important;
   }
   .carousel-mobile-full {
     width: 100% !important;
@@ -470,6 +467,78 @@ input, button, select, textarea {
   }
   .carousel-overlay {
     padding: 14px 12px 14px !important;
+  }
+  .play-sidebar {
+    display: none !important;
+  }
+  .play-action-btns {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .play-action-btn-label {
+    display: none !important;
+  }
+  .play-main-layout {
+    padding: 0 8px 80px !important;
+    gap: 0 !important;
+  }
+  .play-title {
+    font-size: 15px !important;
+  }
+  .play-meta {
+    font-size: 11px !important;
+    gap: 6px !important;
+    margin-top: 5px !important;
+  }
+  .play-breadcrumb {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+  .play-tabs button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  .category-featured {
+    height: 170px !important;
+  }
+  .category-featured-inner {
+    bottom: 10px !important;
+    left: 12px !important;
+    right: 12px !important;
+  }
+  .category-featured-title {
+    font-size: 16px !important;
+    margin-bottom: 4px !important;
+  }
+  .category-featured-desc {
+    display: none !important;
+  }
+  .category-featured-btns {
+    margin-top: 8px !important;
+  }
+  .category-header-spacer {
+    height: 60px !important;
+  }
+  .category-page-pad {
+    padding: 16px 10px 80px !important;
+  }
+  .content-row-section {
+    margin-bottom: 16px !important;
+  }
+  .content-row-title {
+    font-size: 13px !important;
+  }
+  .mobile-header-compact {
+    padding: 0 10px !important;
+    gap: 6px !important;
+  }
+  .mobile-vip-btn {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+  .mobile-login-btn {
+    padding: 0 10px !important;
+    font-size: 11px !important;
   }
 }
 

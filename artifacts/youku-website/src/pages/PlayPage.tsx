@@ -343,6 +343,7 @@ export default function PlayPage() {
 
       {/* Breadcrumb */}
       <div
+        className="play-breadcrumb"
         style={{
           padding: "8px 16px",
           display: "flex",
@@ -364,6 +365,7 @@ export default function PlayPage() {
       </div>
 
       <div
+        className="play-main-layout"
         style={{
           maxWidth: 1440,
           margin: "0 auto",
@@ -488,11 +490,12 @@ export default function PlayPage() {
                       MOVIE
                     </span>
                   )}
-                  <h1 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
+                  <h1 className="play-title" style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
                     {show.title}
                   </h1>
                 </div>
                 <div
+                  className="play-meta"
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -536,7 +539,7 @@ export default function PlayPage() {
               </div>
 
               {/* Action buttons */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              <div className="play-action-btns" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <ActionBtn
                   icon={<ThumbsUp size={14} fill={liked ? "#fff" : "none"} color={liked ? "#fff" : "#60a5fa"} />}
                   label={likeLoading ? "…" : liked ? "LIKED" : "LIKE"}
@@ -658,6 +661,7 @@ export default function PlayPage() {
           {/* Tabs */}
           <div style={{ marginTop: 18 }}>
             <div
+              className="play-tabs"
               style={{
                 display: "flex",
                 borderBottom: "1px solid rgba(255,255,255,0.08)",
@@ -931,6 +935,7 @@ export default function PlayPage() {
 
         {/* Right sidebar */}
         <aside
+          className="play-sidebar"
           style={{
             width: 280,
             flexShrink: 0,
@@ -1203,7 +1208,7 @@ function ActionBtn({
       }}
     >
       {icon}
-      <span style={{
+      <span className="play-action-btn-label" style={{
         fontSize: 8,
         fontWeight: 700,
         letterSpacing: "0.07em",

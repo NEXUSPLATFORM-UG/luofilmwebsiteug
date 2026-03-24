@@ -134,7 +134,7 @@ export default function CategoryPage({ genre, title, description: _description }
   if (shows.length === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-        <div style={{ height: 60 }} />
+        <div className="category-header-spacer" style={{ height: 60 }} />
         <div style={{ maxWidth: 1440, margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 32 }}>
             <div style={{ width: 3, height: 18, borderRadius: 2, background: accentColor }} />
@@ -152,8 +152,8 @@ export default function CategoryPage({ genre, title, description: _description }
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-      <div style={{ height: 60 }} />
-      <div style={{ maxWidth: 1440, margin: "0 auto", padding: "32px 20px 60px" }}>
+      <div className="category-header-spacer" style={{ height: 60 }} />
+      <div className="category-page-pad" style={{ maxWidth: 1440, margin: "0 auto", padding: "32px 20px 60px" }}>
         {featured && (
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
@@ -161,14 +161,14 @@ export default function CategoryPage({ genre, title, description: _description }
               <span style={{ fontSize: 18, fontWeight: 700 }}>FEATURED</span>
             </div>
             <Link href={`/play/${featured.id}`}>
-              <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", cursor: "pointer", height: 280, background: "#1a1a1a" }}>
+              <div className="category-featured" style={{ position: "relative", borderRadius: 10, overflow: "hidden", cursor: "pointer", height: 280, background: "#1a1a1a" }}>
                 <img src={featured.coverUrl || featured.thumbnailUrl} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.85) 40%, transparent)" }} />
-                <div style={{ position: "absolute", bottom: 28, left: 28, maxWidth: 480 }}>
+                <div className="category-featured-inner" style={{ position: "absolute", bottom: 28, left: 28, maxWidth: 480 }}>
                   {featured.badge !== "none" && (
                     <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 3, fontSize: 11, fontWeight: 700, background: "linear-gradient(90deg,#ffc552,#ffdd9a)", color: "#4e2d03", marginBottom: 8 }}>{featured.badge}</span>
                   )}
-                  <h2 style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>{featured.title}</h2>
+                  <h2 className="category-featured-title" style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>{featured.title}</h2>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
                     {featured.rating ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
@@ -179,10 +179,10 @@ export default function CategoryPage({ genre, title, description: _description }
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.year}</span>
                     <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{featured.type === "series" ? `${featured.episodeCount} EPS` : "Movie"}</span>
                   </div>
-                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  <p className="category-featured-desc" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                     {featured.description}
                   </p>
-                  <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
+                  <div className="category-featured-btns" style={{ marginTop: 14, display: "flex", gap: 10 }}>
                     <button style={{ padding: "8px 22px", borderRadius: 20, background: accentColor, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>▶ PLAY NOW</button>
                     <button style={{ padding: "8px 18px", borderRadius: 20, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>DETAILS</button>
                   </div>

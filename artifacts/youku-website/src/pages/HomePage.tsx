@@ -174,7 +174,7 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
-      <div className="mobile-header-spacer" style={{ height: 60 }} />
+      <div style={{ height: 60 }} />
 
       {bannerShows.length === 0 ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400, color: "rgba(255,255,255,0.3)", fontSize: 15 }}>

@@ -34,7 +34,7 @@ export default function Header() {
   return (
     <>
       <header
-        className="desktop-header"
+        className="mobile-header-compact"
         style={{
           position: "fixed",
           top: 0,
@@ -78,7 +78,7 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 0, marginRight: 16 }}>
+        <nav className="desktop-only" style={{ display: "flex", alignItems: "center", gap: 0, marginRight: 16 }}>
           {navLinks.map((link) => {
             const isActive =
               link.path === "/" ? location === "/" : location.startsWith(link.path);
@@ -117,6 +117,7 @@ export default function Header() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <div
+            className="desktop-only"
             style={{
               display: "flex",
               alignItems: "center",
@@ -156,22 +157,27 @@ export default function Header() {
             )}
           </div>
 
-          <HeaderIconBtn title="DOWNLOAD APP">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2" />
-              <path d="M12 18h.01" />
-            </svg>
-          </HeaderIconBtn>
+          <span className="desktop-only" style={{ display: "inline-flex" }}>
+            <HeaderIconBtn title="DOWNLOAD APP">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" />
+                <path d="M12 18h.01" />
+              </svg>
+            </HeaderIconBtn>
+          </span>
 
-          <HeaderIconBtn title="WATCH HISTORY">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-          </HeaderIconBtn>
+          <span className="desktop-only" style={{ display: "inline-flex" }}>
+            <HeaderIconBtn title="WATCH HISTORY">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </HeaderIconBtn>
+          </span>
 
           <button
             onClick={() => setShowVIP(true)}
+            className="mobile-vip-btn"
             style={{
               display: "flex", alignItems: "center", gap: 5, padding: "0 14px", height: 32, borderRadius: 16,
               background: "linear-gradient(90deg, #f5c842 0%, #ffdd9a 45%, #e8a800 100%)",
@@ -315,6 +321,7 @@ export default function Header() {
           ) : (
             <button
               onClick={() => setShowAuth(true)}
+              className="mobile-login-btn"
               style={{
                 display: "flex", alignItems: "center", gap: 7, padding: "0 16px", height: 32, borderRadius: 16,
                 background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)",
