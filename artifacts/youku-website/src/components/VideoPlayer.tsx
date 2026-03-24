@@ -1,10 +1,18 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 
+interface SubtitleTrack {
+  src: string;
+  label: string;
+  lang: string;
+}
+
 interface VideoPlayerProps {
   src: string;
   poster?: string;
   title?: string;
   onEnded?: () => void;
+  subtitles?: SubtitleTrack[];
+  subtitlesEnabled?: boolean;
 }
 
 function formatTime(s: number) {
@@ -16,7 +24,7 @@ function formatTime(s: number) {
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
-export default function VideoPlayer({ src, poster, title, onEnded }: VideoPlayerProps) {
+export default function VideoPlayer({ src, poster, title, onEnded, subtitles = [], subtitlesEnabled = false }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -165,6 +173,18 @@ export default function VideoPlayer({ src, poster, title, onEnded }: VideoPlayer
     else document.exitFullscreen();
   };
 
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const applyMode = () => {
+      for (let i = 0; i < v.textTracks.length; i++) {
+        v.textTracks[i].mode = subtitlesEnabled ? "showing" : "hidden";
+      }
+    };
+    if (v.readyState >= 1) applyMode();
+    else v.addEventListener("loadedmetadata", applyMode, { once: true });
+  }, [subtitlesEnabled, src]);
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
 
@@ -189,7 +209,18 @@ export default function VideoPlayer({ src, poster, title, onEnded }: VideoPlayer
         preload="metadata"
         onContextMenu={e => e.preventDefault()}
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
-      />
+      >
+        {subtitles.map((t, i) => (
+          <track
+            key={t.src}
+            kind="subtitles"
+            src={t.src}
+            srcLang={t.lang}
+            label={t.label}
+            default={i === 0}
+          />
+        ))}
+      </video>
 
       {/* Click to play/pause overlay */}
       <div

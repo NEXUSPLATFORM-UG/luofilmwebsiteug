@@ -64,13 +64,18 @@ export default function PlayPage() {
   const [epPage, setEpPage] = useState(0);
   const [activeTab, setActiveTab] = useState<"EPISODES" | "RECOMMENDED" | "SYNOPSIS">("EPISODES");
   const [liked, setLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [shared, setShared] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [shareLabel, setShareLabel] = useState<"SHARE" | "COPIED!">("SHARE");
   const [downloaded, setDownloaded] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [showQualityPicker, setShowQualityPicker] = useState(false);
   const [downloadQuality, setDownloadQuality] = useState("");
   const [subtitlesOn, setSubtitlesOn] = useState(false);
   const [related, setRelated] = useState<any[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
+  const anonId = fbApi.userActions.getAnonId();
 
   useEffect(() => {
     if (!params.id) return;
@@ -138,6 +143,97 @@ export default function PlayPage() {
     };
   }, [show]);
 
+  useEffect(() => {
+    if (!params.id) return;
+    fbApi.userActions.checkLike(params.id, anonId).then(setLiked).catch(() => {});
+    fbApi.userActions.checkSave(params.id, anonId).then(setSaved).catch(() => {});
+  }, [params.id]);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const handleLike = async () => {
+    if (likeLoading || !params.id) return;
+    setLikeLoading(true);
+    try {
+      const nowLiked = await fbApi.userActions.toggleLike(params.id, anonId);
+      setLiked(nowLiked);
+      showToast(nowLiked ? "Added to likes!" : "Removed from likes");
+    } catch { showToast("Could not update like"); }
+    finally { setLikeLoading(false); }
+  };
+
+  const handleSave = async () => {
+    if (saveLoading || !params.id || !show) return;
+    setSaveLoading(true);
+    try {
+      const nowSaved = await fbApi.userActions.toggleSave(params.id, anonId, {
+        title: show.title,
+        coverUrl: show.coverUrl || "",
+        type: show.type,
+      });
+      setSaved(nowSaved);
+      showToast(nowSaved ? "Saved to watchlist!" : "Removed from watchlist");
+    } catch { showToast("Could not update watchlist"); }
+    finally { setSaveLoading(false); }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = show?.title ? `${show.title} | LUOFILM.SITE` : "LUOFILM.SITE";
+    const text = `Watch "${show?.title}" free — VJ PAUL FREE DOWNLOAD on LUOFILM.SITE`;
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); showToast("Shared!"); return; } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareLabel("COPIED!");
+      setTimeout(() => setShareLabel("SHARE"), 2000);
+      showToast("Link copied to clipboard!");
+    } catch { showToast("Copy this link: " + url); }
+  };
+
+  const handleDownload = async (quality: string) => {
+    const url = rawData?.videoUrl || "";
+    if (!url) { showToast("No video available to download"); setShowQualityPicker(false); return; }
+    const isEmbed = /youtube\.com|youtu\.be|drive\.google\.com|vimeo\.com/.test(url);
+    if (isEmbed) {
+      showToast("Opening video in new tab for download");
+      window.open(url, "_blank");
+      setShowQualityPicker(false);
+      setDownloadQuality(quality);
+      setDownloaded(true);
+      return;
+    }
+    setDownloading(true);
+    setShowQualityPicker(false);
+    showToast(`Starting download (${quality})…`);
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error("fetch failed");
+      const blob = await resp.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${show?.title || "video"}-${quality}.mp4`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      setDownloadQuality(quality);
+      setDownloaded(true);
+      showToast("Download started!");
+    } catch {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${show?.title || "video"}-${quality}.mp4`;
+      a.target = "_blank";
+      a.click();
+      setDownloadQuality(quality);
+      setDownloaded(true);
+      showToast("Download started!");
+    } finally { setDownloading(false); }
+  };
+
   if (loadingShow) {
     return (
       <div style={{ minHeight: "100vh", background: "#0e0e0e", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -164,12 +260,42 @@ export default function PlayPage() {
   const videoSrc = (currentEpisodeData as any)?.videoUrl || rawData?.videoUrl || "";
   const isVip = show.badge === "VIP";
 
+  const subtitleTracks = (() => {
+    const tracks: { src: string; label: string; lang: string }[] = [];
+    if (rawData?.subtitleUrl) tracks.push({ src: rawData.subtitleUrl, label: "English", lang: "en" });
+    if (rawData?.subtitleEn) tracks.push({ src: rawData.subtitleEn, label: "English", lang: "en" });
+    if (rawData?.subtitleFr) tracks.push({ src: rawData.subtitleFr, label: "French", lang: "fr" });
+    if (rawData?.subtitleSw) tracks.push({ src: rawData.subtitleSw, label: "Swahili", lang: "sw" });
+    if (Array.isArray(rawData?.subtitles)) {
+      for (const s of rawData.subtitles) {
+        if (s?.src) tracks.push({ src: s.src, label: s.label || "Subtitle", lang: s.lang || "en" });
+      }
+    }
+    return tracks;
+  })();
+  const hasSubtitles = subtitleTracks.length > 0;
+
   const tabs = isSeries
     ? (["EPISODES", "RECOMMENDED", "SYNOPSIS"] as const)
     : (["RECOMMENDED", "SYNOPSIS"] as const);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0e0e0e", color: "#fff" }}>
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)",
+          background: "rgba(20,20,35,0.97)", border: "1px solid rgba(255,255,255,0.12)",
+          color: "#fff", fontSize: 13, fontWeight: 500,
+          padding: "10px 22px", borderRadius: 100,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
+          zIndex: 9999, whiteSpace: "nowrap",
+          animation: "fadeInUp 0.2s ease",
+        }}>
+          <style>{`@keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
+          {toast}
+        </div>
+      )}
+
       <div style={{ height: 60 }} />
 
       {/* Breadcrumb */}
@@ -228,6 +354,8 @@ export default function PlayPage() {
                 src={embed.src}
                 poster={show.coverUrl}
                 title={isSeries ? `${show.title} · Episode ${currentEp}` : show.title}
+                subtitles={subtitleTracks}
+                subtitlesEnabled={subtitlesOn}
               />
             );
           })() : (
@@ -340,7 +468,7 @@ export default function PlayPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <ActionBtn
                   icon={<ThumbsUp size={14} fill={liked ? "#fff" : "none"} color={liked ? "#fff" : "#60a5fa"} />}
-                  label={liked ? "LIKED" : "LIKE"}
+                  label={likeLoading ? "…" : liked ? "LIKED" : "LIKE"}
                   active={liked}
                   color={{
                     bg: "rgba(59,130,246,0.08)",
@@ -348,11 +476,11 @@ export default function PlayPage() {
                     glow: "rgba(59,130,246,0.4)",
                     activeBg: "linear-gradient(135deg,#2563eb,#3b82f6)",
                   }}
-                  onClick={() => setLiked(!liked)}
+                  onClick={handleLike}
                 />
                 <ActionBtn
                   icon={<Heart size={14} fill={saved ? "#fff" : "none"} color={saved ? "#fff" : "#f472b6"} />}
-                  label={saved ? "SAVED" : "SAVE"}
+                  label={saveLoading ? "…" : saved ? "SAVED" : "SAVE"}
                   active={saved}
                   color={{
                     bg: "rgba(244,114,182,0.08)",
@@ -360,19 +488,19 @@ export default function PlayPage() {
                     glow: "rgba(244,114,182,0.4)",
                     activeBg: "linear-gradient(135deg,#db2777,#f472b6)",
                   }}
-                  onClick={() => setSaved(!saved)}
+                  onClick={handleSave}
                 />
                 <ActionBtn
-                  icon={<Share2 size={14} color={shared ? "#fff" : "#34d399"} />}
-                  label={shared ? "SHARED" : "SHARE"}
-                  active={shared}
+                  icon={<Share2 size={14} color={shareLabel === "COPIED!" ? "#fff" : "#34d399"} />}
+                  label={shareLabel}
+                  active={shareLabel === "COPIED!"}
                   color={{
                     bg: "rgba(52,211,153,0.08)",
                     border: "#34d399",
                     glow: "rgba(52,211,153,0.4)",
                     activeBg: "linear-gradient(135deg,#059669,#34d399)",
                   }}
-                  onClick={() => setShared(!shared)}
+                  onClick={handleShare}
                 />
                 <div style={{ position: "relative" }}>
                   <ActionBtn
@@ -399,35 +527,37 @@ export default function PlayPage() {
                         background: "#1a1a2a", border: "1px solid rgba(251,146,60,0.3)",
                         borderRadius: 10, padding: "8px 6px",
                         boxShadow: "0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,146,60,0.1)",
-                        minWidth: 110, animation: "qualityPop 0.15s ease",
+                        minWidth: 120, animation: "qualityPop 0.15s ease",
                       }}>
                         <style>{`@keyframes qualityPop { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
                         <div style={{ fontSize: 11, fontWeight: 400, color: "rgba(251,146,60,0.8)", textAlign: "center", paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
-                          Select Quality
+                          Download
                         </div>
-                        {[
-                          { label: "480p", sub: "SD · ~300MB" },
-                          { label: "720p", sub: "HD · ~700MB" },
-                          { label: "1080p", sub: "FHD · ~1.5GB" },
-                          { label: "4K", sub: "UHD · ~4GB" },
+                        {rawData?.videoUrl ? [
+                          { label: "Original", sub: "Best quality" },
+                          { label: "HD", sub: "720p" },
+                          { label: "SD", sub: "480p" },
                         ].map((q) => (
-                          <button key={q.label} onClick={() => {
-                            setDownloadQuality(q.label);
-                            setDownloaded(true);
-                            setShowQualityPicker(false);
-                          }} style={{
-                            display: "flex", alignItems: "center", justifyContent: "space-between",
-                            width: "100%", padding: "7px 10px", borderRadius: 6,
-                            background: "transparent", border: "none", cursor: "pointer",
-                            transition: "background 0.15s", gap: 10,
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(251,146,60,0.12)")}
-                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                          <button key={q.label}
+                            onClick={() => handleDownload(q.label)}
+                            disabled={downloading}
+                            style={{
+                              display: "flex", alignItems: "center", justifyContent: "space-between",
+                              width: "100%", padding: "7px 10px", borderRadius: 6,
+                              background: "transparent", border: "none", cursor: downloading ? "not-allowed" : "pointer",
+                              transition: "background 0.15s", gap: 10, opacity: downloading ? 0.5 : 1,
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(251,146,60,0.12)")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                           >
                             <span style={{ fontSize: 13, fontWeight: 400, color: "#fff" }}>{q.label}</span>
                             <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.4)" }}>{q.sub}</span>
                           </button>
-                        ))}
+                        )) : (
+                          <div style={{ padding: "8px 10px", fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>
+                            No download available
+                          </div>
+                        )}
                       </div>
                     </>
                   )}
@@ -444,7 +574,11 @@ export default function PlayPage() {
                     glow: "rgba(192,132,252,0.4)",
                     activeBg: "linear-gradient(135deg,#7c3aed,#c084fc)",
                   }}
-                  onClick={() => setSubtitlesOn(!subtitlesOn)}
+                  onClick={() => {
+                    if (!hasSubtitles) { showToast("No subtitles available for this content"); return; }
+                    setSubtitlesOn(v => !v);
+                    showToast(subtitlesOn ? "Subtitles off" : "Subtitles on");
+                  }}
                 />
               </div>
             </div>

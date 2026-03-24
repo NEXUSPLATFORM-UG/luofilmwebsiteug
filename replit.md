@@ -39,7 +39,12 @@ artifacts/
 
 - Project ID: `luo-film-site`
 - Auth: email/password + Google OAuth
-- Firestore collections: `users`, `content`, `episodes` (subcollection), `carousel`, `featured`, `subscriptions`, `wallet`, `transactions`, `activities`
+- Firestore collections: `users`, `content`, `episodes` (subcollection), `carousel`, `featured`, `subscriptions`, `wallet`, `transactions`, `activities`, `likes`, `watchlist`
+- **Note**: The `likes` and `watchlist` collections require Firestore security rules that allow public reads/writes (or at least unauthenticated reads/writes). Add this to Firebase Console → Firestore → Rules:
+  ```
+  match /likes/{id} { allow read, write: if true; }
+  match /watchlist/{id} { allow read, write: if true; }
+  ```
 
 ## Deploying to Vercel
 

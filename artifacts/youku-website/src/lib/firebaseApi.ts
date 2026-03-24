@@ -260,6 +260,56 @@ export const fbApi = {
     },
   },
 
+  userActions: {
+    getAnonId: (): string => {
+      let id = localStorage.getItem("luofilm_anon_id");
+      if (!id) {
+        id = "anon_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem("luofilm_anon_id", id);
+      }
+      return id;
+    },
+
+    checkLike: async (contentId: string, userId: string): Promise<boolean> => {
+      const snap = await getDoc(doc(db, "likes", `${contentId}_${userId}`));
+      return snap.exists();
+    },
+
+    toggleLike: async (contentId: string, userId: string): Promise<boolean> => {
+      const ref = doc(db, "likes", `${contentId}_${userId}`);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        await deleteDoc(ref);
+        try { await updateDoc(doc(db, "content", contentId), { likesCount: increment(-1) }); } catch {}
+        return false;
+      } else {
+        await setDoc(ref, { contentId, userId, createdAt: serverTimestamp() });
+        try { await updateDoc(doc(db, "content", contentId), { likesCount: increment(1) }); } catch {}
+        return true;
+      }
+    },
+
+    checkSave: async (contentId: string, userId: string): Promise<boolean> => {
+      const snap = await getDoc(doc(db, "watchlist", `${contentId}_${userId}`));
+      return snap.exists();
+    },
+
+    toggleSave: async (contentId: string, userId: string, contentMeta?: any): Promise<boolean> => {
+      const ref = doc(db, "watchlist", `${contentId}_${userId}`);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        await deleteDoc(ref);
+        return false;
+      } else {
+        await setDoc(ref, {
+          contentId, userId, createdAt: serverTimestamp(),
+          ...(contentMeta || {}),
+        });
+        return true;
+      }
+    },
+  },
+
   publicContent: {
     listAll: async () => {
       const snap = await getDocs(collection(db, "content"));
