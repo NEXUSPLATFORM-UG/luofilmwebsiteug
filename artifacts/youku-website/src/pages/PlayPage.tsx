@@ -195,20 +195,37 @@ export default function PlayPage() {
     } catch { showToast("Copy this link: " + url); }
   };
 
-  const handleDownload = async (quality: string) => {
-    const url = rawData?.videoUrl || "";
+  const getDownloadLinks = (): { key: string; label: string; url: string }[] => {
+    const sourceLinks = isSeries
+      ? (currentEpisodeData?.downloadLinks || {})
+      : (rawData?.downloadLinks || {});
+    const QUALITY_ORDER = [
+      { key: "1080p", label: "1080p Full HD" },
+      { key: "720p", label: "720p HD" },
+      { key: "480p", label: "480p Standard" },
+      { key: "360p", label: "360p Low" },
+    ];
+    const fromLinks = QUALITY_ORDER.filter(q => sourceLinks[q.key]).map(q => ({
+      key: q.key, label: q.label, url: sourceLinks[q.key],
+    }));
+    if (fromLinks.length > 0) return fromLinks;
+    const fallbackUrl = (isSeries ? currentEpisodeData?.videoUrl : rawData?.videoUrl) || "";
+    if (fallbackUrl) return [{ key: "Original", label: "Original Quality", url: fallbackUrl }];
+    return [];
+  };
+
+  const handleDownload = async (quality: string, url: string) => {
     if (!url) { showToast("No video available to download"); setShowQualityPicker(false); return; }
+    setShowQualityPicker(false);
     const isEmbed = /youtube\.com|youtu\.be|drive\.google\.com|vimeo\.com/.test(url);
     if (isEmbed) {
-      showToast("Opening video in new tab for download");
+      showToast("Opening in new tab for download");
       window.open(url, "_blank");
-      setShowQualityPicker(false);
       setDownloadQuality(quality);
       setDownloaded(true);
       return;
     }
     setDownloading(true);
-    setShowQualityPicker(false);
     showToast(`Starting download (${quality})…`);
     try {
       const resp = await fetch(url);
@@ -216,7 +233,7 @@ export default function PlayPage() {
       const blob = await resp.blob();
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `${show?.title || "video"}-${quality}.mp4`;
+      a.download = `${show?.title || "video"}_${quality}.mp4`;
       a.click();
       URL.revokeObjectURL(a.href);
       setDownloadQuality(quality);
@@ -225,7 +242,7 @@ export default function PlayPage() {
     } catch {
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${show?.title || "video"}-${quality}.mp4`;
+      a.download = `${show?.title || "video"}_${quality}.mp4`;
       a.target = "_blank";
       a.click();
       setDownloadQuality(quality);
@@ -518,49 +535,48 @@ export default function PlayPage() {
                       else setShowQualityPicker(!showQualityPicker);
                     }}
                   />
-                  {showQualityPicker && (
-                    <>
-                      <div style={{ position: "fixed", inset: 0, zIndex: 49 }} onClick={() => setShowQualityPicker(false)} />
-                      <div style={{
-                        position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
-                        transform: "translateX(-50%)", zIndex: 50,
-                        background: "#1a1a2a", border: "1px solid rgba(251,146,60,0.3)",
-                        borderRadius: 10, padding: "8px 6px",
-                        boxShadow: "0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,146,60,0.1)",
-                        minWidth: 120, animation: "qualityPop 0.15s ease",
-                      }}>
-                        <style>{`@keyframes qualityPop { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
-                        <div style={{ fontSize: 11, fontWeight: 400, color: "rgba(251,146,60,0.8)", textAlign: "center", paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
-                          Download
-                        </div>
-                        {rawData?.videoUrl ? [
-                          { label: "Original", sub: "Best quality" },
-                          { label: "HD", sub: "720p" },
-                          { label: "SD", sub: "480p" },
-                        ].map((q) => (
-                          <button key={q.label}
-                            onClick={() => handleDownload(q.label)}
-                            disabled={downloading}
-                            style={{
-                              display: "flex", alignItems: "center", justifyContent: "space-between",
-                              width: "100%", padding: "7px 10px", borderRadius: 6,
-                              background: "transparent", border: "none", cursor: downloading ? "not-allowed" : "pointer",
-                              transition: "background 0.15s", gap: 10, opacity: downloading ? 0.5 : 1,
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(251,146,60,0.12)")}
-                            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                          >
-                            <span style={{ fontSize: 13, fontWeight: 400, color: "#fff" }}>{q.label}</span>
-                            <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.4)" }}>{q.sub}</span>
-                          </button>
-                        )) : (
-                          <div style={{ padding: "8px 10px", fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>
-                            No download available
+                  {showQualityPicker && (() => {
+                    const dlLinks = getDownloadLinks();
+                    return (
+                      <>
+                        <div style={{ position: "fixed", inset: 0, zIndex: 49 }} onClick={() => setShowQualityPicker(false)} />
+                        <div style={{
+                          position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
+                          transform: "translateX(-50%)", zIndex: 50,
+                          background: "#1a1a2a", border: "1px solid rgba(251,146,60,0.3)",
+                          borderRadius: 10, padding: "8px 6px",
+                          boxShadow: "0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,146,60,0.1)",
+                          minWidth: 160, animation: "qualityPop 0.15s ease",
+                        }}>
+                          <style>{`@keyframes qualityPop { from { opacity:0; transform:translateX(-50%) translateY(6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
+                          <div style={{ fontSize: 11, color: "rgba(251,146,60,0.8)", textAlign: "center", paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                            <Download size={11} color="rgba(251,146,60,0.8)" /> Choose Quality
                           </div>
-                        )}
-                      </div>
-                    </>
-                  )}
+                          {dlLinks.length > 0 ? dlLinks.map(q => (
+                            <button key={q.key}
+                              onClick={() => handleDownload(q.key, q.url)}
+                              disabled={downloading}
+                              style={{
+                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                width: "100%", padding: "8px 12px", borderRadius: 6,
+                                background: "transparent", border: "none", cursor: downloading ? "not-allowed" : "pointer",
+                                transition: "background 0.15s", gap: 12, opacity: downloading ? 0.5 : 1,
+                              }}
+                              onMouseEnter={e => (e.currentTarget.style.background = "rgba(251,146,60,0.12)")}
+                              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                            >
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: "rgba(251,146,60,0.15)", color: "#fb923c" }}>{q.key}</span>
+                              <span style={{ fontSize: 12, color: "#fff", flex: 1, textAlign: "left" }}>{q.label}</span>
+                            </button>
+                          )) : (
+                            <div style={{ padding: "10px 12px", fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>
+                              No download available
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
                 <ActionBtn
                   icon={subtitlesOn

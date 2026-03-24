@@ -158,6 +158,38 @@ function ContentForm({ initial, onSave, onClose }: any) {
         <UrlField label="Trailer Video URL" urlKey="trailerUrl" placeholder="https://cdn.example.com/trailer.mp4" form={form} setForm={setForm} />
       </div>
 
+      {form.type === "movie" && (
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 16, marginTop: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#fb923c" }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Download Links by Quality</span>
+          </div>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 12 }}>
+            Add download URLs for each quality. Only qualities with a URL will appear to users on the play page.
+          </p>
+          {[
+            { key: "360p", label: "360p (Low)", placeholder: "https://cdn.example.com/movie-360p.mp4" },
+            { key: "480p", label: "480p (Standard)", placeholder: "https://cdn.example.com/movie-480p.mp4" },
+            { key: "720p", label: "720p HD", placeholder: "https://cdn.example.com/movie-720p.mp4" },
+            { key: "1080p", label: "1080p Full HD", placeholder: "https://cdn.example.com/movie-1080p.mp4" },
+          ].map(q => (
+            <div key={q.key} style={{ marginBottom: 12 }}>
+              <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>{q.label}</label>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, background: "#fb923c22", color: "#fb923c", border: "1px solid #fb923c44", borderRadius: 5, padding: "4px 8px", flexShrink: 0 }}>{q.key}</span>
+                <input
+                  style={inp}
+                  value={form.downloadLinks?.[q.key] || ""}
+                  onChange={e => setForm((f: any) => ({ ...f, downloadLinks: { ...(f.downloadLinks || {}), [q.key]: e.target.value } }))}
+                  placeholder={q.placeholder}
+                />
+              </div>
+              {form.downloadLinks?.[q.key] && <span style={{ fontSize: 11, color: "#10b981", marginTop: 3, display: "block" }}>✓ URL set</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
         <button onClick={onClose} style={{ padding: "8px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 13 }}>Cancel</button>
         <Btn onClick={save}>{saving ? "Saving..." : (initial?.id ? "Save Changes" : "Add Content")}</Btn>

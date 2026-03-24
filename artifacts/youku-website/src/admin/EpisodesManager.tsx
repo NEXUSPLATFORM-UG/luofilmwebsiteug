@@ -71,17 +71,47 @@ function EpisodeForm({ seriesId, initial, onSave, onClose }: any) {
           Paste URLs from any CDN, Google Drive, or video hosting provider.
         </p>
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Video URL</label>
+          <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Video URL (Streaming)</label>
           <input style={inp} value={form.videoUrl} onChange={e => set("videoUrl", e.target.value)} placeholder="https://cdn.example.com/episode.mp4" />
           {form.videoUrl && <span style={{ fontSize: 11, color: "#10b981", marginTop: 4, display: "block" }}>✓ URL set</span>}
         </div>
-        <div>
+        <div style={{ marginBottom: 14 }}>
           <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 5, fontWeight: 600 }}>Thumbnail Image URL</label>
           <input style={inp} value={form.thumbnailUrl} onChange={e => set("thumbnailUrl", e.target.value)} placeholder="https://cdn.example.com/thumb.jpg" />
           {form.thumbnailUrl && (
             <img src={form.thumbnailUrl} alt="" style={{ height: 38, borderRadius: 4, marginTop: 6, objectFit: "cover" }} onError={e => (e.currentTarget.style.display = "none")} />
           )}
         </div>
+      </div>
+
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 14, marginTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#fb923c" }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Download Links by Quality</span>
+        </div>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 12 }}>
+          Add a download URL for each quality. Only qualities with a URL will show to users.
+        </p>
+        {[
+          { key: "360p", label: "360p (Low)" },
+          { key: "480p", label: "480p (Standard)" },
+          { key: "720p", label: "720p HD" },
+          { key: "1080p", label: "1080p Full HD" },
+        ].map(q => (
+          <div key={q.key} style={{ marginBottom: 10 }}>
+            <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 4, fontWeight: 600 }}>{q.label}</label>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, background: "#fb923c22", color: "#fb923c", border: "1px solid #fb923c44", borderRadius: 5, padding: "4px 8px", flexShrink: 0 }}>{q.key}</span>
+              <input
+                style={inp}
+                value={form.downloadLinks?.[q.key] || ""}
+                onChange={e => setForm((f: any) => ({ ...f, downloadLinks: { ...(f.downloadLinks || {}), [q.key]: e.target.value } }))}
+                placeholder={`https://cdn.example.com/ep-${q.key}.mp4`}
+              />
+            </div>
+            {form.downloadLinks?.[q.key] && <span style={{ fontSize: 11, color: "#10b981", marginTop: 3, display: "block" }}>✓ URL set</span>}
+          </div>
+        ))}
       </div>
 
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
