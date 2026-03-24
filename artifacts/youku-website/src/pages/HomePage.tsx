@@ -253,28 +253,28 @@ export default function HomePage() {
 
       <div style={{ padding: "8px 12px 40px", maxWidth: 1440, margin: "0 auto" }}>
         {shows.length > 0 && (
-          <ContentRow title="ALL CONTENT" subtitle="RECENTLY ADDED" shows={shows.slice(0, 10)} />
+          <ContentRow title="ALL CONTENT" subtitle="RECENTLY ADDED" shows={shows.slice(0, 10)} categoryHref="/drama" />
         )}
         {series.length > 0 && (
-          <ContentRow title="SERIES" shows={series.slice(0, 10)} />
+          <ContentRow title="SERIES" shows={series.slice(0, 10)} categoryHref="/drama" />
         )}
         {movies.length > 0 && (
-          <ContentRow title="MOVIES" shows={movies.slice(0, 10)} />
+          <ContentRow title="MOVIES" shows={movies.slice(0, 10)} categoryHref="/movie" />
         )}
         {byGenre("romance").length > 0 && (
-          <ContentRow title="ROMANCE" shows={byGenre("romance").slice(0, 10)} />
+          <ContentRow title="ROMANCE" shows={byGenre("romance").slice(0, 10)} categoryHref="/drama" />
         )}
         {byGenre("fantasy").length > 0 && (
-          <ContentRow title="FANTASY & WUXIA" shows={byGenre("fantasy").slice(0, 10)} />
+          <ContentRow title="FANTASY & WUXIA" shows={byGenre("fantasy").slice(0, 10)} categoryHref="/anime" />
         )}
         {byGenre("historical").length > 0 && (
-          <ContentRow title="HISTORICAL" shows={byGenre("historical").slice(0, 10)} />
+          <ContentRow title="HISTORICAL" shows={byGenre("historical").slice(0, 10)} categoryHref="/documentary" />
         )}
         {byGenre("action").length > 0 && (
-          <ContentRow title="ACTION" shows={byGenre("action").slice(0, 10)} />
+          <ContentRow title="ACTION" shows={byGenre("action").slice(0, 10)} categoryHref="/sports" />
         )}
         {byGenre("drama").length > 0 && (
-          <ContentRow title="DRAMA" shows={byGenre("drama").slice(0, 10)} />
+          <ContentRow title="DRAMA" shows={byGenre("drama").slice(0, 10)} categoryHref="/drama" />
         )}
         {shows.length === 0 && !loading && (
           <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.25)", fontSize: 14 }}>
@@ -332,7 +332,7 @@ function MiniShowCard({ show }: { show: Show }) {
   );
 }
 
-function ContentRow({ title, subtitle, shows }: { title: string; subtitle?: string; shows: Show[] }) {
+function ContentRow({ title, subtitle, shows, categoryHref }: { title: string; subtitle?: string; shows: Show[]; categoryHref?: string }) {
   if (!shows.length) return null;
   const scrollRef = useRef<HTMLDivElement>(null);
   const scroll = (dir: "left" | "right") => {
@@ -354,7 +354,13 @@ function ContentRow({ title, subtitle, shows }: { title: string; subtitle?: stri
           <button onClick={() => scroll("right")} style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
             <ChevronRight size={12} />
           </button>
-          <button style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer", marginLeft: 2 }}>ALL &gt;</button>
+          {categoryHref ? (
+            <Link href={categoryHref}>
+              <span style={{ fontSize: 11, color: "#00a9f5", background: "transparent", border: "none", cursor: "pointer", marginLeft: 2, fontWeight: 600 }}>ALL &gt;</span>
+            </Link>
+          ) : (
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginLeft: 2 }}>ALL &gt;</span>
+          )}
         </div>
       </div>
       <div ref={scrollRef} className="content-row-scroll" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
