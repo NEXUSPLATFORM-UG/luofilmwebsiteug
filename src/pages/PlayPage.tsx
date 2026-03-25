@@ -1232,6 +1232,8 @@ function ActionBtn({
         minWidth: 54,
         transition: "all 0.2s",
         boxShadow: active ? `0 3px 12px ${color.glow}` : "0 1px 3px rgba(0,0,0,0.3)",
+        userSelect: "none",
+        WebkitUserSelect: "none",
       }}
     >
       {icon}
@@ -1241,6 +1243,8 @@ function ActionBtn({
         letterSpacing: "0.07em",
         color: active ? "#fff" : "rgba(255,255,255,0.5)",
         whiteSpace: "nowrap",
+        userSelect: "none",
+        WebkitUserSelect: "none",
       }}>
         {label}
       </span>

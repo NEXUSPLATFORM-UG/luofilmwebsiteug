@@ -138,8 +138,12 @@ export default function EpisodesManager() {
       api.content.get(seriesId),
       api.content.episodes.list(seriesId)
     ]).then(([d, eps]) => {
+      const episodeList = eps.episodes || [];
       setSeriesInfo(d.content);
-      setEpisodes(eps.episodes || []);
+      setEpisodes(episodeList);
+      if ((d.content?.episodeCount ?? 0) !== episodeList.length) {
+        api.content.update(seriesId, { episodeCount: episodeList.length }).catch(() => {});
+      }
     }).finally(() => setLoading(false));
   };
 
