@@ -282,7 +282,6 @@ export default function PlayPage() {
       const a = document.createElement("a");
       a.href = proxyUrl;
       a.download = filename;
-      a.target = "_blank";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
