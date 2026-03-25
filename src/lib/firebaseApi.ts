@@ -456,10 +456,22 @@ export const fbApi = {
   publicContent: {
     listAll: async () => {
       const snap = await getDocs(collection(db, "content"));
-      return snap.docs
+      const docs = snap.docs
         .map(docToObj)
         .filter((d: any) => d.status === "published")
         .sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+      const fixPromises = docs
+        .filter((d: any) => d.type === "series" && (d.episodeCount || 0) === 0)
+        .map(async (d: any) => {
+          const epSnap = await getDocs(collection(db, "content", d.id, "episodes"));
+          const count = epSnap.size;
+          if (count > 0) {
+            d.episodeCount = count;
+            updateDoc(doc(db, "content", d.id), { episodeCount: count }).catch(() => {});
+          }
+        });
+      await Promise.all(fixPromises);
+      return docs;
     },
     getById: async (id: string) => {
       const snap = await getDoc(doc(db, "content", id));
