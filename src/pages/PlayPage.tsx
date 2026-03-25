@@ -275,26 +275,22 @@ export default function PlayPage() {
     setDownloading(true);
     showToast(`Starting download (${quality})…`);
     try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error("fetch failed");
-      const blob = await resp.blob();
+      const baseTitle = show?.title || "video";
+      const episodePart = isSeries ? ` Episode ${currentEp}` : "";
+      const filename = `${baseTitle}${episodePart} VJ PAUL UG (www.luofilm.site).mp4`;
+      const proxyUrl = `https://download.mainplatform-nexus.workers.dev/?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}&download=1`;
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${show?.title || "video"}_${quality}.mp4`;
+      a.href = proxyUrl;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(a.href);
+      document.body.removeChild(a);
       setDownloadQuality(quality);
       setDownloaded(true);
       showToast("Download started!");
     } catch {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${show?.title || "video"}_${quality}.mp4`;
-      a.target = "_blank";
-      a.click();
-      setDownloadQuality(quality);
-      setDownloaded(true);
-      showToast("Download started!");
+      showToast("Download failed. Please try again.");
     } finally { setDownloading(false); }
   };
 
