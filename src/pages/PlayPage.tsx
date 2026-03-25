@@ -112,7 +112,14 @@ export default function PlayPage() {
         setRawData(d);
         setActiveTab(d.type === "series" ? "EPISODES" : "RECOMMENDED");
         if (d.type === "series") {
-          fbApi.content.episodes.list(params.id).then((r) => setEpisodes(r.episodes || [])).catch(() => {});
+          fbApi.content.episodes.list(params.id).then((r) => {
+            const eps = r.episodes || [];
+            setEpisodes(eps);
+            if ((d.episodeCount || 0) !== eps.length) {
+              fbApi.content.update(params.id, { episodeCount: eps.length }).catch(() => {});
+              setShow((prev) => prev ? { ...prev, episodeCount: eps.length } : prev);
+            }
+          }).catch(() => {});
         }
         fbApi.content.incrementViews(params.id).catch(() => {});
         const cu = auth.currentUser;

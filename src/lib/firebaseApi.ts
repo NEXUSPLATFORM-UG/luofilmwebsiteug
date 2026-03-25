@@ -152,6 +152,7 @@ export const fbApi = {
         const ref2 = await addDoc(collection(db, "content", contentId, "episodes"), {
           ...data, views: 0, createdAt: serverTimestamp(),
         });
+        await updateDoc(doc(db, "content", contentId), { episodeCount: increment(1) });
         return { id: ref2.id };
       },
       update: async (contentId: string, epId: string, data: any) => {
@@ -162,6 +163,7 @@ export const fbApi = {
       },
       delete: async (contentId: string, epId: string) => {
         await deleteDoc(doc(db, "content", contentId, "episodes", epId));
+        await updateDoc(doc(db, "content", contentId), { episodeCount: increment(-1) });
         return { id: epId };
       },
     },
