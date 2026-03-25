@@ -72,24 +72,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pageUrl = `${baseUrl}/play/${id}`;
 
   if (!isBot(ua)) {
-    try {
-      const indexPath = path.join(process.cwd(), "dist/public/index.html");
-      const html = fs.readFileSync(indexPath, "utf8");
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "no-store");
-      return res.send(html);
-    } catch {
-      return res.redirect(302, pageUrl);
+    const candidates = [
+      path.join(process.cwd(), "dist", "index.html"),
+      path.join(process.cwd(), "public", "index.html"),
+      path.join(process.cwd(), "index.html"),
+    ];
+    for (const p of candidates) {
+      try {
+        const html = fs.readFileSync(p, "utf8");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Cache-Control", "no-store");
+        return res.send(html);
+      } catch {}
     }
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=/"></head><body></body></html>`);
   }
 
   const content = await getContent(id);
 
   const movieTitle = content?.title || "LUOFILM.SITE";
-  const ogTitle = `${movieTitle} | VJ PAUL FREE DOWNLOAD LUOFILM.SITE`;
-  const ogDesc =
-    content?.description ||
-    "Watch free movies, drama, series and anime. VJ PAUL FREE DOWNLOAD on LUOFILM.SITE";
+  const typeLabel = content?.type === "series" ? "Series" : "Movie";
+  const ogTitle = `${movieTitle} — VJ PAUL UG FREE DOWNLOAD | LUOFILM.SITE`;
+  const ogDesc = content?.description
+    ? `${content.description} | VJ PAUL UG FREE DOWNLOAD on LUOFILM.SITE`
+    : `Watch ${typeLabel}: ${movieTitle} free — VJ PAUL UG FREE DOWNLOAD on LUOFILM.SITE`;
   const ogImage = content?.coverUrl
     ? content.coverUrl
     : `${baseUrl}/logo.png`;
